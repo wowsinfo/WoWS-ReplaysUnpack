@@ -1,9 +1,15 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
-    <RootNamespace>Replays_Unpack_CS</RootNamespace>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <Version>0.1</Version>
+    <Company>Nodsoft Systems</Company>
+    <Authors>imkindaprogrammermyself, Sakura Akeno Isayeki</Authors>
+    <Product>WoWS Replays Unpack</Product>
+    <PackageProjectUrl>https://github.com/Nodsoft/WoWS-ReplaysUnpack</PackageProjectUrl>
+    <Description>Unpacking library for World of Warships replay files</Description>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
