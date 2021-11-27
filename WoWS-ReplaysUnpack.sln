@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31410.357
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Replays Unpack CS", "Replays Unpack CS\Replays Unpack CS.csproj", "{B7A3AA8B-E20E-4DE9-B63A-A1A96741EFCD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nodsoft.WowsReplaysUnpack", "Nodsoft.WowsReplaysUnpack\Nodsoft.WowsReplaysUnpack.csproj", "{B7A3AA8B-E20E-4DE9-B63A-A1A96741EFCD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

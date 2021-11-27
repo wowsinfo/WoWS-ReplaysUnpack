@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Replays_Unpack_CS
+namespace Nodsoft.WowsReplaysUnpack
 {
     class CamouflageInfo : IObjectConstructor
     {

@@ -7,7 +7,7 @@ using BlowFishCS;
 using System.IO.Compression;
 using System.Collections;
 
-namespace Replays_Unpack_CS
+namespace Nodsoft.WowsReplaysUnpack
 {
     class NetPacket
     {
