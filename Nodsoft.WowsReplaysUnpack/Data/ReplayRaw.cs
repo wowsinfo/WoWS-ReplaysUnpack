@@ -6,12 +6,12 @@ namespace Nodsoft.WowsReplaysUnpack.Data;
 /// <summary>
 /// Low-level DTO for Replay file info ingest
 /// </summary>
-internal record ReplayRaw
+public sealed record ReplayRaw
 {
 	public string ArenaInfoJson { get; init; }
 
-	public IReadOnlyList<ReplayMessage> ReplayMessages { get; init; }
-	public IEnumerable<ReplayPlayer> ReplayPlayers { get; init; }
+	public List<ReplayMessage> ChatMessages { get; init; } = new();
+	public List<ReplayPlayer> ReplayPlayers { get; init; } = new();
 
 
 	internal byte[] BReplaySignature { get; init; }

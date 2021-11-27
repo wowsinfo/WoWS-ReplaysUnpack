@@ -2,7 +2,7 @@
 
 namespace Nodsoft.WowsReplaysUnpack.Data;
 
-internal record ReplayPlayer
+public sealed record ReplayPlayer
 {
-	IEnumerable<object> Properties { get; init; }
+	public IEnumerable<object> Properties { get; init; }
 }

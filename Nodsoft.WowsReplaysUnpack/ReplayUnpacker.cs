@@ -16,8 +16,10 @@ namespace Nodsoft.WowsReplaysUnpack;
 
 public class ReplayUnpacker
 {
-	public virtual void UnpackReplay(Stream stream)
+	public virtual ReplayRaw UnpackReplay(Stream stream)
 	{
+
+
 		byte[] bReplaySignature = new byte[4];
 		byte[] bReplayBlockCount = new byte[4];
 		byte[] bReplayBlockSize = new byte[4];
@@ -32,8 +34,7 @@ public class ReplayUnpacker
 		bReplayJSONData = new byte[jsonDataSize];
 		stream.Read(bReplayJSONData, 0, jsonDataSize);
 
-		string sReplayJSONData = Encoding.UTF8.GetString(bReplayJSONData);
-		//Console.WriteLine(sReplayJSONData);
+		ReplayRaw replay = new() { ArenaInfoJson = Encoding.UTF8.GetString(bReplayJSONData) };
 
 		if (stream is not MemoryStream memStream)
 		{
@@ -67,28 +68,24 @@ public class ReplayUnpacker
 
 		compressedData.Seek(2, SeekOrigin.Begin); //DeflateStream doesn't strip the header so we strip it manually.
 		MemoryStream decompressedData = new();
+
 		using (DeflateStream df = new(compressedData, CompressionMode.Decompress))
 		{
 			df.CopyTo(decompressedData);
 		}
 
-		//Console.WriteLine(decompressedData.Length);
 		decompressedData.Seek(0, SeekOrigin.Begin);
 
 		while (decompressedData.Position != decompressedData.Length)
 		{
 			NetPacket np = new(decompressedData);
-			//Console.WriteLine("{0}: {1}", np.time, np.type);
 
 			if (np.Type is "08")
 			{
 				EntityMethod em = new(np.rawData);
-				// Console.WriteLine("{0}: {1}: {2}\n", em.entityId, em.messageId, em.Data.Value.Length);
 
-				if (em.MessageId is 124) // 10.10=124
+				if (em.MessageId is 124) // 10.10=124, OnArenaStatesReceived
 				{
-					// Console.WriteLine("{0}: {1}\n", em.entityId, em.messageId);
-
 					//var unk1 = new byte[8]; //?
 					//em.Data.Value.Read(unk1);
 
@@ -121,19 +118,12 @@ public class ReplayUnpacker
 						byte[] blobPlayerStates = new byte[PlayerStatesRealSize];
 						em.Data.Value.Read(blobPlayerStates);
 
-						Unpickler.registerConstructor("CamouflageInfo", "CamouflageInfo", new CamouflageInfo());
+						Unpickler.registerConstructor(nameof(CamouflageInfo), nameof(CamouflageInfo), new CamouflageInfo());
 						Unpickler k = new();
 
-
-						ArrayList players = (ArrayList)k.load(new MemoryStream(blobPlayerStates));
-
-						foreach (ArrayList player in players)
+						foreach (ArrayList player in k.load(new MemoryStream(blobPlayerStates)) as ArrayList)
 						{
-							foreach (object[] properties in player)
-							{
-								Console.WriteLine("{0}: {1}", Constants.PropertyMapping[(int)properties[0]].PadRight(21, ' '), properties[1]);
-							}
-							Console.WriteLine("");
+							replay.ReplayPlayers.Add(new() { Properties = player.ToArray() });
 						}
 
 						/*
@@ -177,7 +167,7 @@ public class ReplayUnpacker
 					}
 
 				}
-				else if (em.MessageId is 122) // 10.10=122,
+				else if (em.MessageId is 122) // 10.10=122, OnChatMessage
 				{
 					byte[] bEntityId = new byte[4];
 					em.Data.Value.Read(bEntityId);
@@ -195,7 +185,7 @@ public class ReplayUnpacker
 					em.Data.Value.Read(bMessageContent);
 					string messageContent = Encoding.UTF8.GetString(bMessageContent);
 
-					Console.WriteLine("{0} : {1} : {2}", entityId, messageGroup, messageContent);
+					replay.ChatMessages.Add(new(entityId, messageGroup, messageContent));
 					/*
 						615476 : battle_team : cv run
 						615474 : battle_common : nb
@@ -219,6 +209,8 @@ public class ReplayUnpacker
 				}
 			}
 		}
+
+		return replay;
 	}
 
 
