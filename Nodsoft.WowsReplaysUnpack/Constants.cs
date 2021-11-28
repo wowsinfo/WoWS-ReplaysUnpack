@@ -8,7 +8,7 @@ namespace Nodsoft.WowsReplaysUnpack
 {
 	class Constants
 	{
-		public static Dictionary<int, string> PropertyMapping = new()
+		public static Dictionary<int, string> PropertyMapping { get; } = new()
 		{
 			{ 0, "accountDBID" },
 			{ 1, "antiAbuseEnabled"	},

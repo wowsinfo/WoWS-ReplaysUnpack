@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -16,6 +17,9 @@ namespace Nodsoft.WowsReplaysUnpack;
 
 public class ReplayUnpacker
 {
+	private static readonly PropertyInfo[] _replayPlayerProperties = typeof(ReplayPlayer).GetProperties();
+
+
 	public ReplayRaw UnpackReplay(Stream stream)
 	{
 
@@ -118,9 +122,19 @@ public class ReplayUnpacker
 						Unpickler.registerConstructor(nameof(CamouflageInfo), nameof(CamouflageInfo), new CamouflageInfo());
 						Unpickler k = new();
 
-						foreach (ArrayList player in k.load(new MemoryStream(blobPlayerStates)) as ArrayList)
+						ArrayList players = k.load(new MemoryStream(blobPlayerStates)) as ArrayList;
+
+						foreach (ArrayList player in players)
 						{
-							replay.ReplayPlayers.Add(new() { Properties = player.ToArray() });
+							var x = player.ToArray();
+
+							foreach (object[] properties in player)
+							{
+								//Console.WriteLine("{0}: {1}", Constants.PropertyMapping[(int)properties[0]].PadRight(21, ' '), properties[1]);
+							}
+							Console.WriteLine("");
+
+							replay.ReplayPlayers.Add(ParseReplayPlayer(player));
 						}
 
 						/*
@@ -208,6 +222,26 @@ public class ReplayUnpacker
 		}
 
 		return replay;
+	}
+
+	internal static ReplayPlayer ParseReplayPlayer(ArrayList playerInfo)
+	{
+		Dictionary<string, object> data = new();
+
+		for (int i = 0; i < playerInfo.Count; i++)
+		{
+			data.Add(Constants.PropertyMapping.GetValueOrDefault(i), (playerInfo[i] as object[])[1]);
+		}
+
+		ReplayPlayer player = new() { Properties = data };
+
+
+		foreach (KeyValuePair<string, object> value in player.Properties)
+		{
+			_replayPlayerProperties.FirstOrDefault(p => p.Name.Equals(value.Key, StringComparison.InvariantCultureIgnoreCase))?.SetValue(player, value.Value);
+		}
+
+		return player;
 	}
 
 

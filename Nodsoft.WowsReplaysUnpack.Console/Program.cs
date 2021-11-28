@@ -8,19 +8,19 @@ using Nodsoft.WowsReplaysUnpack.Data;
 
 Console.WriteLine();
 
-
+/*
 BenchmarkRunner.Run<UnpackBenchmark>(DefaultConfig.Instance
 	.WithOptions(ConfigOptions.DisableOptimizationsValidator)
 );
 
 /**/
 
-/*
+
 ReplayRaw replay = new UnpackBenchmark().GetReplay();
 
 /**/
 
-/*
+
 foreach (ReplayMessage msg in replay.ChatMessages)
 {
 	Console.WriteLine($"[{GetGroupString(msg)}] {msg.EntityId} : {msg.MessageContent}");
@@ -30,7 +30,7 @@ foreach (ReplayMessage msg in replay.ChatMessages)
 
 Console.ReadKey();
 
-/*
+
 static string GetGroupString(ReplayMessage msg) => msg.MessageGroup switch
 {
 	"battle_team" => "Team",
