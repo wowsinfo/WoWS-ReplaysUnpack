@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <TargetFramework>net6.0</TargetFramework>
-    <Version>0.2</Version>
+    <Version>0.2-dev1</Version>
     <Company>Nodsoft Systems</Company>
     <Authors>imkindaprogrammermyself, Sakura Akeno Isayeki</Authors>
     <Product>WoWS Replays Unpack</Product>
