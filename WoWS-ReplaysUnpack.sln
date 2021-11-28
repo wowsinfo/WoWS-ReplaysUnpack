@@ -5,7 +5,12 @@ VisualStudioVersion = 17.0.31815.197
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nodsoft.WowsReplaysUnpack", "Nodsoft.WowsReplaysUnpack\Nodsoft.WowsReplaysUnpack.csproj", "{B7A3AA8B-E20E-4DE9-B63A-A1A96741EFCD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nodsoft.WowsReplaysUnpack.Console", "Nodsoft.WowsReplaysUnpack.Console\Nodsoft.WowsReplaysUnpack.Console.csproj", "{11921E06-712D-48E4-A1BB-8F9CDAFDBBC3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nodsoft.WowsReplaysUnpack.Console", "Nodsoft.WowsReplaysUnpack.Console\Nodsoft.WowsReplaysUnpack.Console.csproj", "{11921E06-712D-48E4-A1BB-8F9CDAFDBBC3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{179DD26A-613E-460F-BB27-970ED806CE00}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
