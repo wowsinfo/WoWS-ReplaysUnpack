@@ -8,14 +8,14 @@ using Nodsoft.WowsReplaysUnpack.Data;
 
 Console.WriteLine();
 
-/*
+
 BenchmarkRunner.Run<UnpackBenchmark>(DefaultConfig.Instance
 	.WithOptions(ConfigOptions.DisableOptimizationsValidator)
 );
 
 /**/
 
-
+/*
 ReplayRaw replay = new UnpackBenchmark().GetReplay();
 
 /**/
