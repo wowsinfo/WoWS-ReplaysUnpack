@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Razorvine.Pickle.Objects;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace Nodsoft.WowsReplaysUnpack.Data;
 
@@ -6,39 +8,42 @@ public sealed record ReplayPlayer
 {
 	public IReadOnlyDictionary<string, object> Properties { get; init; }
 
-	public object AccountDBID { get; set; }
-	public object AvatarId { get; set; }
+	public uint AccountDBID { get; set; }
+	public uint AvatarId { get; set; }
+
 	public object CamouflageInfo { get; set; }
-	public object ClanColor { get; set; }
-	public object ClanID { get; set; }
-	public object ClanTag { get; set; }
-	public object CrewParams { get; set; }
-	public object DogTag { get; set; }
-	public object FragsCount { get; set; }
-	public object FriendlyFireEnabled { get; set; }
-	public object Id { get; set; }
-	public object InvitationsEnabled { get; set; }
-	public object IsAbuser { get; set; }
-	public object IsAlive { get; set; }
-	public object IsBot { get; set; }
-	public object IsClientLoaded { get; set; }
-	public object IsConnected { get; set; }
-	public object IsHidden { get; set; }
-	public object IsLeaver { get; set; }
-	public object IsPreBattleOwner { get; set; }
-	public object KilledBuildingsCount { get; set; }
-	public object MaxHealth { get; set; }
-	public object Name { get; set; }
-	public object PlayerMode { get; set; }
-	public object PreBattleIdOnStart { get; set; }
+
+	public uint ClanColor { get; set; }
+	public uint ClanID { get; set; }
+	public string ClanTag { get; set; }
+
+	public ArrayList CrewParams { get; set; }
+	public ArrayList DogTag { get; set; }
+	public short FragsCount { get; set; }
+	public bool FriendlyFireEnabled { get; set; }
+	public uint Id { get; set; }
+	public bool InvitationsEnabled { get; set; }
+	public bool IsAbuser { get; set; }
+	public bool IsAlive { get; set; }
+	public bool IsBot { get; set; }
+	public bool IsClientLoaded { get; set; }
+	public bool IsConnected { get; set; }
+	public bool IsHidden { get; set; }
+	public bool IsLeaver { get; set; }
+	public bool IsPreBattleOwner { get; set; }
+	public short KilledBuildingsCount { get; set; }
+	public uint MaxHealth { get; set; }
+	public string Name { get; set; }
+	public ClassDict PlayerMode { get; set; }
+	public uint PreBattleIdOnStart { get; set; }
 	public object PreBattleSign { get; set; }
-	public object PrebattleId { get; set; }
-	public object Realm { get; set; }
-	public object ShipComponents { get; set; }
-	public object ShipId { get; set; }
-	public object ShipParamsId { get; set; }
-	public object SkinId { get; set; }
-	public object TeamId { get; set; }
-	public object TtkStatus { get; set; }
+	public uint PrebattleId { get; set; }
+	public string Realm { get; set; }
+	public Hashtable ShipComponents { get; set; }
+	public uint ShipId { get; set; }
+	public uint ShipParamsId { get; set; }
+	public uint SkinId { get; set; }
+	public uint TeamId { get; set; }
+	public bool TtkStatus { get; set; }
 
 }

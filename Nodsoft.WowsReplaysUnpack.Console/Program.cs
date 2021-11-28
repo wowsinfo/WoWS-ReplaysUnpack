@@ -20,7 +20,7 @@ ReplayRaw replay = new UnpackBenchmark().GetReplay();
 
 /**/
 
-
+/*
 foreach (ReplayMessage msg in replay.ChatMessages)
 {
 	Console.WriteLine($"[{GetGroupString(msg)}] {msg.EntityId} : {msg.MessageContent}");

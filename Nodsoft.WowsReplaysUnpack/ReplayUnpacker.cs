@@ -1,4 +1,5 @@
-﻿using Nodsoft.WowsReplaysUnpack.Data;
+﻿using Mapster;
+using Nodsoft.WowsReplaysUnpack.Data;
 using Nodsoft.WowsReplaysUnpack.Infrastructure;
 using Razorvine.Pickle;
 using System;
@@ -132,7 +133,6 @@ public class ReplayUnpacker
 							{
 								//Console.WriteLine("{0}: {1}", Constants.PropertyMapping[(int)properties[0]].PadRight(21, ' '), properties[1]);
 							}
-							Console.WriteLine("");
 
 							replay.ReplayPlayers.Add(ParseReplayPlayer(player));
 						}
@@ -238,7 +238,20 @@ public class ReplayUnpacker
 
 		foreach (KeyValuePair<string, object> value in player.Properties)
 		{
-			_replayPlayerProperties.FirstOrDefault(p => p.Name.Equals(value.Key, StringComparison.InvariantCultureIgnoreCase))?.SetValue(player, value.Value);
+			PropertyInfo propertyInfo = _replayPlayerProperties.FirstOrDefault(p => p.Name.Equals(value.Key, StringComparison.OrdinalIgnoreCase));
+			Type sourceType = value.Value.GetType();
+
+			if (propertyInfo is not null)
+			{
+				if (propertyInfo.PropertyType == sourceType)
+				{
+					propertyInfo.SetValue(player, value.Value);
+				}
+				else
+				{
+					propertyInfo.SetValue(player, value.Value.Adapt(value.Value.GetType(), propertyInfo.PropertyType));
+				}
+			}
 		}
 
 		return player;
