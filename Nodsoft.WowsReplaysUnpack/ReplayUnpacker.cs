@@ -16,7 +16,7 @@ namespace Nodsoft.WowsReplaysUnpack;
 
 public class ReplayUnpacker
 {
-	public virtual ReplayRaw UnpackReplay(Stream stream)
+	public ReplayRaw UnpackReplay(Stream stream)
 	{
 
 
@@ -36,11 +36,8 @@ public class ReplayUnpacker
 
 		ReplayRaw replay = new() { ArenaInfoJson = Encoding.UTF8.GetString(bReplayJSONData) };
 
-		if (stream is not MemoryStream memStream)
-		{
-			memStream = new();
-			stream.CopyTo(memStream);
-		}
+		using MemoryStream memStream = new();
+		stream.CopyTo(memStream);
 
 		string sBfishKey = "\x29\xB7\xC9\x09\x38\x3F\x84\x88\xFA\x98\xEC\x4E\x13\x19\x79\xFB";
 		byte[] bBfishKey = sBfishKey.Select(x => Convert.ToByte(x)).ToArray();
@@ -82,7 +79,7 @@ public class ReplayUnpacker
 
 			if (np.Type is "08")
 			{
-				EntityMethod em = new(np.rawData);
+				EntityMethod em = new(np.RawData);
 
 				if (em.MessageId is 124) // 10.10=124, OnArenaStatesReceived
 				{

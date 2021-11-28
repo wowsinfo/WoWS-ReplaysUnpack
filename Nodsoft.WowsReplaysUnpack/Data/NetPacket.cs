@@ -7,10 +7,10 @@ namespace Nodsoft.WowsReplaysUnpack.Data;
 
 public struct NetPacket
 {
-	public uint Size;
-	public string Type;
-	public float Time;
-	public MemoryStream rawData;
+	public uint Size { get; set; }
+	public string Type { get; set; }
+	public float Time { get; set; }
+	public MemoryStream RawData { get; set; }
 
 
 	public NetPacket(MemoryStream stream)
@@ -29,6 +29,6 @@ public struct NetPacket
 
 		byte[] data = new byte[Size];
 		stream.Read(data);
-		rawData = new MemoryStream(data);
+		RawData = new MemoryStream(data);
 	}
 }
