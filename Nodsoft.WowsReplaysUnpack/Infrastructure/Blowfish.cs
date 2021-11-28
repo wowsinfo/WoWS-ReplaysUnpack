@@ -65,9 +65,6 @@ internal class BlowFish
     //standard is 16, to increase the number of rounds, bf_P needs to be equal to the number of rouds. Use digits of PI.
     private const int Rounds = 16;
 
-    //Random number generator for creating IVs
-    private readonly RNGCryptoServiceProvider randomSource;
-
     //SBLOCKS
     private uint[] bfS0 = default!;
     private uint[] bfS1 = default!;
@@ -101,7 +98,6 @@ internal class BlowFish
     /// <param name="hexKey">Cipher key as a hex string</param>
     public BlowFish(string hexKey)
     {
-        randomSource = new RNGCryptoServiceProvider();
         SetupKey(HexToByte(hexKey));
     }
 
@@ -111,7 +107,6 @@ internal class BlowFish
     /// <param name="cipherKey">Cipher key as a byte array</param>
     public BlowFish(byte[] cipherKey)
     {
-        randomSource = new RNGCryptoServiceProvider();
         SetupKey(cipherKey);
     }
 
@@ -259,8 +254,7 @@ internal class BlowFish
     /// <returns>The random IV</returns>
     public byte[] SetRandomIV()
     {
-        initVector = new byte[8];
-        randomSource.GetBytes(initVector);
+        initVector = RandomNumberGenerator.GetBytes(8);
         iVSet = true;
         return initVector;
     }
