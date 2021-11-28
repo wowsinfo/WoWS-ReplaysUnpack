@@ -58,7 +58,7 @@ using System.Text;
 
 namespace Nodsoft.WowsReplaysUnpack.Infrastructure;
 
-internal class BlowFish
+internal class Blowfish
 {
     #region Global variables and constants
 
@@ -96,7 +96,7 @@ internal class BlowFish
     /// Constructor for hex key
     /// </summary>
     /// <param name="hexKey">Cipher key as a hex string</param>
-    public BlowFish(string hexKey)
+    public Blowfish(string hexKey)
     {
         SetupKey(HexToByte(hexKey));
     }
@@ -105,7 +105,7 @@ internal class BlowFish
     /// Constructor for byte key
     /// </summary>
     /// <param name="cipherKey">Cipher key as a byte array</param>
-    public BlowFish(byte[] cipherKey)
+    public Blowfish(byte[] cipherKey)
     {
         SetupKey(cipherKey);
     }
