@@ -9,6 +9,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Metadata;
 using System.Text;
 
 
@@ -89,7 +90,7 @@ public class ReplayUnpacker
 					byte[] arenaId = new byte[8];
 					em.Data.Value.Read(arenaId);
 
-					byte[] teamBuildTypeId = new byte[1];
+					byte[]? teamBuildTypeId = new byte[1];
 					em.Data.Value.Read(teamBuildTypeId);
 
 					byte[] blobPreBattlesInfo = new ReplayBlob(em.Data.Value).Data; // useless
