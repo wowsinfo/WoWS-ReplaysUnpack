@@ -9,7 +9,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Metadata;
 using System.Text;
 
 
@@ -50,11 +49,11 @@ public class ReplayUnpacker
 
 		using MemoryStream compressedData = new();
 
-		foreach ((int, byte[]) chunk in ChunkData(memStream.ToArray()[8..]))
+		foreach (byte[] chunk in ChunkData(memStream.ToArray()[8..]))
 		{
 			try
 			{
-				long decryptedBlock = BitConverter.ToInt64(blowfish.Decrypt_ECB(chunk.Item2));
+				long decryptedBlock = BitConverter.ToInt64(blowfish.Decrypt_ECB(chunk));
 
 				if (prev is not 0)
 				{
@@ -87,16 +86,16 @@ public class ReplayUnpacker
 
 				if (em.MessageId is Constants.ReplayMessageTypes.OnArenaStatesReceived) // 10.10=124, OnArenaStatesReceived
 				{
-					byte[]? arenaId = new byte[8];
+					byte[] arenaId = new byte[8];
 					em.Data.Value.Read(arenaId);
 
-					byte[]? teamBuildTypeId = new byte[1];
+					byte[] teamBuildTypeId = new byte[1];
 					em.Data.Value.Read(teamBuildTypeId);
 
-					byte[]? blobPreBattlesInfo = new ReplayBlob(em.Data.Value).Data; // useless
-					byte[]? blobPlayerStates = new ReplayBlob(em.Data.Value).Data; // what we need
-					byte[]? blobObserversStates = new ReplayBlob(em.Data.Value).Data; // useless
-					byte[]? blobBuildingsInfo = new ReplayBlob(em.Data.Value).Data; // useless
+					byte[] blobPreBattlesInfo = new ReplayBlob(em.Data.Value).Data; // useless
+					byte[] blobPlayerStates = new ReplayBlob(em.Data.Value).Data; // what we need
+					byte[] blobObserversStates = new ReplayBlob(em.Data.Value).Data; // useless
+					byte[] blobBuildingsInfo = new ReplayBlob(em.Data.Value).Data; // useless
 
 					Unpickler.registerConstructor("CamouflageInfo", "CamouflageInfo", new CamouflageInfo());
 					ArrayList players = new Unpickler().load(new MemoryStream(blobPlayerStates)) as ArrayList ?? new ArrayList();
@@ -225,27 +224,11 @@ public class ReplayUnpacker
 			}
 		}
 		
-		string chunkedConfigDump = (string)player.Properties["shipConfigDump"];
-		byte[] byteArray = Encoding.Latin1.GetBytes(chunkedConfigDump);
-		MemoryStream memoryStream = new(byteArray);
-		List<uint> configDumpList = new();
-
-		while (memoryStream.Position != memoryStream.Length)
-		{
-			byte[] byteData = new byte[4];
-			memoryStream.Read(byteData);
-			configDumpList.Add(BitConverter.ToUInt32(byteData));
-		}
-
-		player.ShipData = new(player.ShipId, configDumpList);
-
 		return player;
 	}
 
-	private static IEnumerable<(int, byte[])> ChunkData(byte[] data, int len = 8)
+	private static IEnumerable<byte[]> ChunkData(byte[] data, int len = 8)
 	{
-		int idx = 0;
-
 		for (int s = 0; s <= data.Length; s += len)
 		{
 			byte[] g;
@@ -259,8 +242,7 @@ public class ReplayUnpacker
 				g = data[s..];
 			}
 
-			idx++;
-			yield return (idx, g);
+			yield return g;
 		}
 	}
 }
