@@ -250,7 +250,7 @@ public class ReplayUnpacker
 		string chunkedConfigDump = (string)player.Properties["shipConfigDump"];
 		byte[] byteArray = Encoding.Latin1.GetBytes(chunkedConfigDump);
 		MemoryStream memoryStream = new(byteArray);
-		List<long> configDumpList = new();
+		List<uint> configDumpList = new();
 
 		while (memoryStream.Position != memoryStream.Length)
 		{
