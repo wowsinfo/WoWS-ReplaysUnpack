@@ -45,5 +45,6 @@ public sealed record ReplayPlayer
 	public uint SkinId { get; set; }
 	public uint TeamId { get; set; }
 	public bool TtkStatus { get; set; }
-
+	
+	public ShipData? ShipData { get; internal set; }
 }

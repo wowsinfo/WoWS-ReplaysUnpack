@@ -246,6 +246,20 @@ public class ReplayUnpacker
 				}
 			}
 		}
+		
+		string chunkedConfigDump = (string)player.Properties["shipConfigDump"];
+		byte[] byteArray = Encoding.Latin1.GetBytes(chunkedConfigDump);
+		MemoryStream memoryStream = new(byteArray);
+		List<long> configDumpList = new();
+
+		while (memoryStream.Position != memoryStream.Length)
+		{
+			byte[] byteData = new byte[4];
+			memoryStream.Read(byteData);
+			configDumpList.Add(BitConverter.ToUInt32(byteData));
+		}
+
+		player.ShipData = new(player.ShipId, configDumpList);
 
 		return player;
 	}
