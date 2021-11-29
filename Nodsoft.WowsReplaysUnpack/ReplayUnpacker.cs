@@ -9,6 +9,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Metadata;
 using System.Text;
 
 
@@ -80,51 +81,30 @@ public class ReplayUnpacker
 		{
 			NetPacket np = new(decompressedData);
 
-			if (np.Type is "08")
+			if (np.Type is 0x08)
 			{
 				EntityMethod em = new(np.RawData);
 
 				if (em.MessageId is Constants.ReplayMessageTypes.OnArenaStatesReceived) // 10.10=124, OnArenaStatesReceived
 				{
-					//var unk1 = new byte[8]; //?
-					//em.Data.Value.Read(unk1);
-
-					byte[] arenaId = new byte[8];
+					byte[]? arenaId = new byte[8];
 					em.Data.Value.Read(arenaId);
 
-					byte[] teamBuildTypeId = new byte[1];
+					byte[]? teamBuildTypeId = new byte[1];
 					em.Data.Value.Read(teamBuildTypeId);
 
-					byte[] blobPreBattlesInfoSize = new byte[1];
-					em.Data.Value.Read(blobPreBattlesInfoSize);
+					byte[]? blobPreBattlesInfo = new ReplayBlob(em.Data.Value).Data; // useless
+					byte[]? blobPlayerStates = new ReplayBlob(em.Data.Value).Data; // what we need
+					byte[]? blobObserversStates = new ReplayBlob(em.Data.Value).Data; // useless
+					byte[]? blobBuildingsInfo = new ReplayBlob(em.Data.Value).Data; // useless
 
-					byte[] blobPreBattlesInfo = new byte[blobPreBattlesInfoSize[0]];
-					em.Data.Value.Read(blobPreBattlesInfo);
+					Unpickler.registerConstructor("CamouflageInfo", "CamouflageInfo", new CamouflageInfo());
+					ArrayList players = new Unpickler().load(new MemoryStream(blobPlayerStates)) as ArrayList ?? new ArrayList();
 
-					byte[] blobPlayersStatesSize = new byte[1];
-					em.Data.Value.Read(blobPlayersStatesSize);
-
-					if (blobPlayersStatesSize[0] is 255)
+					foreach (ArrayList player in players)
 					{
-						byte[] blobPlayerStatesRealSize = new byte[2];
-						em.Data.Value.Read(blobPlayerStatesRealSize);
-						ushort playerStatesRealSize = BitConverter.ToUInt16(blobPlayerStatesRealSize);
-						em.Data.Value.Read(new byte[1]); // Skip one byte in the stream
-
-						// blobPlayerStates will contain players' information like account id, server realm, etc...
-						// but it is serialized via Python's pickle.
-						// We use Razorvine's Pickle Unpickler for that.
-
-						byte[] blobPlayerStates = new byte[playerStatesRealSize];
-						em.Data.Value.Read(blobPlayerStates);
-
-						Unpickler.registerConstructor(nameof(CamouflageInfo), nameof(CamouflageInfo), new CamouflageInfo());
-						ArrayList players = new Unpickler().load(new MemoryStream(blobPlayerStates)) as ArrayList ?? new ArrayList();
-
-						foreach (ArrayList player in players)
-						{
-							replay.ReplayPlayers.Add(ParseReplayPlayer(player));
-						}
+						replay.ReplayPlayers.Add(ParseReplayPlayer(player));
+					}
 
 						/*
 							...
@@ -164,8 +144,6 @@ public class ReplayUnpacker
 							ttkStatus            : False
 							...
 						 */
-					}
-
 				}
 				else if (em.MessageId is Constants.ReplayMessageTypes.OnChatMessage) // 10.10=122, OnChatMessage
 				{
