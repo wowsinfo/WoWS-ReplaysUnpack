@@ -5,15 +5,14 @@ using System.IO;
 namespace Nodsoft.WowsReplaysUnpack.Data;
 
 
-public struct NetPacket
+internal readonly struct NetPacket
 {
-	public uint Size { get; set; }
-	public uint Type { get; set; }
-	public float Time { get; set; }
-	public MemoryStream RawData { get; set; }
+	public uint Size { get; }
+	public uint Type { get; }
+	public float Time { get; }
+	public MemoryStream RawData { get; }
 
-
-	public NetPacket(MemoryStream stream)
+	public NetPacket(Stream stream)
 	{
 		byte[] payloadSize = new byte[4];
 		byte[] payloadType = new byte[4];
@@ -29,6 +28,6 @@ public struct NetPacket
 
 		byte[] data = new byte[Size];
 		stream.Read(data);
-		RawData = new MemoryStream(data);
+		RawData = new(data);
 	}
 }

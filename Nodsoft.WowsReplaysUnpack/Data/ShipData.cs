@@ -9,7 +9,7 @@ namespace Nodsoft.WowsReplaysUnpack.Data;
 /// </summary>
 /// <param name="ShipId">The id of the ship.</param>
 /// <param name="ShipConfigurationList">A mapping of the ship configuration.</param>
-public record ShipData(uint ShipId, IReadOnlyList<uint> ShipConfigurationList)
+public sealed record ShipData(uint ShipId, IReadOnlyList<uint> ShipConfigurationList)
 {
 	private const uint componentIdStart = 3000000000; // Player IDs end at 2.999.999.999 and apparently WG components start at 3 billion.
 	

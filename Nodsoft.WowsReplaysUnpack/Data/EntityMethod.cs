@@ -8,11 +8,11 @@ namespace Nodsoft.WowsReplaysUnpack.Data;
 
 internal sealed record EntityMethod
 {
-	public uint EntityId { get; set; }
-	public uint MessageId { get; set; }
-	public BinaryStream Data { get; set; }
+	public uint EntityId { get; }
+	public uint MessageId { get; }
+	public BinaryStream Data { get; }
 
-	public EntityMethod(MemoryStream stream)
+	public EntityMethod(Stream stream)
 	{
 		byte[] bEntityId = new byte[4];
 		byte[] bMessageId = new byte[4];
@@ -23,6 +23,6 @@ internal sealed record EntityMethod
 		EntityId = BitConverter.ToUInt32(bEntityId);
 		MessageId = BitConverter.ToUInt32(bMessageId);
 
-		Data = new BinaryStream(stream);
+		Data = new(stream);
 	}
 }

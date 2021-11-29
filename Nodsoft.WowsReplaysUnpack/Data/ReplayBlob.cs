@@ -5,12 +5,11 @@ using System.IO;
 namespace Nodsoft.WowsReplaysUnpack.Data;
 
 
-internal struct ReplayBlob
+internal readonly struct ReplayBlob
 {
-	public byte[] Data { get; init; }
+	public byte[] Data { get; }
 
-
-	public ReplayBlob(MemoryStream stream)
+	public ReplayBlob(Stream stream)
 	{
 		byte[] bSize = new byte[1];
 		stream.Read(bSize);

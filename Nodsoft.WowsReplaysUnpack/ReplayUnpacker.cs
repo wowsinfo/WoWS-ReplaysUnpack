@@ -9,7 +9,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Metadata;
 using System.Text;
 
 
@@ -19,12 +18,10 @@ namespace Nodsoft.WowsReplaysUnpack;
 public class ReplayUnpacker
 {
 	private static readonly PropertyInfo[] _replayPlayerProperties = typeof(ReplayPlayer).GetProperties();
-
-
+	
 	public ReplayRaw UnpackReplay(Stream stream)
 	{
-
-
+		
 		byte[] bReplaySignature = new byte[4];
 		byte[] bReplayBlockCount = new byte[4];
 		byte[] bReplayBlockSize = new byte[4];
@@ -50,7 +47,8 @@ public class ReplayUnpacker
 
 		using MemoryStream compressedData = new();
 
-		foreach (byte[] chunk in ChunkData(memStream.ToArray()[8..]))
+		memStream.Seek(8, SeekOrigin.Begin);
+		foreach (byte[] chunk in ChunkData(memStream))
 		{
 			try
 			{
@@ -90,7 +88,7 @@ public class ReplayUnpacker
 					byte[] arenaId = new byte[8];
 					em.Data.Value.Read(arenaId);
 
-					byte[]? teamBuildTypeId = new byte[1];
+					byte[] teamBuildTypeId = new byte[1];
 					em.Data.Value.Read(teamBuildTypeId);
 
 					byte[] blobPreBattlesInfo = new ReplayBlob(em.Data.Value).Data; // useless
@@ -191,7 +189,7 @@ public class ReplayUnpacker
 		return replay;
 	}
 
-	internal static ReplayPlayer ParseReplayPlayer(ArrayList playerInfo)
+	private static ReplayPlayer ParseReplayPlayer(ArrayList playerInfo)
 	{
 		Dictionary<string, object> data = new();
 
@@ -201,7 +199,6 @@ public class ReplayUnpacker
 			{
 				data.Add(key, values[1]);
 			}
-
 		}
 
 		ReplayPlayer player = new() { Properties = data };
@@ -209,7 +206,7 @@ public class ReplayUnpacker
 
 		foreach (KeyValuePair<string, object> value in player.Properties)
 		{
-			PropertyInfo? propertyInfo = _replayPlayerProperties.FirstOrDefault(p => p.Name.Equals(value.Key, StringComparison.OrdinalIgnoreCase));
+			PropertyInfo? propertyInfo = _replayPlayerProperties.FirstOrDefault(p => p.Name == value.Key);
 			Type sourceType = value.Value.GetType();
 
 			if (propertyInfo is not null)
@@ -228,22 +225,13 @@ public class ReplayUnpacker
 		return player;
 	}
 
-	private static IEnumerable<byte[]> ChunkData(byte[] data, int len = 8)
+	private static IEnumerable<byte[]> ChunkData(Stream data, int len = 8)
 	{
-		for (int s = 0; s <= data.Length; s += len)
+		while (data.Position < data.Length)
 		{
-			byte[] g;
-
-			try
-			{
-				g = data[s..(s + len)];
-			}
-			catch (ArgumentOutOfRangeException)
-			{
-				g = data[s..];
-			}
-
-			yield return g;
+			byte[] chunk = new byte[len];
+			data.Read(chunk);
+			yield return chunk;
 		}
 	}
 }
