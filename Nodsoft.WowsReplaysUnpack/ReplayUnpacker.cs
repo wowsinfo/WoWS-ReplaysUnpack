@@ -1,4 +1,4 @@
-using Mapster;
+﻿using Mapster;
 using Nodsoft.WowsReplaysUnpack.Data;
 using Nodsoft.WowsReplaysUnpack.Infrastructure;
 using Razorvine.Pickle;
@@ -81,7 +81,7 @@ public class ReplayUnpacker
 		{
 			NetPacket np = new(decompressedData);
 
-			if (np.Type is "08")
+			if (np.Type is 0x08)
 			{
 				EntityMethod em = new(np.RawData);
 

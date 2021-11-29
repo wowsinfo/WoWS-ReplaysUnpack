@@ -8,7 +8,7 @@ namespace Nodsoft.WowsReplaysUnpack.Data;
 public struct NetPacket
 {
 	public uint Size { get; set; }
-	public string Type { get; set; }
+	public uint Type { get; set; }
 	public float Time { get; set; }
 	public MemoryStream RawData { get; set; }
 
@@ -24,7 +24,7 @@ public struct NetPacket
 		stream.Read(payloadTime);
 
 		Size = BitConverter.ToUInt32(payloadSize);
-		Type = BitConverter.ToUInt32(payloadType).ToString("X2");
+		Type = BitConverter.ToUInt32(payloadType);
 		Time = BitConverter.ToSingle(payloadTime);
 
 		byte[] data = new byte[Size];
