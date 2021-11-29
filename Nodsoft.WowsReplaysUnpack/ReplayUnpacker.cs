@@ -119,7 +119,7 @@ public class ReplayUnpacker
 						em.Data.Value.Read(blobPlayerStates);
 
 						Unpickler.registerConstructor(nameof(CamouflageInfo), nameof(CamouflageInfo), new CamouflageInfo());
-						ArrayList players = new Unpickler().load(new MemoryStream(blobPlayerStates)) as ArrayList;
+						ArrayList players = new Unpickler().load(new MemoryStream(blobPlayerStates)) as ArrayList ?? new ArrayList();
 
 						foreach (ArrayList player in players)
 						{
@@ -219,7 +219,11 @@ public class ReplayUnpacker
 
 		for (int i = 0; i < playerInfo.Count; i++)
 		{
-			data.Add(Constants.PropertyMapping.GetValueOrDefault(i), (playerInfo[i] as object[])[1]);
+			if (Constants.PropertyMapping.GetValueOrDefault(i) is string key && playerInfo[i] is object[] values)
+			{
+				data.Add(key, values[1]);
+			}
+
 		}
 
 		ReplayPlayer player = new() { Properties = data };
@@ -227,7 +231,7 @@ public class ReplayUnpacker
 
 		foreach (KeyValuePair<string, object> value in player.Properties)
 		{
-			PropertyInfo propertyInfo = _replayPlayerProperties.FirstOrDefault(p => p.Name.Equals(value.Key, StringComparison.OrdinalIgnoreCase));
+			PropertyInfo? propertyInfo = _replayPlayerProperties.FirstOrDefault(p => p.Name.Equals(value.Key, StringComparison.OrdinalIgnoreCase));
 			Type sourceType = value.Value.GetType();
 
 			if (propertyInfo is not null)
