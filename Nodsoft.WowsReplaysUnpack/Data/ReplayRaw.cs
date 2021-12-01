@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Nodsoft.WowsReplaysUnpack.Data;
 
@@ -8,13 +9,13 @@ namespace Nodsoft.WowsReplaysUnpack.Data;
 /// </summary>
 public sealed record ReplayRaw
 {
-	public string ArenaInfoJson { get; init; }
+	public string? ArenaInfoJson { get; init; }
 
 	public List<ReplayMessage> ChatMessages { get; init; } = new();
 	public List<ReplayPlayer> ReplayPlayers { get; init; } = new();
 
 
-	internal byte[] BReplaySignature { get; init; }
-	internal byte[] BReplayBlockCount { get; init; }
-	internal byte[] BReplayBlockSize { get; init; }
+	internal byte[] BReplaySignature { get; init; } = Array.Empty<byte>();
+	internal byte[] BReplayBlockCount { get; init; } = Array.Empty<byte>();
+	internal byte[] BReplayBlockSize { get; init; } = Array.Empty<byte>();
 }

@@ -3,19 +3,21 @@
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <TargetFramework>net6.0</TargetFramework>
-    <Version>0.2</Version>
+    <Nullable>enable</Nullable>
+    <Version>0.3</Version>
     <Company>Nodsoft Systems</Company>
-    <Authors>imkindaprogrammermyself, Sakura Akeno Isayeki</Authors>
+    <Authors>imkindaprogrammermyself, Sakura Akeno Isayeki, floribe2000</Authors>
     <Product>WoWS Replays Unpack</Product>
     <PackageProjectUrl>https://github.com/Nodsoft/WoWS-ReplaysUnpack</PackageProjectUrl>
     <Description>Unpacking library for World of Warships replay files</Description>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+    <RepositoryUrl>https://github.com/Nodsoft/WoWS-ReplaysUnpack</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="KaitaiStruct.Runtime.CSharp" Version="0.9.0" />
     <PackageReference Include="Mapster" Version="7.2.0" />
-    <PackageReference Include="Razorvine.Pickle" Version="1.1.0" />
+    <PackageReference Include="Razorvine.Pickle" Version="1.2.0" />
   </ItemGroup>
 
 </Project>

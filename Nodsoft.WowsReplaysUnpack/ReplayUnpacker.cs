@@ -10,7 +10,6 @@ using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 
 
 namespace Nodsoft.WowsReplaysUnpack;
@@ -19,16 +18,13 @@ namespace Nodsoft.WowsReplaysUnpack;
 public class ReplayUnpacker
 {
 	private static readonly PropertyInfo[] _replayPlayerProperties = typeof(ReplayPlayer).GetProperties();
-
-
+	
 	public ReplayRaw UnpackReplay(Stream stream)
 	{
-
-
+		
 		byte[] bReplaySignature = new byte[4];
 		byte[] bReplayBlockCount = new byte[4];
 		byte[] bReplayBlockSize = new byte[4];
-		byte[] bReplayJSONData;
 
 		stream.Read(bReplaySignature, 0, 4);
 		stream.Read(bReplayBlockCount, 0, 4);
@@ -36,34 +32,35 @@ public class ReplayUnpacker
 
 		int jsonDataSize = BitConverter.ToInt32(bReplayBlockSize, 0);
 
-		bReplayJSONData = new byte[jsonDataSize];
-		stream.Read(bReplayJSONData, 0, jsonDataSize);
+		byte[] bReplayJsonData = new byte[jsonDataSize];
+		stream.Read(bReplayJsonData, 0, jsonDataSize);
 
-		ReplayRaw replay = new() { ArenaInfoJson = Encoding.UTF8.GetString(bReplayJSONData) };
+		ReplayRaw replay = new() { ArenaInfoJson = Encoding.UTF8.GetString(bReplayJsonData) };
 
 		using MemoryStream memStream = new();
 		stream.CopyTo(memStream);
 
-		string sBfishKey = "\x29\xB7\xC9\x09\x38\x3F\x84\x88\xFA\x98\xEC\x4E\x13\x19\x79\xFB";
-		byte[] bBfishKey = sBfishKey.Select(x => Convert.ToByte(x)).ToArray();
-		BlowFish bfish = new(bBfishKey);
+		const string stringBlowfishKey = "\x29\xB7\xC9\x09\x38\x3F\x84\x88\xFA\x98\xEC\x4E\x13\x19\x79\xFB";
+		byte[] byteBlowfishKey = stringBlowfishKey.Select(Convert.ToByte).ToArray();
+		Blowfish blowfish = new(byteBlowfishKey);
 		long prev = 0;
 
 		using MemoryStream compressedData = new();
 
-		foreach ((int, byte[]) chunk in ChunkData(memStream.ToArray()[8..]))
+		memStream.Seek(8, SeekOrigin.Begin);
+		foreach (byte[] chunk in ChunkData(memStream))
 		{
 			try
 			{
-				long decrypted_block = BitConverter.ToInt64(bfish.Decrypt_ECB(chunk.Item2));
+				long decryptedBlock = BitConverter.ToInt64(blowfish.Decrypt_ECB(chunk));
 
 				if (prev is not 0)
 				{
-					decrypted_block ^= prev;
+					decryptedBlock ^= prev;
 				}
 
-				prev = decrypted_block;
-				compressedData.Write(BitConverter.GetBytes(decrypted_block));
+				prev = decryptedBlock;
+				compressedData.Write(BitConverter.GetBytes(decryptedBlock));
 			}
 			catch (ArgumentOutOfRangeException)	{ }
 		}
@@ -82,60 +79,30 @@ public class ReplayUnpacker
 		{
 			NetPacket np = new(decompressedData);
 
-			if (np.Type is "08")
+			if (np.Type is 0x08)
 			{
 				EntityMethod em = new(np.RawData);
 
-				if (em.MessageId is 124) // 10.10=124, OnArenaStatesReceived
+				if (em.MessageId is Constants.ReplayMessageTypes.OnArenaStatesReceived) // 10.10=124, OnArenaStatesReceived
 				{
-					//var unk1 = new byte[8]; //?
-					//em.Data.Value.Read(unk1);
+					byte[] arenaId = new byte[8];
+					em.Data.Value.Read(arenaId);
 
-					byte[] arenaID = new byte[8];
-					em.Data.Value.Read(arenaID);
+					byte[] teamBuildTypeId = new byte[1];
+					em.Data.Value.Read(teamBuildTypeId);
 
-					byte[] teamBuildTypeID = new byte[1];
-					em.Data.Value.Read(teamBuildTypeID);
+					byte[] blobPreBattlesInfo = new ReplayBlob(em.Data.Value).Data; // useless
+					byte[] blobPlayerStates = new ReplayBlob(em.Data.Value).Data; // what we need
+					byte[] blobObserversStates = new ReplayBlob(em.Data.Value).Data; // useless
+					byte[] blobBuildingsInfo = new ReplayBlob(em.Data.Value).Data; // useless
 
-					byte[] blobPreBattlesInfoSize = new byte[1];
-					em.Data.Value.Read(blobPreBattlesInfoSize);
+					Unpickler.registerConstructor("CamouflageInfo", "CamouflageInfo", new CamouflageInfo());
+					ArrayList players = new Unpickler().load(new MemoryStream(blobPlayerStates)) as ArrayList ?? new ArrayList();
 
-					byte[] blobPreBattlesInfo = new byte[blobPreBattlesInfoSize[0]];
-					em.Data.Value.Read(blobPreBattlesInfo);
-
-					byte[] blobPlayersStatesSize = new byte[1];
-					em.Data.Value.Read(blobPlayersStatesSize);
-
-					if (blobPlayersStatesSize[0] is 255)
+					foreach (ArrayList player in players)
 					{
-						byte[] blobPlayerStatesRealSize = new byte[2];
-						em.Data.Value.Read(blobPlayerStatesRealSize);
-						ushort PlayerStatesRealSize = BitConverter.ToUInt16(blobPlayerStatesRealSize);
-						em.Data.Value.Read(new byte[1]); //?
-
-						// blobPlayerStates will contain players' information like account id, server realm, etc...
-						// but it is serialized via Python's pickle.
-						// We use Razorvine's Pickle Unpickler for that.
-
-						byte[] blobPlayerStates = new byte[PlayerStatesRealSize];
-						em.Data.Value.Read(blobPlayerStates);
-
-						Unpickler.registerConstructor(nameof(CamouflageInfo), nameof(CamouflageInfo), new CamouflageInfo());
-						Unpickler k = new();
-
-						ArrayList players = k.load(new MemoryStream(blobPlayerStates)) as ArrayList;
-
-						foreach (ArrayList player in players)
-						{
-							var x = player.ToArray();
-
-							foreach (object[] properties in player)
-							{
-								//Console.WriteLine("{0}: {1}", Constants.PropertyMapping[(int)properties[0]].PadRight(21, ' '), properties[1]);
-							}
-
-							replay.ReplayPlayers.Add(ParseReplayPlayer(player));
-						}
+						replay.ReplayPlayers.Add(ParseReplayPlayer(player));
+					}
 
 						/*
 							...
@@ -175,10 +142,8 @@ public class ReplayUnpacker
 							ttkStatus            : False
 							...
 						 */
-					}
-
 				}
-				else if (em.MessageId is 122) // 10.10=122, OnChatMessage
+				else if (em.MessageId is Constants.ReplayMessageTypes.OnChatMessage) // 10.10=122, OnChatMessage
 				{
 					byte[] bEntityId = new byte[4];
 					em.Data.Value.Read(bEntityId);
@@ -224,13 +189,16 @@ public class ReplayUnpacker
 		return replay;
 	}
 
-	internal static ReplayPlayer ParseReplayPlayer(ArrayList playerInfo)
+	private static ReplayPlayer ParseReplayPlayer(ArrayList playerInfo)
 	{
 		Dictionary<string, object> data = new();
 
 		for (int i = 0; i < playerInfo.Count; i++)
 		{
-			data.Add(Constants.PropertyMapping.GetValueOrDefault(i), (playerInfo[i] as object[])[1]);
+			if (Constants.PropertyMapping.GetValueOrDefault(i) is string key && playerInfo[i] is object[] values)
+			{
+				data.Add(key, values[1]);
+			}
 		}
 
 		ReplayPlayer player = new() { Properties = data };
@@ -238,7 +206,7 @@ public class ReplayUnpacker
 
 		foreach (KeyValuePair<string, object> value in player.Properties)
 		{
-			PropertyInfo propertyInfo = _replayPlayerProperties.FirstOrDefault(p => p.Name.Equals(value.Key, StringComparison.OrdinalIgnoreCase));
+			PropertyInfo? propertyInfo = _replayPlayerProperties.FirstOrDefault(p => p.Name == value.Key);
 			Type sourceType = value.Value.GetType();
 
 			if (propertyInfo is not null)
@@ -253,30 +221,17 @@ public class ReplayUnpacker
 				}
 			}
 		}
-
+		
 		return player;
 	}
 
-
-	internal static IEnumerable<(int, byte[])> ChunkData(byte[] data, int len = 8)
+	private static IEnumerable<byte[]> ChunkData(Stream data, int len = 8)
 	{
-		int idx = 0;
-
-		for (int s = 0; s <= data.Length; s += len)
+		while (data.Position < data.Length)
 		{
-			byte[] g;
-
-			try
-			{
-				g = data[s..(s + len)];
-			}
-			catch (ArgumentOutOfRangeException)
-			{
-				g = data[s..];
-			}
-
-			idx++;
-			yield return (idx, g);
+			byte[] chunk = new byte[len];
+			data.Read(chunk);
+			yield return chunk;
 		}
 	}
 }
