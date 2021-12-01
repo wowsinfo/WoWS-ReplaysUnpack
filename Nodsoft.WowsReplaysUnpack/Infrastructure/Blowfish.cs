@@ -233,7 +233,7 @@ internal class Blowfish
 			}
 			else
 			{
-				throw new Exception("Invalid IV size.");
+				throw new("Invalid IV size.");
 			}
 		}
 	}
@@ -246,7 +246,12 @@ internal class Blowfish
 	/// <returns>The random IV</returns>
 	public byte[] SetRandomIV()
 	{
+#if NET6_0_OR_GREATER
 		initVector = RandomNumberGenerator.GetBytes(8);
+#else
+		initVector = new byte[8];
+		RandomNumberGenerator.Create().GetBytes(initVector);
+#endif
 		iVSet = true;
 		return initVector;
 	}
