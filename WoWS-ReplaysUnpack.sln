@@ -12,8 +12,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nodsoft.WowsReplaysUnpack.Console.NET5", "Nodsoft.WowsReplaysUnpack.Console.NET5\Nodsoft.WowsReplaysUnpack.Console.NET5.csproj", "{D108D2BA-16EE-4672-8F4A-A8DDC5C6E471}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -28,10 +26,6 @@ Global
 		{11921E06-712D-48E4-A1BB-8F9CDAFDBBC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{11921E06-712D-48E4-A1BB-8F9CDAFDBBC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{11921E06-712D-48E4-A1BB-8F9CDAFDBBC3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D108D2BA-16EE-4672-8F4A-A8DDC5C6E471}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D108D2BA-16EE-4672-8F4A-A8DDC5C6E471}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D108D2BA-16EE-4672-8F4A-A8DDC5C6E471}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D108D2BA-16EE-4672-8F4A-A8DDC5C6E471}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
