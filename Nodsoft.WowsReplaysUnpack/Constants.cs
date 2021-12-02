@@ -51,4 +51,20 @@ internal static class Constants
 		public const byte OnChatMessage = 122;
 		public const byte OnArenaStatesReceived = 124;
 	}
+
+	/// <summary>
+	/// Represents the mapping for the entries of the <see cref="ShipData.ShipConfiguration">ship configuration</see> of a ship.
+	/// </summary>
+	public static class ShipConfigMapping
+	{
+		public const byte ShipId = 0;
+		public const byte TotalValueCount = 1;
+		public const byte ShipModules = 2;
+		public const byte ShipUpgrades = 3;
+		public const byte ExteriorSlots = 4;
+		public const byte AutoSupplyState = 5;
+		public const byte ColorScheme = 6;
+		public const byte ConsumableSlots = 7;
+		public const byte Flags = 8;
+	}
 }

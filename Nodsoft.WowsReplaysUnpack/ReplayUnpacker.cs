@@ -221,7 +221,7 @@ public class ReplayUnpacker
 				}
 			}
 		}
-		
+
 		return player;
 	}
 
