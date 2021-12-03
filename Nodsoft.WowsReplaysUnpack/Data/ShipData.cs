@@ -1,23 +1,60 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace Nodsoft.WowsReplaysUnpack.Data;
 
 /// <summary>
 /// Represents the data extracted from the shipConfigDump property of a player entry in the replay.
+/// <br/>
+/// The individual lists may contain 0 values, indicating that a slot or module is either unused or not available on the ship.
 /// </summary>
-/// <param name="ShipId">The id of the ship.</param>
-/// <param name="ShipConfigurationList">A mapping of the ship configuration.</param>
-public sealed record ShipData(uint ShipId, IReadOnlyList<uint> ShipConfigurationList)
+/// <param name="ShipConfiguration">A mapping of the ship configuration.</param>
+public sealed record ShipData(IReadOnlyList<IReadOnlyList<uint>> ShipConfiguration)
 {
-	private const uint componentIdStart = 3000000000; // Player IDs end at 2.999.999.999 and apparently WG components start at 3 billion.
-	
-	private readonly Lazy<List<uint>> filteredIds = new(() => ShipConfigurationList.Where(id => id > componentIdStart).ToList());
+	/// <summary>
+	/// Gets the numeric id of the selected ship.
+	/// </summary>
+	public uint ShipId { get; } = ShipConfiguration[Constants.ShipConfigMapping.ShipId].First();
 
 	/// <summary>
-	/// Gets a filtered version of the <see cref="ShipConfigurationList"/> that only contains component IDs used by Wargaming.
-	/// Metadata like section length and other configurations are filtered out.
+	/// Gets the total number of values that are present in the raw data list.
+	/// Not recommended to use.
 	/// </summary>
-	public IReadOnlyList<uint> FilteredIds => filteredIds.Value;
+	public uint TotalValueCount { get; } = ShipConfiguration[Constants.ShipConfigMapping.TotalValueCount].First();
+
+	/// <summary>
+	/// Gets the list of the ids of the selected ship modules.
+	/// </summary>
+	public IReadOnlyList<uint> ShipModules { get; } = ShipConfiguration[Constants.ShipConfigMapping.ShipModules];
+
+	/// <summary>
+	/// Gets the list of the ids of the selected ship upgrades.
+	/// </summary>
+	public IReadOnlyList<uint> ShipUpgrades { get; } = ShipConfiguration[Constants.ShipConfigMapping.ShipUpgrades];
+
+	/// <summary>
+	/// Gets the list of the selected exterior components.
+	/// Usually signals, but it can contain other exterior stuff as well.
+	/// </summary>
+	public IReadOnlyList<uint> ExteriorSlots { get; } = ShipConfiguration[Constants.ShipConfigMapping.ExteriorSlots];
+
+	/// <summary>
+	/// Gets the auto supply state. It's unclear how this is calculated.
+	/// </summary>
+	public uint AutoSupplyState { get; } = ShipConfiguration[Constants.ShipConfigMapping.AutoSupplyState].First();
+
+	/// <summary>
+	/// Gets the list of color scheme data.
+	/// </summary>
+	public IReadOnlyList<uint> ColorScheme { get; } = ShipConfiguration[Constants.ShipConfigMapping.ColorScheme];
+
+	/// <summary>
+	/// Gets the list of the selected consumables.
+	/// </summary>
+	public IReadOnlyList<uint> ConsumableSlots { get; } = ShipConfiguration[Constants.ShipConfigMapping.ConsumableSlots];
+
+	/// <summary>
+	/// Gets the currently mounted flags of the ship.
+	/// </summary>
+	public IReadOnlyList<uint> Flags { get; } = ShipConfiguration[Constants.ShipConfigMapping.Flags];
 }

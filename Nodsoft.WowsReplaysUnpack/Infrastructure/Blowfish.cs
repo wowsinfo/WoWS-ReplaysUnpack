@@ -50,8 +50,6 @@ Use the same mode of operation for decryption.
  * -Use a MAC to ensure that the ciphertext and IV have not been modified.
  * -Do not use the compatibility mode unless neccessary.
  */
-#nullable enable
-
 using System;
 using System.Security.Cryptography;
 using System.Text;
@@ -841,5 +839,3 @@ internal class Blowfish
 
 	#endregion
 }
-
-#nullable restore
