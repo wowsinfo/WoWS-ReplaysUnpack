@@ -50,8 +50,6 @@ Use the same mode of operation for decryption.
  * -Use a MAC to ensure that the ciphertext and IV have not been modified.
  * -Do not use the compatibility mode unless neccessary.
  */
-#nullable enable
-
 using System;
 using System.Security.Cryptography;
 using System.Text;
@@ -233,7 +231,7 @@ internal class Blowfish
 			}
 			else
 			{
-				throw new Exception("Invalid IV size.");
+				throw new("Invalid IV size.");
 			}
 		}
 	}
@@ -246,7 +244,12 @@ internal class Blowfish
 	/// <returns>The random IV</returns>
 	public byte[] SetRandomIV()
 	{
+#if NET6_0_OR_GREATER
 		initVector = RandomNumberGenerator.GetBytes(8);
+#else
+		initVector = new byte[8];
+		RandomNumberGenerator.Create().GetBytes(initVector);
+#endif
 		iVSet = true;
 		return initVector;
 	}
@@ -836,5 +839,3 @@ internal class Blowfish
 
 	#endregion
 }
-
-#nullable restore
