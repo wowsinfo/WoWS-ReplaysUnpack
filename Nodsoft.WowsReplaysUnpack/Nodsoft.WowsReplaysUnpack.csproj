@@ -13,6 +13,7 @@
     <Description>Unpacking library for World of Warships replay files</Description>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <RepositoryUrl>https://github.com/Nodsoft/WoWS-ReplaysUnpack</RepositoryUrl>
+    <PackageReadmeFile>../README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
