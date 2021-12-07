@@ -45,7 +45,12 @@ internal static class Constants
 		{ 35, nameof(ReplayPlayer.TeamId) },
 		{ 36, nameof(ReplayPlayer.TtkStatus) }
 	};
-	
+
+	public static class ReplayPacketTypes
+	{
+		public const byte OnEntityMethod = 0x8;
+	}
+
 	public static class ReplayMessageTypes
 	{
 		public const byte OnChatMessage = 122;

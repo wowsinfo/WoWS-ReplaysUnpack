@@ -6,7 +6,7 @@ using System.IO;
 namespace Nodsoft.WowsReplaysUnpack.Data;
 
 
-internal sealed record EntityMethod
+public sealed record EntityMethod
 {
 	public uint EntityId { get; }
 	public uint MessageId { get; }
