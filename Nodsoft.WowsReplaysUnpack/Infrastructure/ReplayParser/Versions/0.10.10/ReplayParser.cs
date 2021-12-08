@@ -5,6 +5,7 @@ using System.Reflection;
 using System;
 using System.Linq;
 using Mapster;
+using Nodsoft.WowsReplaysUnpack.Data.Raw;
 using Razorvine.Pickle;
 using System.IO.Compression;
 using System.IO;
@@ -17,8 +18,6 @@ internal class ReplayParser_0_10_10 : IReplayParser
 	protected const string stringBlowfishKey = "\x29\xB7\xC9\x09\x38\x3F\x84\x88\xFA\x98\xEC\x4E\x13\x19\x79\xFB";
 
 	protected static readonly PropertyInfo[] _replayPlayerProperties = typeof(ReplayPlayer).GetProperties();
-
-	public ReplayParser_0_10_10() { }
 
 	public virtual ReplayRaw ParseReplay(MemoryStream memStream, ReplayRaw replay)
 	{

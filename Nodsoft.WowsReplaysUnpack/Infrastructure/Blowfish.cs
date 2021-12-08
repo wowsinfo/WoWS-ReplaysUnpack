@@ -231,7 +231,7 @@ internal class Blowfish
 			}
 			else
 			{
-				throw new("Invalid IV size.");
+				throw new CryptographicException("Invalid IV size.");
 			}
 		}
 	}
@@ -276,7 +276,7 @@ internal class Blowfish
 
 		if (cipherKey.Length > 56)
 		{
-			throw new Exception("Key too long. 56 bytes required.");
+			throw new CryptographicException("Key too long. 56 bytes required.");
 		}
 
 		Buffer.BlockCopy(cipherKey, 0, key, 0, cipherKey.Length);
@@ -365,7 +365,7 @@ internal class Blowfish
 	{
 		if (!iVSet)
 		{
-			throw new Exception("IV not set.");
+			throw new CryptographicException("IV not set.");
 		}
 
 		byte[] input = new byte[8];
@@ -401,7 +401,7 @@ internal class Blowfish
 	{
 		if (!iVSet)
 		{
-			throw new Exception("IV not set.");
+			throw new CryptographicException("IV not set.");
 		}
 
 		int paddedLen = text.Length % 8 is 0 ? text.Length : text.Length + 8 - text.Length % 8;

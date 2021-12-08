@@ -1,8 +1,7 @@
 ﻿using System;
 using System.IO;
 
-
-namespace Nodsoft.WowsReplaysUnpack.Infrastructure;
+namespace Nodsoft.WowsReplaysUnpack.Data.Raw;
 
 public sealed class BinaryStream
 {

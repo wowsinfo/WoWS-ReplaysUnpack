@@ -1,4 +1,5 @@
 ﻿using Nodsoft.WowsReplaysUnpack.Data;
+using Nodsoft.WowsReplaysUnpack.Data.Raw;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;

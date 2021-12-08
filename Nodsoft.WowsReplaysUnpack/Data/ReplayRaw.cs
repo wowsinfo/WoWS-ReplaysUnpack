@@ -9,7 +9,11 @@ namespace Nodsoft.WowsReplaysUnpack.Data;
 /// </summary>
 public sealed record ReplayRaw
 {
-	public string? ArenaInfoJson { get; init; }
+	internal ReplayRaw()
+	{
+	}
+	
+	public ArenaInfo ArenaInfo { get; internal init; } = default!;
 
 	public List<ReplayMessage> ChatMessages { get; init; } = new();
 	public List<ReplayPlayer> ReplayPlayers { get; init; } = new();

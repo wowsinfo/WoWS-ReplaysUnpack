@@ -1,9 +1,7 @@
-﻿using Nodsoft.WowsReplaysUnpack.Infrastructure;
-using System;
+﻿using System;
 using System.IO;
 
-
-namespace Nodsoft.WowsReplaysUnpack.Data;
+namespace Nodsoft.WowsReplaysUnpack.Data.Raw;
 
 
 public sealed record EntityMethod
