@@ -15,10 +15,9 @@ namespace Nodsoft.WowsReplaysUnpack.Infrastructure.ReplayParser.Versions;
 
 internal class ReplayParser_0_10_10 : IReplayParser
 {
-	public virtual IReplayMessageTypes MessageTypes { get; } = new Constants_0_10_10.ReplayMessageTypes();
-	public virtual IShipConfigMapping ShipConfigMapping { get; } = new Constants_0_10_10.ShipConfigMapping();
-	public virtual IPlayerMessageMapping PlayerMessageMapping { get; } = new Constants_0_10_10.PlayerMessageMapping();
-
+	protected virtual IReplayMessageTypes MessageTypes { get; } = new Constants_0_10_10.ReplayMessageTypes();
+	protected virtual IShipConfigMapping ShipConfigMapping { get; } = new Constants_0_10_10.ShipConfigMapping();
+	protected virtual IPlayerMessageMapping PlayerMessageMapping { get; } = new Constants_0_10_10.PlayerMessageMapping();
 
 	protected static readonly PropertyInfo[] _replayPlayerProperties = typeof(ReplayPlayer).GetProperties();
 

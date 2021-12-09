@@ -19,7 +19,7 @@
     <None Update="0.10.11.wowsreplay">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="10.10.wowsreplay">
+    <None Update="0.10.10.wowsreplay">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
