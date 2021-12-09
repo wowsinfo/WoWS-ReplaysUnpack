@@ -15,9 +15,9 @@ namespace Nodsoft.WowsReplaysUnpack.Infrastructure.ReplayParser.Versions;
 
 internal class ReplayParser_0_10_10 : IReplayParser
 {
-	public IReplayMessageTypes MessageTypes { get; } = new Constants_0_10_10.ReplayMessageTypes();
-	public IShipConfigMapping ShipConfigMapping { get; } = new Constants_0_10_10.ShipConfigMapping();
-	public IPlayerMessageMapping PlayerMessageMapping { get; } = new Constants_0_10_10.PlayerMessageMapping();
+	public virtual IReplayMessageTypes MessageTypes { get; } = new Constants_0_10_10.ReplayMessageTypes();
+	public virtual IShipConfigMapping ShipConfigMapping { get; } = new Constants_0_10_10.ShipConfigMapping();
+	public virtual IPlayerMessageMapping PlayerMessageMapping { get; } = new Constants_0_10_10.PlayerMessageMapping();
 
 
 	protected static readonly PropertyInfo[] _replayPlayerProperties = typeof(ReplayPlayer).GetProperties();
@@ -80,7 +80,7 @@ internal class ReplayParser_0_10_10 : IReplayParser
 		return replay;
 	}
 
-	public ReplayPlayer ParseReplayPlayer(ArrayList playerInfo)
+	public virtual ReplayPlayer ParseReplayPlayer(ArrayList playerInfo)
 	{
 		Dictionary<string, object> data = new();
 
@@ -177,7 +177,7 @@ internal class ReplayParser_0_10_10 : IReplayParser
 		 */
 	}
 
-	public ReplayMessage ParseChatMessagePacket(EntityMethod em)
+	public virtual ReplayMessage ParseChatMessagePacket(EntityMethod em)
 	{
 		byte[] bEntityId = new byte[4];
 		em.Data.Value.Read(bEntityId);

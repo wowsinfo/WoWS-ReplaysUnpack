@@ -1,4 +1,5 @@
 ﻿using Nodsoft.WowsReplaysUnpack.Infrastructure.ReplayParser;
+using Nodsoft.WowsReplaysUnpack.Infrastructure.ReplayParser.Versions;
 using Razorvine.Pickle.Objects;
 using System;
 using System.Collections;

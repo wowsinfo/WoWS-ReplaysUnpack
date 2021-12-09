@@ -2,7 +2,7 @@
 using Nodsoft.WowsReplaysUnpack.Infrastructure.ReplayParser;
 using System.Collections.Generic;
 
-namespace Nodsoft.WowsReplaysUnpack;
+namespace Nodsoft.WowsReplaysUnpack.Infrastructure.ReplayParser.Versions;
 
 internal static class Constants_0_10_10
 {
