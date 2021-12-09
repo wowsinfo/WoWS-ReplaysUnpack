@@ -1,12 +1,10 @@
-﻿using Nodsoft.WowsReplaysUnpack.Infrastructure;
-using System;
+﻿using System;
 using System.IO;
 
+namespace Nodsoft.WowsReplaysUnpack.Data.Raw;
 
-namespace Nodsoft.WowsReplaysUnpack.Data;
 
-
-internal sealed record EntityMethod
+public sealed record EntityMethod
 {
 	public uint EntityId { get; }
 	public uint MessageId { get; }

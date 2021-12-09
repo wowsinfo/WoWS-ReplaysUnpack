@@ -1,8 +1,7 @@
 ﻿using System;
 using System.IO;
 
-
-namespace Nodsoft.WowsReplaysUnpack.Data;
+namespace Nodsoft.WowsReplaysUnpack.Data.Raw;
 
 
 internal readonly struct ReplayBlob
