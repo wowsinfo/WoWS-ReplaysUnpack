@@ -13,7 +13,7 @@ namespace Nodsoft.WowsReplaysUnpack.Console
 		{
 			if (_ms is null)
 			{
-				FileStream fs = File.OpenRead(Path.Join(Directory.GetCurrentDirectory(), "0.10.11.wowsreplay"));
+				FileStream fs = File.OpenRead(Path.Join(Directory.GetCurrentDirectory(), "0.10.10.wowsreplay"));
 				_ms = new();
 				fs.CopyTo(_ms);
 				fs.Dispose();
