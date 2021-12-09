@@ -9,6 +9,11 @@ namespace Nodsoft.WowsReplaysUnpack.Infrastructure.ReplayParser;
 
 public interface IReplayParser
 {
+	internal IReplayMessageTypes MessageTypes { get; }
+	internal IPlayerMessageMapping PlayerMessageMapping { get; }
+	internal IShipConfigMapping ShipConfigMapping { get; }
+
+
 	public ReplayRaw ParseReplay(MemoryStream memStream, ReplayRaw replay);
 	public ReplayPlayer ParseReplayPlayer(ArrayList playerInfo);
 

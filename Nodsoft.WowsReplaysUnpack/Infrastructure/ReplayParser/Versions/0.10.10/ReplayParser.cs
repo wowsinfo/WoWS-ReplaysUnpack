@@ -15,13 +15,16 @@ namespace Nodsoft.WowsReplaysUnpack.Infrastructure.ReplayParser.Versions;
 
 internal class ReplayParser_0_10_10 : IReplayParser
 {
-	protected const string stringBlowfishKey = "\x29\xB7\xC9\x09\x38\x3F\x84\x88\xFA\x98\xEC\x4E\x13\x19\x79\xFB";
+	public IReplayMessageTypes MessageTypes { get; } = new Constants_0_10_10.ReplayMessageTypes();
+	public IShipConfigMapping ShipConfigMapping { get; } = new Constants_0_10_10.ShipConfigMapping();
+	public IPlayerMessageMapping PlayerMessageMapping { get; } = new Constants_0_10_10.PlayerMessageMapping();
+
 
 	protected static readonly PropertyInfo[] _replayPlayerProperties = typeof(ReplayPlayer).GetProperties();
 
 	public virtual ReplayRaw ParseReplay(MemoryStream memStream, ReplayRaw replay)
 	{
-		byte[] byteBlowfishKey = stringBlowfishKey.Select(Convert.ToByte).ToArray();
+		byte[] byteBlowfishKey = GlobalConstants.BlowfishKey.Select(Convert.ToByte).ToArray();
 		Blowfish blowfish = new(byteBlowfishKey);
 		long prev = 0;
 
@@ -59,15 +62,15 @@ internal class ReplayParser_0_10_10 : IReplayParser
 		{
 			NetPacket np = new(decompressedData);
 
-			if (np.Type is Constants.ReplayPacketTypes.OnEntityMethod)
+			if (np.Type is GlobalConstants.ReplayPacketTypes.OnEntityMethod)
 			{
 				EntityMethod em = new(np.RawData);
 
-				if (em.MessageId is Constants.ReplayMessageTypes.OnArenaStatesReceived) // 10.10=124, OnArenaStatesReceived
+				if (em.MessageId == MessageTypes.OnArenaStatesReceived) // 10.10=124, OnArenaStatesReceived
 				{
 					replay.ReplayPlayers.AddRange(ParsePlayersPacket(em));
 				}
-				else if (em.MessageId is Constants.ReplayMessageTypes.OnChatMessage) // 10.10=122, OnChatMessage
+				else if (em.MessageId == MessageTypes.OnChatMessage) // 10.10=122, OnChatMessage
 				{
 					replay.ChatMessages.Add(ParseChatMessagePacket(em));
 				}
@@ -83,7 +86,7 @@ internal class ReplayParser_0_10_10 : IReplayParser
 
 		for (int i = 0; i < playerInfo.Count; i++)
 		{
-			if (Constants.PropertyMapping.GetValueOrDefault(i) is string key && playerInfo[i] is object[] values)
+			if (PlayerMessageMapping.PropertyMapping.GetValueOrDefault(i) is string key && playerInfo[i] is object[] values)
 			{
 				data.Add(key, values[1]);
 			}
