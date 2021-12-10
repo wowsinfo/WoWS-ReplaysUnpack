@@ -1,4 +1,5 @@
 ﻿using Nodsoft.WowsReplaysUnpack.Infrastructure.ReplayParser;
+using Nodsoft.WowsReplaysUnpack.Infrastructure.ReplayParser.Versions;
 using System.Collections.Generic;
 using System.Linq;
 

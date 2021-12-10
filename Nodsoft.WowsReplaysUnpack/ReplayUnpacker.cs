@@ -14,7 +14,7 @@ namespace Nodsoft.WowsReplaysUnpack;
 public class ReplayUnpacker
 {
 	private static readonly byte[] ReplaySignature = Encoding.UTF8.GetBytes("\x12\x32\x34\x11");
-	
+
 	public ReplayRaw UnpackReplay(Stream stream)
 	{
 
@@ -46,11 +46,9 @@ public class ReplayUnpacker
 			BReplayBlockCount = bReplayBlockCount,
 			BReplayBlockSize = bReplayBlockSize,
 		};
-		
-		string replayVersionString = string.Join('.', replay.ArenaInfo.ClientVersionFromExe.Split(',')[..3]);
-		Version replayVersion = Version.Parse(replayVersionString);
-		IReplayParser replayParser = ReplayParserProvider.FromReplayVersion(replayVersion);
 
+		Version replayVersion = Version.Parse(string.Join('.', replay.ArenaInfo.ClientVersionFromExe.Split(',')[..3]));
+		IReplayParser replayParser = ReplayParserProvider.FromReplayVersion(replayVersion);
 
 		using MemoryStream memStream = new();
 		stream.CopyTo(memStream);
@@ -59,5 +57,5 @@ public class ReplayUnpacker
 		return replay;
 	}
 
-	
+
 }
