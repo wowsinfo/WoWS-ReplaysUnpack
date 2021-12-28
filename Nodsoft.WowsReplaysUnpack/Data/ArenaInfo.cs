@@ -20,12 +20,12 @@ namespace Nodsoft.WowsReplaysUnpack.Data;
 /// <param name="Vehicles">A list of all ships and players that are part of the replay.</param>
 /// <param name="GameType">A string representing the game mode, for example RandomBattle.</param>
 /// <param name="DateTime">The date when the battle started. In format 'dd.MM.yyyy HH:mm:ss'.</param>
-/// <param name="PlayerName"></param>
-/// <param name="ScenarioConfigId"></param>
-/// <param name="TeamsCount"></param>
-/// <param name="Logic"></param>
-/// <param name="PlayerVehicle"></param>
-/// <param name="BattleDuration"></param>
+/// <param name="PlayerName">The name of the player.</param>
+/// <param name="ScenarioConfigId">The ID of the game scenario.</param>
+/// <param name="TeamsCount">The number of teams in the game. This considers the actual teams, not divisions.</param>
+/// <param name="Logic">The type of the game mode, usually the same as <see cref="GameLogic"/>.</param>
+/// <param name="PlayerVehicle">The internal name of the ship, underscores of the internal name are replaced by hyphens.</param>
+/// <param name="BattleDuration">The maximum duration of the game in seconds, usually the same as <see cref="Duration"/>.</param>
 public sealed record ArenaInfo(
 	string MatchGroup,
 	uint GameMode,

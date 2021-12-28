@@ -1,5 +1,4 @@
 ﻿using Nodsoft.WowsReplaysUnpack.Infrastructure.ReplayParser;
-using Nodsoft.WowsReplaysUnpack.Infrastructure.ReplayParser.Versions;
 using Razorvine.Pickle.Objects;
 using System;
 using System.Collections;
@@ -11,7 +10,7 @@ namespace Nodsoft.WowsReplaysUnpack.Data;
 
 public sealed record ReplayPlayer
 {
-	public ReplayPlayer()
+	public ReplayPlayer(IShipConfigMapping shipConfigMapping)
 	{
 		ShipData = new(() =>
 		{
@@ -27,9 +26,7 @@ public sealed record ReplayPlayer
 				configDumpList.Add(BitConverter.ToUInt32(byteData));
 			}
 
-			// HACK: Set to latest constants available
-			// This should be fixed ASAP.
-			return new(ProcessShipConfigDump(configDumpList, new Constants_0_10_10.ShipConfigMapping()));
+			return new(ProcessShipConfigDump(configDumpList, shipConfigMapping), shipConfigMapping);
 		});
 	}
 
