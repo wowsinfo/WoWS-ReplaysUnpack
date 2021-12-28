@@ -13,15 +13,15 @@ using System.Text;
 
 namespace Nodsoft.WowsReplaysUnpack.Infrastructure.ReplayParser.Versions;
 
-internal class ReplayParser_0_10_10 : IReplayParser
+internal class ReplayParser_0_10_10 : ReplayParserBase
 {
-	protected virtual IReplayMessageTypes MessageTypes { get; } = new Constants_0_10_10.ReplayMessageTypes();
-	protected virtual IShipConfigMapping ShipConfigMapping { get; } = new Constants_0_10_10.ShipConfigMapping();
-	protected virtual IPlayerMessageMapping PlayerMessageMapping { get; } = new Constants_0_10_10.PlayerMessageMapping();
+	protected override IReplayMessageTypes MessageTypes { get; } = new Constants_0_10_10.ReplayMessageTypes();
+	protected override IShipConfigMapping ShipConfigMapping { get; } = new Constants_0_10_10.ShipConfigMapping();
+	protected override IPlayerMessageMapping PlayerMessageMapping { get; } = new Constants_0_10_10.PlayerMessageMapping();
 
 	protected static readonly PropertyInfo[] _replayPlayerProperties = typeof(ReplayPlayer).GetProperties();
 
-	public virtual ReplayRaw ParseReplay(MemoryStream memStream, ReplayRaw replay)
+	public override ReplayRaw ParseReplay(MemoryStream memStream, ReplayRaw replay)
 	{
 		byte[] byteBlowfishKey = GlobalConstants.BlowfishKey.Select(Convert.ToByte).ToArray();
 		Blowfish blowfish = new(byteBlowfishKey);
@@ -79,7 +79,7 @@ internal class ReplayParser_0_10_10 : IReplayParser
 		return replay;
 	}
 
-	public virtual ReplayPlayer ParseReplayPlayer(ArrayList playerInfo)
+	public override ReplayPlayer ParseReplayPlayer(ArrayList playerInfo)
 	{
 		Dictionary<string, object> data = new();
 
@@ -115,7 +115,7 @@ internal class ReplayParser_0_10_10 : IReplayParser
 		return player;
 	}
 
-	public virtual IEnumerable<ReplayPlayer> ParsePlayersPacket(EntityMethod em)
+	public override IEnumerable<ReplayPlayer> ParsePlayersPacket(EntityMethod em)
 	{
 		byte[] arenaId = new byte[8];
 		em.Data.Value.Read(arenaId);
@@ -176,7 +176,7 @@ internal class ReplayParser_0_10_10 : IReplayParser
 		 */
 	}
 
-	public virtual ReplayMessage ParseChatMessagePacket(EntityMethod em)
+	public override ReplayMessage ParseChatMessagePacket(EntityMethod em)
 	{
 		byte[] bEntityId = new byte[4];
 		em.Data.Value.Read(bEntityId);
