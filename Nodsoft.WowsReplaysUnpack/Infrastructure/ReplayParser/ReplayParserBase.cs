@@ -20,7 +20,7 @@ public abstract class ReplayParserBase : IReplayParser
 {
 	protected static readonly PropertyInfo[] _replayPlayerProperties = typeof(ReplayPlayer).GetProperties();
 
-	public virtual ReplayRaw ParseReplay(MemoryStream memStream, ReplayRaw replay)
+	public virtual ReplayRaw ParseReplay(MemoryStream memStream, ReplayMetadata replayMetadata)
 	{
 		byte[] byteBlowfishKey = GlobalConstants.BlowfishKey.Select(Convert.ToByte).ToArray();
 		Blowfish blowfish = new(byteBlowfishKey);
@@ -56,6 +56,7 @@ public abstract class ReplayParserBase : IReplayParser
 
 		decompressedData.Seek(0, SeekOrigin.Begin);
 
+		ReplayRaw replay = new(replayMetadata);
 		while (decompressedData.Position != decompressedData.Length)
 		{
 			NetPacket np = new(decompressedData);

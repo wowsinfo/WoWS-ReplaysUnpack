@@ -58,7 +58,7 @@ public class ReplayUnpacker
 		JsonSerializerOptions options = new() { PropertyNameCaseInsensitive = true };
 		options.Converters.Add(new DateTimeJsonConverter());
 		Utf8JsonReader reader = new(bReplayJsonData);
-		ReplayRaw replay = new()
+		ReplayMetadata metadata = new()
 		{
 			ArenaInfo = JsonSerializer.Deserialize<ArenaInfo>(ref reader, options) ?? throw new InvalidReplayException(),
 			BReplaySignature = bReplaySignature,
@@ -66,12 +66,12 @@ public class ReplayUnpacker
 			BReplayBlockSize = bReplayBlockSize,
 		};
 
-		Version replayVersion = Version.Parse(string.Join('.', replay.ArenaInfo.ClientVersionFromExe.Split(',')[..3]));
+		Version replayVersion = Version.Parse(string.Join('.', metadata.ArenaInfo.ClientVersionFromExe.Split(',')[..3]));
 		IReplayParser replayParser = parserProvider.FromReplayVersion(replayVersion);
 
 		using MemoryStream memStream = new();
 		stream.CopyTo(memStream);
-		replay = replayParser.ParseReplay(memStream, replay);
+		ReplayRaw replay = replayParser.ParseReplay(memStream, metadata);
 
 		return replay;
 	}
