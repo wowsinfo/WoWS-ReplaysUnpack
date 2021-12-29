@@ -35,11 +35,13 @@ foreach (ReplayMessage msg in replay.ChatMessages)
 Console.ReadKey();
 
 
+#pragma warning disable CS8321
 static string GetGroupString(ReplayMessage msg) => msg.MessageGroup switch
 {
 	"battle_team" => "Team",
 	"battle_common" => "All",
 	_ => ""
 };
+#pragma warning restore CS8321
 
 /**/

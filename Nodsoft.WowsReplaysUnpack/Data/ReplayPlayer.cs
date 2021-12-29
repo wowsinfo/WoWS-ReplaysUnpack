@@ -1,4 +1,5 @@
-﻿using Razorvine.Pickle.Objects;
+﻿using Nodsoft.WowsReplaysUnpack.Infrastructure.ReplayParser;
+using Razorvine.Pickle.Objects;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,7 +10,7 @@ namespace Nodsoft.WowsReplaysUnpack.Data;
 
 public sealed record ReplayPlayer
 {
-	public ReplayPlayer()
+	public ReplayPlayer(IShipConfigMapping shipConfigMapping)
 	{
 		ShipData = new(() =>
 		{
@@ -25,11 +26,11 @@ public sealed record ReplayPlayer
 				configDumpList.Add(BitConverter.ToUInt32(byteData));
 			}
 
-			return new(ProcessShipConfigDump(configDumpList));
+			return new(ProcessShipConfigDump(configDumpList, shipConfigMapping), shipConfigMapping);
 		});
 	}
 
-	private static IReadOnlyList<IReadOnlyList<uint>> ProcessShipConfigDump(IReadOnlyList<uint> rawConfigDump)
+	private static IReadOnlyList<IReadOnlyList<uint>> ProcessShipConfigDump(IReadOnlyList<uint> rawConfigDump, IShipConfigMapping configMapping)
 	{
 		int listPosition = 0;
 		int currentLength = (int)rawConfigDump[listPosition++];
@@ -42,7 +43,7 @@ public sealed record ReplayPlayer
 			{
 				groupedList.Add(tmpList);
 				step++;
-				if (step is Constants.ShipConfigMapping.TotalValueCount or Constants.ShipConfigMapping.AutoSupplyState)
+				if (step == configMapping.TotalValueCount || step == configMapping.AutoSupplyState)
 				{
 					tmpList = new() { rawConfigDump[listPosition++] };
 				}
@@ -58,7 +59,7 @@ public sealed record ReplayPlayer
 				currentLength--;
 			}
 		}
-			
+
 		groupedList.Add(tmpList);
 		return groupedList;
 	}

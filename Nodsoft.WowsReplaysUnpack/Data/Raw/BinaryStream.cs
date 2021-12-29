@@ -1,10 +1,9 @@
 ﻿using System;
 using System.IO;
 
+namespace Nodsoft.WowsReplaysUnpack.Data.Raw;
 
-namespace Nodsoft.WowsReplaysUnpack.Infrastructure;
-
-internal sealed class BinaryStream
+public sealed class BinaryStream
 {
 	public MemoryStream Value { get; }
 
