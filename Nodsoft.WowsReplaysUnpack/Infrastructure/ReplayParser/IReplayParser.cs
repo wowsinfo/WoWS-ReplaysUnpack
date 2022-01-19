@@ -21,6 +21,7 @@ public interface IReplayParser
 	/// <param name="replayMetadata">An object containing metadata for the replay.</param>
 	/// <returns>The populated <see cref="ReplayRaw"/> object.</returns>
 	public ReplayRaw ParseReplay(MemoryStream memStream, ReplayMetadata replayMetadata);
+
 	public ReplayPlayer ParseReplayPlayer(ArrayList playerInfo);
 
 	public IEnumerable<ReplayPlayer> ParsePlayersPacket(EntityMethod em);
