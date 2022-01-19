@@ -16,10 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="0.10.11.wowsreplay">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="0.10.10.wowsreplay">
+    <None Update="sampleData\*.wowsreplay">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

@@ -1,26 +1,17 @@
 ﻿using Nodsoft.WowsReplaysUnpack.Infrastructure.ReplayParser;
-using Nodsoft.WowsReplaysUnpack.Infrastructure.ReplayParser.Versions;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Nodsoft.WowsReplaysUnpack.Data;
-
-/*
- * HACK: Set Ship Constants to latest version constants.
- * This shoud be fixed ASAP.
- */
-
 
 /// <summary>
 /// Represents the data extracted from the shipConfigDump property of a player entry in the replay.
 /// <br/>
 /// The individual lists may contain 0 values, indicating that a slot or module is either unused or not available on the ship.
 /// </summary>
-/// <param name="ShipConfiguration">A mapping of the ship configuration.</param>
-public sealed record ShipData(IReadOnlyList<IReadOnlyList<uint>> ShipConfiguration)
+/// <param name="ShipConfiguration">A list of the ship configuration.</param>
+/// <param name="ShipConfigMapping">The mapping used to retrieve values from the provided ship configuration.</param>
+public sealed record ShipData(IReadOnlyList<IReadOnlyList<uint>> ShipConfiguration, IShipConfigMapping ShipConfigMapping)
 {
-	static IShipConfigMapping ShipConfigMapping { get; } = new Constants_0_10_10.ShipConfigMapping();
-
 	/// <summary>
 	/// Gets the numeric id of the selected ship.
 	/// </summary>

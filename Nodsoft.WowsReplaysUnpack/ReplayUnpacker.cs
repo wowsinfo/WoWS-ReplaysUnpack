@@ -15,9 +15,28 @@ public class ReplayUnpacker
 {
 	private static readonly byte[] ReplaySignature = Encoding.UTF8.GetBytes("\x12\x32\x34\x11");
 
+	/// <summary>
+	/// Unpacks a replay from a stream.
+	/// Uses the default <see cref="ReplayParserProvider.Instance">ReplayParserProvider instance</see>.
+	/// </summary>
+	/// <param name="stream">The stream containing the replay file content.</param>
+	/// <returns>The unpacked replay, wrapped in a <see cref="ReplayRaw"/> instance.</returns>
+	/// <exception cref="InvalidReplayException">Occurs if the replay file is not valid.</exception>
 	public ReplayRaw UnpackReplay(Stream stream)
 	{
-
+		return UnpackReplay(stream, ReplayParserProvider.Instance);
+	}
+	
+	/// <summary>
+	/// Unpacks a replay from a stream.
+	/// Uses a custom <see cref="IReplayParserProvider"/> implementation.
+	/// </summary>
+	/// <param name="stream">The stream containing the replay file content.</param>
+	/// <param name="parserProvider">The <see cref="IReplayParserProvider"/> implementation to use to retrieve the necessary <see cref="IReplayParser"/>.</param>
+	/// <returns>The unpacked replay, wrapped in a <see cref="ReplayRaw"/> instance.</returns>
+	/// <exception cref="InvalidReplayException">Occurs if the replay file is not valid.</exception>
+	public ReplayRaw UnpackReplay(Stream stream, IReplayParserProvider parserProvider)
+	{
 		byte[] bReplaySignature = new byte[4];
 		byte[] bReplayBlockCount = new byte[4];
 		byte[] bReplayBlockSize = new byte[4];
@@ -39,7 +58,7 @@ public class ReplayUnpacker
 		JsonSerializerOptions options = new() { PropertyNameCaseInsensitive = true };
 		options.Converters.Add(new DateTimeJsonConverter());
 		Utf8JsonReader reader = new(bReplayJsonData);
-		ReplayRaw replay = new()
+		ReplayMetadata metadata = new()
 		{
 			ArenaInfo = JsonSerializer.Deserialize<ArenaInfo>(ref reader, options) ?? throw new InvalidReplayException(),
 			BReplaySignature = bReplaySignature,
@@ -47,12 +66,12 @@ public class ReplayUnpacker
 			BReplayBlockSize = bReplayBlockSize,
 		};
 
-		Version replayVersion = Version.Parse(string.Join('.', replay.ArenaInfo.ClientVersionFromExe.Split(',')[..3]));
-		IReplayParser replayParser = ReplayParserProvider.FromReplayVersion(replayVersion);
+		Version replayVersion = Version.Parse(string.Join('.', metadata.ArenaInfo.ClientVersionFromExe.Split(',')[..3]));
+		IReplayParser replayParser = parserProvider.FromReplayVersion(replayVersion);
 
 		using MemoryStream memStream = new();
 		stream.CopyTo(memStream);
-		replay = replayParser.ParseReplay(memStream, replay);
+		ReplayRaw replay = replayParser.ParseReplay(memStream, metadata);
 
 		return replay;
 	}
