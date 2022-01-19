@@ -16,6 +16,7 @@ public class ReplayParserProvider : IReplayParserProvider
 	public IReplayParser FromReplayVersion(Version version)
 	{
 		// Match versions, newest to oldest.
+		if (version >= new Version(0, 11, 0)) return new ReplayParser_0_11_0();
 		if (version >= new Version(0, 10, 11)) return new ReplayParser_0_10_11();
 		if (version == new Version(0, 10, 10)) return new ReplayParser_0_10_10();
 
