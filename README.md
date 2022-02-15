@@ -1,17 +1,17 @@
-# Replays-Unpack-CS
+<img align="right" src="Nodsoft.WowsReplaysUnpack/logo.png" alt="logo" width="200"/>
 
-An attempt to convert Monstrofil's [replays_unpack](https://github.com/Monstrofil/replays_unpack/) to C#.
+# WoWS-ReplaysUnpack
+A C# file unpacking library for World of Warships Replays, inspired by Monstrofil's [replays_unpack](https://github.com/Monstrofil/replays_unpack/).
 
 ## Information before using the library
 The library supports only World of Warships replays starting with version 0.10.10. 
 Trying to use an older replay can result in unexpected errors when processing the replay.
 
-
 ## How to use
 To analyze a replay, simply use the ReplayUnpacker:
 ```c#
 ReplayUnpacker unpacker = new();
-Stream replayFileStream = File.OpenRead("<Path to replay file>");
+using Stream replayFileStream = File.OpenRead("<Path to replay file>");
 ReplayRaw unpackedReplay = unpacker.UnpackReplay(replayFileStream);
 ```
 
@@ -27,6 +27,6 @@ To use a custom replay reader implementation, provide the replay unpacker with a
 ```c#
 ReplayUnpacker unpacker = new();
 IReplayParserProvider provider = new MyCustomReplayParserProvider();
-Stream replayFileStream = File.OpenRead("<Path to replay file>");
+using Stream replayFileStream = File.OpenRead("<Path to replay file>");
 ReplayRaw unpackedReplay = unpacker.UnpackReplay(replayFileStream, provider);
 ```
