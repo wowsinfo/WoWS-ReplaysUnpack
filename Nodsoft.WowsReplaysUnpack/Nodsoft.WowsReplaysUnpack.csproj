@@ -5,7 +5,7 @@
     <TargetFrameworks>net5.0;net6.0</TargetFrameworks>
     <LangVersion>10</LangVersion>
     <Nullable>enable</Nullable>
-    <Version>0.5.1</Version>
+    <Version>0.5.2</Version>
     <Company>Nodsoft Systems</Company>
     <Authors>imkindaprogrammermyself, Sakura Akeno Isayeki, floribe2000</Authors>
     <Product>WoWS Replays Unpack</Product>
