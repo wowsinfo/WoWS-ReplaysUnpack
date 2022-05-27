@@ -9,7 +9,10 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
+using System.Security;
 using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace Nodsoft.WowsReplaysUnpack.Infrastructure.ReplayParser;
 
@@ -78,7 +81,12 @@ public abstract class ReplayParserBase : IReplayParser
 
 		return replay;
 	}
-
+	
+	/// <inheritdoc />
+	/// <remarks>
+	/// This method checks and accounts for CVE-2022-31265 exploit,
+	/// and will throw a <see cref="SecurityException"/> if an injection is detected.
+	/// </remarks>
 	public virtual ReplayPlayer ParseReplayPlayer(ArrayList playerInfo)
 	{
 		Dictionary<string, object> data = new();
@@ -127,6 +135,13 @@ public abstract class ReplayParserBase : IReplayParser
 		byte[] blobObserversStates = new ReplayBlob(em.Data.Value).Data; // useless
 		byte[] blobBuildingsInfo = new ReplayBlob(em.Data.Value).Data; // useless
 
+		// Scan all blobs for CVE-2022-31265 exploit
+		ScanBlobForRceInjection(blobPreBattlesInfo, nameof(blobPreBattlesInfo));
+		ScanBlobForRceInjection(blobPlayerStates, nameof(blobPlayerStates));
+		ScanBlobForRceInjection(blobObserversStates, nameof(blobObserversStates));
+		ScanBlobForRceInjection(blobBuildingsInfo, nameof(blobBuildingsInfo));
+		
+		// All goood, business as usual. Parse the blobs.
 		Unpickler.registerConstructor("CamouflageInfo", "CamouflageInfo", new CamouflageInfo());
 		ArrayList players = new Unpickler().load(new MemoryStream(blobPlayerStates)) as ArrayList ?? new ArrayList();
 
@@ -215,6 +230,44 @@ public abstract class ReplayParserBase : IReplayParser
 			615452 : battle_team : ? ???????
 		 */
 	}
+
+	
+	/// <summary>
+	/// Provides detection for CVE-2022-31265 RCE injections. <br />
+	/// See : https://www.cve.org/CVERecord?id=CVE-2022-31265
+	/// </summary>
+	/// <param name="blob">Python pickle byte array to scan.</param>
+	/// <param name="blobName">Name of byte array (used for exception source reporting)</param>
+	/// <exception cref="SecurityException">Raised when a CVE-2022-31265 RCE Injection attack is detected within a blob.</exception>
+	protected virtual void ScanBlobForRceInjection(byte[] blob, string? blobName = null)
+	{
+		/*
+		 * Scan the UTF-8 blobs for any RCE injections.
+		 *
+		 * These can be picked up on Windows (98% of all users),
+		 * using the special moniker "cnt system", which defines an entry point for the RCE.
+		 * This moniker consists of detecting the "c" pickle opcode, followed by the "nt system" value.
+		 */
+
+		if (RceInjectionRegex.IsMatch(Encoding.UTF8.GetString(blob)))
+		{
+			throw new SecurityException("CVE-2022-31265 RCE injection detected within replay blob.")
+			{
+				Source = blobName,
+				Data = { { "blob", blob }, { "exploit", "CVE-2022-31265" } }
+			};
+		}
+	}
+	
+	/// <summary>
+	/// Looks for any matching CVE-2022-31265 RCE injections monikers in a Python pickle.
+	/// <br />
+	/// We're looking for the following monikers:
+	/// "cnt system", "commands"
+	/// </summary>
+	protected static readonly Regex RceInjectionRegex = new(
+		@"cnt\ssystem|commands", 
+		RegexOptions.Compiled | RegexOptions.ExplicitCapture);
 	
 	protected abstract IReplayMessageTypes MessageTypes { get; }
 	
