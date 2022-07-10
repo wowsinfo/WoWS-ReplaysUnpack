@@ -14,7 +14,7 @@ public sealed record ReplayMetadata
 	/// <summary>
 	/// Gets the <see cref="Nodsoft.WowsReplaysUnpack.Data.ArenaInfo"/> of the replay file.
 	/// </summary>
-	public ArenaInfo ArenaInfo { get; internal init; } = default!;
+	public TArenaInfo ArenaInfo { get; internal init; } = default!;
 	
 	internal byte[] BReplaySignature { get; init; } = Array.Empty<byte>();
 	internal byte[] BReplayBlockCount { get; init; } = Array.Empty<byte>();

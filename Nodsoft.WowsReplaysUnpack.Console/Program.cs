@@ -4,18 +4,20 @@ using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Environments;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Running;
+using Nodsoft.WowsReplaysUnpack;
 using Nodsoft.WowsReplaysUnpack.Console;
+using Nodsoft.WowsReplaysUnpack.Core.Definitions;
 using Nodsoft.WowsReplaysUnpack.Data;
 using System;
 
 Console.WriteLine();
 
 
-BenchmarkRunner.Run<UnpackBenchmark>(DefaultConfig.Instance
-	.WithOptions(ConfigOptions.DisableOptimizationsValidator)
-	.AddJob(Job.Default.WithRuntime(CoreRuntime.Core50))
-	.AddJob(Job.Default.WithRuntime(CoreRuntime.Core60))
-);
+//BenchmarkRunner.Run<UnpackBenchmark>(DefaultConfig.Instance
+//	.WithOptions(ConfigOptions.DisableOptimizationsValidator)
+//	.AddJob(Job.Default.WithRuntime(CoreRuntime.Core50))
+//	.AddJob(Job.Default.WithRuntime(CoreRuntime.Core60))
+//);
 
 /**/
 
@@ -31,7 +33,9 @@ foreach (ReplayMessage msg in replay.ChatMessages)
 }
 
 /**/
-
+var reader = new DefinitionsReader(typeof(ReplayUnpackerService).Assembly, new Version(0, 11, 5));
+var alias = new Alias(reader);
+var x = new EntityDefinition("Avatar.def", "entity_defs", reader, alias);
 Console.ReadKey();
 
 

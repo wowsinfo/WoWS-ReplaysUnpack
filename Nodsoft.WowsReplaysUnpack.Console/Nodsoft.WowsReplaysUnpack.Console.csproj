@@ -4,7 +4,7 @@
     <OutputType>Exe</OutputType>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <TargetFrameworks>net5.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>net6.0</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Nodsoft.WowsReplaysUnpack.Core\Nodsoft.WowsReplaysUnpack.Core.csproj" />
     <ProjectReference Include="..\Nodsoft.WowsReplaysUnpack\Nodsoft.WowsReplaysUnpack.csproj" />
   </ItemGroup>
 
