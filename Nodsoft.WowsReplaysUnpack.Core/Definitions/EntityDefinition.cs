@@ -4,15 +4,15 @@ namespace Nodsoft.WowsReplaysUnpack.Core.Definitions;
 
 public class EntityDefinition : ABaseDefinition
 {
+
 	public List<EntityMethodDefinition> CellMethods { get; set; } = new();
 	public List<EntityMethodDefinition> BaseMethods { get; set; } = new();
 	public List<EntityMethodDefinition> ClientMethods { get; set; } = new();
-	public EntityDefinition(string name, string folder, DefinitionsReader definitionsReader, Alias alias)
-		: base(name, folder, definitionsReader, alias)
+
+	public EntityDefinition(Version clientVersion, DefinitionStore definitionStore,
+		string name, string folder) : base(clientVersion, definitionStore, name, folder)
 	{
-
 	}
-
 
 	protected override void ParseDefinitionFile(XmlElement xml)
 	{
@@ -28,6 +28,8 @@ public class EntityDefinition : ABaseDefinition
 			return;
 
 		foreach (var node in methodsNode.ChildNodes.Cast<XmlNode>())
-			methods.Add(new EntityMethodDefinition(node, Alias));
+			methods.Add(new EntityMethodDefinition(ClientVersion, DefinitionStore, node));
+
+		methods = methods.OrderBy(m => m.DataSize).ToList();
 	}
 }

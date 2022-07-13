@@ -1,17 +1,25 @@
-﻿using Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
-using Nodsoft.WowsReplaysUnpack.Models.Replay;
+﻿using Nodsoft.WowsReplaysUnpack.Core.Models;
+using Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
 
 namespace Nodsoft.WowsReplaysUnpack.Services;
 
 public class DefaultReplayController : IReplayController
 {
-	public virtual void HandleNetworkPacket(UnpackedReplay replay, INetworkPacket networkPacket)
+	public virtual UnpackedReplay? Replay { get; protected set; }
+
+	public virtual UnpackedReplay CreateUnpackedReplay(ArenaInfo arenaInfo)
 	{
-		if (networkPacket is BasePlayerCreatePacket packet)
-			OnBasePlayerCreate(replay, packet);
+		Replay = new UnpackedReplay(arenaInfo);
+		return Replay!;
 	}
 
-	public virtual void OnBasePlayerCreate(UnpackedReplay replay, BasePlayerCreatePacket packet)
+	public virtual void HandleNetworkPacket(INetworkPacket networkPacket)
+	{
+		if (networkPacket is BasePlayerCreatePacket packet)
+			OnBasePlayerCreate(packet);
+	}
+
+	public virtual void OnBasePlayerCreate(BasePlayerCreatePacket packet)
 	{
 
 	}

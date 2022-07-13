@@ -1,9 +1,10 @@
-﻿using Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
-using Nodsoft.WowsReplaysUnpack.Models.Replay;
+﻿using Nodsoft.WowsReplaysUnpack.Core.Models;
+using Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
 
 namespace Nodsoft.WowsReplaysUnpack.Services;
 
 public interface IReplayController
 {
-	void HandleNetworkPacket(UnpackedReplay replay, INetworkPacket networkPacket);
+	UnpackedReplay CreateUnpackedReplay(ArenaInfo arenaInfo);
+	void HandleNetworkPacket(INetworkPacket networkPacket);
 }

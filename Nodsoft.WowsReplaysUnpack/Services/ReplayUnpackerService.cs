@@ -3,10 +3,9 @@ using Microsoft.Extensions.Logging;
 using Nodsoft.WowsReplaysUnpack.Core;
 using Nodsoft.WowsReplaysUnpack.Core.Extensions;
 using Nodsoft.WowsReplaysUnpack.Core.Json;
+using Nodsoft.WowsReplaysUnpack.Core.Models;
 using Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
 using Nodsoft.WowsReplaysUnpack.Infrastructure.Exceptions;
-using Nodsoft.WowsReplaysUnpack.Models;
-using Nodsoft.WowsReplaysUnpack.Models.Replay;
 using System;
 using System.IO;
 using System.IO.Compression;
@@ -26,74 +25,22 @@ public class ReplayUnpackerService
 
 	private readonly JsonSerializerOptions _jsonSerializerOptions = new() { PropertyNameCaseInsensitive = true };
 	private readonly IServiceProvider _serviceProvider;
+	private readonly IReplayDataParser _replayDataParser;
+	private readonly IReplayController _replayController;
 	private readonly ILogger<ReplayUnpackerService> _logger;
 
-	public ReplayUnpackerService(IServiceProvider serviceProvider, ILogger<ReplayUnpackerService> logger)
+	public ReplayUnpackerService(IServiceProvider serviceProvider,
+		IReplayDataParser replayDataParser,
+		IReplayController replayController,
+		ILogger<ReplayUnpackerService> logger)
 	{
 		_jsonSerializerOptions.Converters.Add(new DateTimeJsonConverter());
 		_serviceProvider = serviceProvider;
+		_replayDataParser = replayDataParser;
+		_replayController = replayController;
 		_logger = logger;
 	}
 
-
-	///// <summary>
-	///// Unpacks a replay from a stream.
-	///// Uses the default <see cref="ReplayParserProvider.Instance">ReplayParserProvider instance</see>.
-	///// </summary>
-	///// <param name="stream">The stream containing the replay file content.</param>
-	///// <returns>The unpacked replay, wrapped in a <see cref="ReplayRaw"/> instance.</returns>
-	///// <exception cref="InvalidReplayException">Occurs if the replay file is not valid.</exception>
-	//public ReplayRaw UnpackReplay(Stream stream)
-	//	=> UnpackReplay(stream, ReplayParserProvider.Instance);
-
-	///// <summary>
-	///// Unpacks a replay from a stream.
-	///// Uses a custom <see cref="IReplayParserProvider"/> implementation.
-	///// </summary>
-	///// <param name="stream">The stream containing the replay file content.</param>
-	///// <param name="parserProvider">The <see cref="IReplayParserProvider"/> implementation to use to retrieve the necessary <see cref="IReplayParser"/>.</param>
-	///// <returns>The unpacked replay, wrapped in a <see cref="ReplayRaw"/> instance.</returns>
-	///// <exception cref="InvalidReplayException">Occurs if the replay file is not valid.</exception>
-	//public ReplayRaw UnpackReplay(Stream stream, IReplayParserProvider parserProvider)
-	//{
-	//	byte[] bReplaySignature = new byte[4];
-	//	byte[] bReplayBlockCount = new byte[4];
-	//	byte[] bReplayBlockSize = new byte[4];
-
-	//	stream.Read(bReplaySignature, 0, 4);
-	//	stream.Read(bReplayBlockCount, 0, 4);
-	//	stream.Read(bReplayBlockSize, 0, 4);
-
-	//	// Verify replay signature
-	//	if (!bReplaySignature.SequenceEqual(ReplaySignature))
-	//	{
-	//		throw new InvalidReplayException("Invalid replay signature.");
-	//	}
-
-	//	int jsonDataSize = BitConverter.ToInt32(bReplayBlockSize, 0);
-	//	byte[] bReplayJsonData = new byte[jsonDataSize];
-	//	stream.Read(bReplayJsonData, 0, jsonDataSize);
-
-	//	JsonSerializerOptions options = new() { PropertyNameCaseInsensitive = true };
-	//	options.Converters.Add(new DateTimeJsonConverter());
-	//	Utf8JsonReader reader = new(bReplayJsonData);
-	//	ReplayMetadata metadata = new()
-	//	{
-	//		//ArenaInfo = JsonSerializer.Deserialize<ArenaInfo>(ref reader, options) ?? throw new InvalidReplayException(),
-	//		BReplaySignature = bReplaySignature,
-	//		BReplayBlockCount = bReplayBlockCount,
-	//		BReplayBlockSize = bReplayBlockSize,
-	//	};
-
-	//	Version replayVersion = Version.Parse(string.Join('.', metadata.ArenaInfo.ClientVersionFromExe.Split(',')[..3]));
-	//	IReplayParser replayParser = parserProvider.FromReplayVersion(replayVersion);
-
-	//	using MemoryStream memStream = new();
-	//	stream.CopyTo(memStream);
-	//	ReplayRaw replay = replayParser.ParseReplay(memStream, metadata);
-
-	//	return replay;
-	//}
 
 	public UnpackedReplay Unpack(byte[] data, ReplayUnpackerOptions? options = null)
 	{
@@ -132,10 +79,6 @@ public class ReplayUnpackerService
 		*/
 		options ??= new();
 
-		if (options.Mode is ReplayUnpackerMode.IgnoreCVECheck)
-			_logger.LogWarning("IgnoreCVECheck mode is active");
-
-		UnpackedReplay replay;
 		BinaryReader binaryReader = new(stream);
 
 		byte[] signature = binaryReader.ReadBytes(4);
@@ -148,8 +91,8 @@ public class ReplayUnpackerService
 		}
 
 		// The first block is the arena info
-		// Read it and create the unpack replay info
-		replay = new(ReadJsonBlock<ArenaInfo>(binaryReader));
+		// Read it and create the unpacked replay model
+		UnpackedReplay replay = _replayController.CreateUnpackedReplay(ReadJsonBlock<ArenaInfo>(binaryReader));
 		ReadExtraJsonBlocks(replay, binaryReader, jsonBlockCount);
 
 		MemoryStream decryptedStream = new();
@@ -166,11 +109,9 @@ public class ReplayUnpackerService
 		decryptedStream.Close();
 		decryptedStream.Dispose();
 
-		using IServiceScope parserScope = _serviceProvider.CreateScope();
-		using IReplayDataParser replayDataParser = parserScope.ServiceProvider.GetRequiredService<IReplayDataParser>();
-		IReplayController replayController = parserScope.ServiceProvider.GetRequiredService<IReplayController>();
-		foreach (INetworkPacket networkPacket in replayDataParser.ParseNetworkPackets(replayDataStream, options))
-			replayController.HandleNetworkPacket(replay, networkPacket);
+
+		foreach (INetworkPacket networkPacket in _replayDataParser.ParseNetworkPackets(replayDataStream, options))
+			_replayController.HandleNetworkPacket(networkPacket);
 
 		return replay;
 	}

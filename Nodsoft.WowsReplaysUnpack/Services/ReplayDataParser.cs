@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
+using Nodsoft.WowsReplaysUnpack.Core.Models;
 using Nodsoft.WowsReplaysUnpack.Core.Network;
 using Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
-using Nodsoft.WowsReplaysUnpack.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,14 +12,12 @@ namespace Nodsoft.WowsReplaysUnpack.Services;
 public class ReplayDataParser : IReplayDataParser
 {
 	private readonly ILogger<ReplayDataParser> _logger;
-	private readonly CveSecurityService _cveSecurityService;
 	private readonly MemoryStream _packetBuffer = new();
 	private readonly BinaryReader _packetBufferReader;
 
-	public ReplayDataParser(ILogger<ReplayDataParser> logger, CveSecurityService cveSecurityService)
+	public ReplayDataParser(ILogger<ReplayDataParser> logger)
 	{
 		_logger = logger;
-		_cveSecurityService = cveSecurityService;
 		_packetBufferReader = new BinaryReader(_packetBuffer);
 	}
 	protected static readonly Regex RceInjectionRegex = new(
@@ -44,20 +42,10 @@ public class ReplayDataParser : IReplayDataParser
 
 			byte[] packetData = binaryReader.ReadBytes((int)packetSize);
 
-			if (options.Mode is not ReplayUnpackerMode.OnlyCVECheck)
-			{
 				// Reset packet buffer, write current data and set position to start
 				_packetBuffer.SetLength(packetSize);
 				_packetBuffer.Write(packetData);
 				_packetBuffer.Seek(0, SeekOrigin.Begin);
-			}
-
-			if (options.Mode is not ReplayUnpackerMode.IgnoreCVECheck)
-				_cveSecurityService.ScanForVulnerabilities(packetData, packetType, packetTime);
-
-
-			if (options.Mode is ReplayUnpackerMode.OnlyCVECheck)
-				continue;
 
 			yield return packetType switch
 			{

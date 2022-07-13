@@ -4,23 +4,28 @@ namespace Nodsoft.WowsReplaysUnpack.Core.Definitions;
 
 public abstract class ABaseDefinition
 {
-	protected Alias Alias { get; }
-	protected DefinitionsReader DefinitionsReader { get; }
+	protected Version ClientVersion { get; }
+	protected DefinitionStore DefinitionStore { get; }
+	protected List<PropertyDefinition> Properties { get; } = new();
 	public string Name { get; }
 	public string Folder { get; }
-	public List<PropertyDefinition> Properties { get; } = new();
 	public Dictionary<string, object> VolatileProperties { get; } = new();
 
-	public ABaseDefinition(string name, string folder,
-		DefinitionsReader definitionsReader, Alias alias)
+	public ABaseDefinition(Version clientVersion, DefinitionStore definitionStore, string name, string folder)
 	{
+		ClientVersion = clientVersion;
+		DefinitionStore = definitionStore;
 		Name = name;
 		Folder = folder;
-		DefinitionsReader = definitionsReader;
-		Alias = alias;
-		ParseDefinitionFile(DefinitionsReader.GetFileAsXml(Name, Folder).DocumentElement!);
+		ParseDefinitionFile(DefinitionStore.GetFileAsXml(ClientVersion, Name, Folder).DocumentElement!);
 	}
-
+	public PropertyDefinition[] GetPropertiesByFlags(EntityFlag entityFlag, bool orderBySize = false)
+	{
+		var properties = Properties.Where(p => p.Flag.HasFlag(entityFlag));
+		if (!orderBySize)
+			return properties.ToArray();
+		return properties.OrderBy(p => p.DataSize).ToArray();
+	}
 	protected virtual void ParseDefinitionFile(XmlElement xml)
 	{
 		ParseImplements(xml.SelectNodes("Implements/Interface")!.Cast<XmlNode>().Select(node => node.InnerText.Trim()).ToArray());
@@ -32,7 +37,7 @@ public abstract class ABaseDefinition
 	{
 		foreach (var @interface in @interfaces)
 		{
-			ParseDefinitionFile(DefinitionsReader.GetFileAsXml(@interface + ".def", Folder, "interfaces").DocumentElement!);
+			ParseDefinitionFile(DefinitionStore.GetFileAsXml(ClientVersion, @interface + ".def", Folder, "interfaces").DocumentElement!);
 		}
 	}
 
@@ -48,7 +53,7 @@ public abstract class ABaseDefinition
 			if (propertyIndex > -1)
 				Properties.RemoveAt(propertyIndex);
 
-			Properties.Add(new PropertyDefinition(propertyNode, Alias));
+			Properties.Add(new PropertyDefinition(ClientVersion, DefinitionStore, propertyNode));
 		}
 	}
 

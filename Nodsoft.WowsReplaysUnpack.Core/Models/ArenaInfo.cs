@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Nodsoft.WowsReplaysUnpack.Models.Replay;
+﻿namespace Nodsoft.WowsReplaysUnpack.Core.Models;
 
 /// <summary>
 /// The structure if the ArenaInfo property of a replay.

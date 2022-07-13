@@ -1,10 +1,15 @@
-﻿namespace Nodsoft.WowsReplaysUnpack.Core.DataTypes;
+﻿using Nodsoft.WowsReplaysUnpack.Core.Definitions;
+using Nodsoft.WowsReplaysUnpack.Core.Extensions;
+using System.Xml;
+
+namespace Nodsoft.WowsReplaysUnpack.Core.DataTypes;
 
 internal class VectorDataType : ADataTypeBase
 {
 	private readonly int _itemCount;
 
-	protected VectorDataType(int itemCount)
+	protected VectorDataType(Version version, DefinitionStore definitionStore, XmlNode xmlNode, int itemCount)
+		: base(version, definitionStore, xmlNode)
 	{
 		_itemCount = itemCount;
 	}
@@ -16,7 +21,7 @@ internal class VectorDataType : ADataTypeBase
 	/// <param name="reader"></param>
 	/// <param name="itemCount"></param>
 	/// <returns></returns>
-	protected override object? GetValue(BinaryReader reader)
+	protected override object? GetValueInternal(BinaryReader reader, XmlNode propertyOrArgumentNode, int headerSize)
 	{
 		// Size of a float value
 		int itemSize = 4;
@@ -31,8 +36,8 @@ internal class VectorDataType : ADataTypeBase
 		return values;
 	}
 
-	protected override object? GetDefaultValue(string defaultValue)
-	=> defaultValue.Split(' ').Select(v => Convert.ToSingle(v)).ToArray();
+	protected override object? GetDefaultValue(XmlNode propertyOrArgumentNode)
+	=> propertyOrArgumentNode.SelectSingleNodeText("Default")?.Split(' ').Select(v => Convert.ToSingle(v)).ToArray();
 }
 
 /// <summary>
@@ -41,23 +46,20 @@ internal class VectorDataType : ADataTypeBase
 internal class Vector2DataType : VectorDataType
 {
 	public override int DataSize => 8;
-	public Vector2DataType() : base(2) { }
-	protected override object? GetValue(BinaryReader reader)
-		=> base.GetValue(reader);
+	public Vector2DataType(Version version, DefinitionStore definitionStore, XmlNode xmlNode) 
+		: base(version, definitionStore, xmlNode, 2) { }
 }
 
 internal class Vector3DataType : VectorDataType
 {
 	public override int DataSize => 12;
-	public Vector3DataType() : base(3) { }
-	protected override object? GetValue(BinaryReader reader)
-		=> base.GetValue(reader);
+	public Vector3DataType(Version version, DefinitionStore definitionStore, XmlNode xmlNode) 
+		: base(version, definitionStore, xmlNode, 3) { }
 }
 
 internal class Vector4DataType : VectorDataType
 {
 	public override int DataSize => 16;
-	public Vector4DataType() : base(4) { }
-	protected override object? GetValue(BinaryReader reader)
-		=> base.GetValue(reader);
+	public Vector4DataType(Version version, DefinitionStore definitionStore, XmlNode xmlNode) 
+		: base(version, definitionStore, xmlNode, 4) { }
 }

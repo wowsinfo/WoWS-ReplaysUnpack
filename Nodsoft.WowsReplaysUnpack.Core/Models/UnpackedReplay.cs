@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text.Json;
+﻿using System.Text.Json;
 
-namespace Nodsoft.WowsReplaysUnpack.Models.Replay;
+namespace Nodsoft.WowsReplaysUnpack.Core.Models;
 
-public sealed record UnpackedReplay
+public class UnpackedReplay
 {
 	public Version ClientVersion { get; }
 	public ArenaInfo ArenaInfo { get; }

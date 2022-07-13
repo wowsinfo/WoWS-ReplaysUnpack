@@ -10,16 +10,12 @@ namespace Nodsoft.WowsReplaysUnpack.Core.Exceptions;
 public class CVESecurityException: SecurityException
 {
 	public string Exploit { get; }
-	public byte[] PacketData { get; }
-	public uint PacketType { get; }
-	public float PacketTime { get; }
-
-	public CVESecurityException(string exploit, 
-		byte[] packetData, uint packetType, float packetTime): base($"{exploit} detected within network packet")
+	public byte[] ByteData { get; }
+	public string AropertyOrArgumentName { get; }
+	public CVESecurityException(string exploit, byte[] byteData, string propertyOrArgumentName): base($"{exploit} detected within network packet")
 	{
 		Exploit = exploit;
-		PacketData = packetData;
-		PacketType = packetType;
-		PacketTime = packetTime;
+		ByteData = byteData;
+		AropertyOrArgumentName = propertyOrArgumentName;
 	}
 }
