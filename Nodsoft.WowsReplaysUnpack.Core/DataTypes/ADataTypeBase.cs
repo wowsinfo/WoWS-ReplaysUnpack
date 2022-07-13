@@ -18,6 +18,6 @@ public abstract class ADataTypeBase
 	protected abstract object? GetValue(BinaryReader reader);
 	protected virtual object? GetDefaultValue(string defaultValue)
 		=> throw new NotImplementedException();
-	protected int GetActualDataSize(BinaryReader reader)
-		=> reader.ReadInt32();
+	protected virtual int GetActualDataSize(BinaryReader reader)
+		=> reader.ReadByte();
 }

@@ -25,7 +25,7 @@ public abstract class ReplayParserBase : IReplayParser
 
 	public virtual ReplayRaw ParseReplay(MemoryStream memStream, ReplayMetadata replayMetadata)
 	{
-		byte[] byteBlowfishKey = GlobalConstants.BlowfishKey.Select(Convert.ToByte).ToArray();
+		byte[] byteBlowfishKey = new byte[0]; // GlobalConstants.BlowfishKey.Select(Convert.ToByte).ToArray();
 		Blowfish blowfish = new(byteBlowfishKey);
 		long prev = 0;
 
