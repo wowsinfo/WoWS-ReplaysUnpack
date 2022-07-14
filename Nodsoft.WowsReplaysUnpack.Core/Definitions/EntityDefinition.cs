@@ -1,4 +1,5 @@
-﻿using System.Xml;
+﻿using Nodsoft.WowsReplaysUnpack.Core.Extensions;
+using System.Xml;
 
 namespace Nodsoft.WowsReplaysUnpack.Core.Definitions;
 
@@ -10,7 +11,7 @@ public class EntityDefinition : ABaseDefinition
 	public List<EntityMethodDefinition> BaseMethods { get; set; } = new();
 	public List<EntityMethodDefinition> ClientMethods { get; set; } = new();
 
-	public EntityDefinition(Version clientVersion, DefinitionStore definitionStore,
+	public EntityDefinition(Version clientVersion, IDefinitionStore definitionStore,
 		string name) : base(clientVersion, definitionStore, name, ENTITY_DEFS)
 	{
 	}
@@ -28,7 +29,7 @@ public class EntityDefinition : ABaseDefinition
 		if (methodsNode is null)
 			return;
 
-		foreach (var node in methodsNode.ChildNodes.Cast<XmlNode>())
+		foreach (var node in methodsNode.ChildNodes())
 			methods.Add(new EntityMethodDefinition(ClientVersion, DefinitionStore, node));
 
 		methods = methods.OrderBy(m => m.DataSize).ToList();

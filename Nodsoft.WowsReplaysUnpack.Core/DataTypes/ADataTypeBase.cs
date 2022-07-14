@@ -7,18 +7,18 @@ namespace Nodsoft.WowsReplaysUnpack.Core.DataTypes;
 public abstract class ADataTypeBase
 {
 	protected Version Version { get; }
-	protected DefinitionStore DefinitionStore { get; }
+	protected IDefinitionStore DefinitionStore { get; }
 	protected XmlNode XmlNode { get; }
 
 	public virtual int DataSize { get; protected set; } = Consts.Infinity;
 	public Type ClrType { get; protected set; }
 
-	public ADataTypeBase(Version version, DefinitionStore definitionStore, XmlNode xmlNode,
+	public ADataTypeBase(Version version, IDefinitionStore definitionStore, XmlNode typeOrArgXmlNode,
 		Type clrType)
 	{
 		Version = version;
 		DefinitionStore = definitionStore;
-		XmlNode = xmlNode;
+		XmlNode = typeOrArgXmlNode;
 		ClrType = clrType;
 	}
 
@@ -38,7 +38,7 @@ public abstract class ADataTypeBase
 		if (!forArray)
 			return propertyOrArgumentNode.SelectSingleNodeText("Default");
 
-		return propertyOrArgumentNode.InnerText?.Trim();
+		return propertyOrArgumentNode.TrimmedText();
 	}
 	protected virtual int GetSizeFromHeader(BinaryReader reader)
 		=> reader.ReadByte();

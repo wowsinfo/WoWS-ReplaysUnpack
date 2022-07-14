@@ -12,13 +12,13 @@ public class PropertyDefinition
 	public int DataSize => Math.Min(DataType.DataSize, Consts.Infinity);
 	public XmlNode XmlNode { get; }
 
-	public PropertyDefinition(Version clientVersion, DefinitionStore definitionStore, XmlNode xmlNode)
+	public PropertyDefinition(Version clientVersion, IDefinitionStore definitionStore, XmlNode propertyXmlNode)
 	{
-		XmlNode = xmlNode;
-		Name = xmlNode.Name;
-		DataType = definitionStore.GetDataType(clientVersion, xmlNode.SelectSingleNode("Type")!);
+		XmlNode = propertyXmlNode;
+		Name = propertyXmlNode.Name;
+		DataType = definitionStore.GetDataType(clientVersion, propertyXmlNode.SelectSingleNode("Type")!);
 
-		var flag = xmlNode.SelectSingleNodeText("Flags");
+		var flag = propertyXmlNode.SelectSingleNodeText("Flags");
 		if (!string.IsNullOrEmpty(flag))
 		{
 			Flag = (EntityFlag)Enum.Parse(typeof(EntityFlag), flag);
@@ -27,4 +27,6 @@ public class PropertyDefinition
 
 	public object? GetValue(BinaryReader reader, XmlNode propertyNode)
 		=> DataType.GetValue(reader, propertyNode);
+
+	public override string ToString() => $"{Name} <{DataType.GetType().Name},{DataType.ClrType.Name}>";
 }

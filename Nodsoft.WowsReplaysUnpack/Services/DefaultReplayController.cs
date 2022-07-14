@@ -1,8 +1,10 @@
-﻿using Nodsoft.WowsReplaysUnpack.Core.Definitions;
+﻿using Microsoft.Extensions.Logging;
+using Nodsoft.WowsReplaysUnpack.Core.Definitions;
 using Nodsoft.WowsReplaysUnpack.Core.Entities;
 using Nodsoft.WowsReplaysUnpack.Core.Models;
 using Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 
@@ -12,7 +14,8 @@ public class DefaultReplayController : IReplayController
 {
 	private static readonly Dictionary<string, MethodInfo> _methodSubscriptions;
 	private static readonly Dictionary<string, MethodInfo> _propertyChangedSubscriptions;
-	private readonly DefinitionStore _definitionStore;
+	private readonly IDefinitionStore _definitionStore;
+	private readonly ILogger<Entity> _entityLogger;
 
 	public virtual UnpackedReplay? Replay { get; protected set; }
 
@@ -29,9 +32,11 @@ public class DefaultReplayController : IReplayController
 			.ToDictionary(m => $"{m.Attribute!.EntityName}_{m.Attribute.PropertyName}", m => m.MethodInfo);
 	}
 
-	public DefaultReplayController(DefinitionStore definitionStore)
+	public DefaultReplayController(IDefinitionStore definitionStore,
+		ILogger<Entity> entityLogger)
 	{
 		_definitionStore = definitionStore;
+		_entityLogger = entityLogger;
 	}
 
 	public virtual UnpackedReplay CreateUnpackedReplay(ArenaInfo arenaInfo)
@@ -44,8 +49,8 @@ public class DefaultReplayController : IReplayController
 	{
 		if (networkPacket is MapPacket mapPacket)
 			OnMap(mapPacket);
-		//else if (networkPacket is BasePlayerCreatePacket packet)
-		//	OnBasePlayerCreate(packet);
+		else if (networkPacket is BasePlayerCreatePacket packet)
+			OnBasePlayerCreate(packet);
 	}
 
 	public virtual void OnMap(MapPacket packet)
@@ -54,6 +59,15 @@ public class DefaultReplayController : IReplayController
 	}
 	public virtual void OnBasePlayerCreate(BasePlayerCreatePacket packet)
 	{
+		if (!Replay!.Entities.TryGetValue(packet.EntityId, out var basePlayer))
+			basePlayer = CreateEntity(packet.EntityId, "Avatar");
 
+		using var memoryStream = new MemoryStream(packet.Data);
+		using var binaryReader = new BinaryReader(memoryStream);
+		basePlayer.SetBaseProperties(binaryReader);
+		Replay!.PlayerEntityId = packet.EntityId;
 	}
+
+	protected virtual Entity CreateEntity(int id, string name)
+		=> new(id, name, _definitionStore.GetEntityDefinitionByName(Replay!.ClientVersion, name), _methodSubscriptions, _propertyChangedSubscriptions, _entityLogger);
 }

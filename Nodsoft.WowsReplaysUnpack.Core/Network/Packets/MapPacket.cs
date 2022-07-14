@@ -21,7 +21,7 @@ public class MapPacket : INetworkPacket
 		var nameSize = binaryReader.ReadInt32();
 
 		// I assume this is some useless stuff about the map that we have to skip
-		var stream = binaryReader.BaseStream as MemoryStream;
+		var stream = binaryReader.BaseStream;
 		if (stream.Position + nameSize + 16 * 4 != stream.Length)
 		{
 			_ = binaryReader.ReadBytes(16 * 8 + 4);

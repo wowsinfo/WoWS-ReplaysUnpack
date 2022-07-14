@@ -1,5 +1,4 @@
 ﻿using BenchmarkDotNet.Attributes;
-using Nodsoft.WowsReplaysUnpack.Data;
 using System.IO;
 
 namespace Nodsoft.WowsReplaysUnpack.Console

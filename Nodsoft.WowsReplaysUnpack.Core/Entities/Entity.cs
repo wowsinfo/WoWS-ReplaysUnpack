@@ -16,17 +16,18 @@ public enum EntityType
 }
 public class Entity
 {
-	private readonly ILogger<Entity> _logger;
+	protected ILogger<Entity> Logger { get; }
 
-	private readonly EntityDefinition _entityDefinition;
+	protected EntityDefinition EntityDefinition { get; }
 
-	private readonly Dictionary<string, MethodInfo> _methodSubscriptions;
-	private readonly Dictionary<string, MethodInfo> _propertyChangedSubscriptions;
+	protected Dictionary<string, MethodInfo> MethodSubscriptions { get; }
+	protected Dictionary<string, MethodInfo> PropertyChangedSubscriptions { get; }
 
-	private readonly Dictionary<int, PropertyDefinition> _clientPropertyDefinitions;
-	private readonly Dictionary<int, PropertyDefinition> _clientPropertyInternalDefinitions;
-	private readonly Dictionary<int, PropertyDefinition> _cellPropertyDefinitions;
-	private readonly Dictionary<int, PropertyDefinition> _basePropertyDefinitions;
+	protected PropertyDefinition[] ClientPropertyDefinitions { get; }
+	protected PropertyDefinition[] ClientPropertyInternalDefinitions { get; }
+	protected PropertyDefinition[] CellPropertyDefinitions { get; }
+	protected PropertyDefinition[] BasePropertyDefinitions { get; }
+
 	public int Id { get; }
 	public string Name { get; }
 
@@ -39,7 +40,7 @@ public class Entity
 	public Dictionary<string, object?> CellProperties { get; } = new();
 	public Dictionary<string, object?> BaseProperties { get; } = new();
 	public Dictionary<string, object> VolatileProperties { get; } = new();
-	public List<EntityMethodDefinition> MethodDefinitions => _entityDefinition.ClientMethods;
+	public List<EntityMethodDefinition> MethodDefinitions => EntityDefinition.ClientMethods;
 
 	public Entity(int id, string name, EntityDefinition entityDefinition,
 		Dictionary<string, MethodInfo> methodSubscriptions,
@@ -48,28 +49,25 @@ public class Entity
 	{
 		Id = id;
 		Name = name;
-		_entityDefinition = entityDefinition;
-		_methodSubscriptions = methodSubscriptions;
-		_propertyChangedSubscriptions = propertyChangedSubscriptions;
-		_logger = logger;
-		VolatileProperties = _entityDefinition.VolatileProperties.ToDictionary(kv => kv.Key, kv => kv.Value);
+		EntityDefinition = entityDefinition;
+		MethodSubscriptions = methodSubscriptions;
+		PropertyChangedSubscriptions = propertyChangedSubscriptions;
+		Logger = logger;
+		VolatileProperties = EntityDefinition.VolatileProperties.ToDictionary(kv => kv.Key, kv => kv.Value);
 
-		_clientPropertyDefinitions = GetPropertiesByFlags(EntityFlag.ALL_CLIENTS | EntityFlag.BASE_AND_CLIENT | EntityFlag.OTHER_CLIENTS
+		ClientPropertyDefinitions = EntityDefinition.GetPropertiesByFlags(EntityFlag.ALL_CLIENTS | EntityFlag.BASE_AND_CLIENT | EntityFlag.OTHER_CLIENTS
 			| EntityFlag.OWN_CLIENT | EntityFlag.CELL_PUBLIC_AND_OWN, true);
 
-		_clientPropertyInternalDefinitions = GetPropertiesByFlags(EntityFlag.ALL_CLIENTS | EntityFlag.OTHER_CLIENTS
+		ClientPropertyInternalDefinitions = EntityDefinition.GetPropertiesByFlags(EntityFlag.ALL_CLIENTS | EntityFlag.OTHER_CLIENTS
 			| EntityFlag.OWN_CLIENT | EntityFlag.CELL_PUBLIC_AND_OWN);
 
-		_cellPropertyDefinitions = GetPropertiesByFlags(EntityFlag.CELL_PUBLIC_AND_OWN | EntityFlag.CELL_PUBLIC);
+		CellPropertyDefinitions = EntityDefinition.GetPropertiesByFlags(EntityFlag.CELL_PUBLIC_AND_OWN | EntityFlag.CELL_PUBLIC);
 
-		_basePropertyDefinitions = GetPropertiesByFlags(EntityFlag.BASE_AND_CLIENT);
+		BasePropertyDefinitions = EntityDefinition.GetPropertiesByFlags(EntityFlag.BASE_AND_CLIENT);
 	}
 
-	private Dictionary<int, PropertyDefinition> GetPropertiesByFlags(EntityFlag flags, bool orderBySize = false)
-		=> _entityDefinition.GetPropertiesByFlags(flags, orderBySize).Select((p, i) => new { Index = i, Definition = p }).ToDictionary(p => p.Index, p => p.Definition);
 
-
-	internal void CallClientMethod(int index, BinaryReader reader, object? subscriptionTarget)
+	public virtual void CallClientMethod(int index, BinaryReader reader, object? subscriptionTarget)
 	{
 		if (subscriptionTarget is null)
 			return;
@@ -77,11 +75,11 @@ public class Entity
 		var methodDefinition = MethodDefinitions.ElementAtOrDefault(index);
 		if (methodDefinition is null)
 		{
-			_logger.LogError("Method with index {index} was not found on entity with name {Name} ({Id})", index, Name, Id);
+			Logger.LogError("Method with index {index} was not found on entity with name {Name} ({Id})", index, Name, Id);
 			return;
 		}
 		var hash = $"{Name}_{methodDefinition.Name}";
-		if (_methodSubscriptions.TryGetValue(hash, out var methodInfo))
+		if (MethodSubscriptions.TryGetValue(hash, out var methodInfo))
 		{
 			var methodParameters = methodInfo.GetParameters();
 			if (methodDefinition.Arguments.Count != methodParameters.Length - 1
@@ -89,27 +87,27 @@ public class Entity
 				|| !methodDefinition.Arguments.Select(a => a.DataType.ClrType).SequenceEqual(methodParameters.Skip(1).Select(m => m.ParameterType))
 			)
 			{
-				_logger.LogError("Arguments of method definition and method subscription does not match");
+				Logger.LogError("Arguments of method definition and method subscription does not match");
 				return;
 			}
 			try
 			{
 				var methodArgumentValues = methodDefinition.Arguments.Select(a => a.GetValue(reader))
 					.Prepend(this).ToArray();
-				_logger.LogDebug("Calling method subscription with hash {hash}", hash);
+				Logger.LogDebug("Calling method subscription with hash {hash}", hash);
 				methodInfo.Invoke(subscriptionTarget, methodArgumentValues);
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error when calling method subscription with hash {hash}", hash);
+				Logger.LogError(ex, "Error when calling method subscription with hash {hash}", hash);
 			}
 		}
 	}
 
-	internal void SetClientProperty(int exposedIndex, BinaryReader reader, object? subscriptionTarget)
+	public virtual void SetClientProperty(int exposedIndex, BinaryReader reader, object? subscriptionTarget)
 	{
-		_logger.LogDebug("Setting client property with index {index} on entity {Name} ({id})", exposedIndex, Name, Id);
-		var propertyDefinition = _clientPropertyDefinitions[exposedIndex];
+		Logger.LogDebug("Setting client property with index {index} on entity {Name} ({id})", exposedIndex, Name, Id);
+		var propertyDefinition = ClientPropertyDefinitions[exposedIndex];
 		var propertyValue = propertyDefinition.GetValue(reader, propertyDefinition.XmlNode);
 		ClientProperties[propertyDefinition.Name] = propertyValue;
 
@@ -117,7 +115,7 @@ public class Entity
 			return;
 
 		var hash = $"{Name}_{propertyDefinition.Name}";
-		if (_propertyChangedSubscriptions.TryGetValue(hash, out var methodInfo))
+		if (PropertyChangedSubscriptions.TryGetValue(hash, out var methodInfo))
 		{
 			var methodParameters = methodInfo.GetParameters();
 			if (methodParameters.Length != 2
@@ -125,42 +123,48 @@ public class Entity
 					|| methodParameters[1].ParameterType != propertyDefinition.DataType.ClrType
 			)
 			{
-				_logger.LogError("Arguments of property definition and property changed subscription does not match");
+				Logger.LogError("Arguments of property definition and property changed subscription does not match");
 				return;
 			}
 			try
 			{
-				_logger.LogDebug("Calling property changed subscription with hash {hash}", hash);
+				Logger.LogDebug("Calling property changed subscription with hash {hash}", hash);
 				methodInfo.Invoke(subscriptionTarget, new[] { this, propertyValue });
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Error when calling property changed subscription with hash {hash}", hash);
+				Logger.LogError(ex, "Error when calling property changed subscription with hash {hash}", hash);
 			}
 		}
 	}
 
-	internal void SetClientPropertyInternal(int internalIndex, BinaryReader reader)
+	public virtual void SetClientPropertyInternal(int internalIndex, BinaryReader reader)
 	{
-		_logger.LogDebug("Setting internal client property with index {index} on entity {Name} ({id})", internalIndex, Name, Id);
-		var propertyDefinition = _clientPropertyInternalDefinitions[internalIndex];
+		Logger.LogDebug("Setting internal client property with index {index} on entity {Name} ({id})", internalIndex, Name, Id);
+		var propertyDefinition = ClientPropertyInternalDefinitions[internalIndex];
 		var propertyValue = propertyDefinition.GetValue(reader, propertyDefinition.XmlNode);
 		ClientProperties[propertyDefinition.Name] = propertyValue;
 	}
 
-	internal void SetCellProperty(int internalIndex, BinaryReader reader)
+	public virtual void SetCellProperty(int internalIndex, BinaryReader reader)
 	{
-		_logger.LogDebug("Setting cell property with index {index} on entity {Name} ({id})", internalIndex, Name, Id);
-		var propertyDefinition = _cellPropertyDefinitions[internalIndex];
+		Logger.LogDebug("Setting cell property with index {index} on entity {Name} ({id})", internalIndex, Name, Id);
+		var propertyDefinition = CellPropertyDefinitions[internalIndex];
 		var propertyValue = propertyDefinition.GetValue(reader, propertyDefinition.XmlNode);
 		CellProperties[propertyDefinition.Name] = propertyValue;
 	}
 
-	internal void SetBaseProperty(int internalIndex, BinaryReader reader)
+	public virtual void SetBaseProperty(int internalIndex, BinaryReader reader)
 	{
-		_logger.LogDebug("Setting base property with index {index} on entity {Name} ({id})", internalIndex, Name, Id);
-		var propertyDefinition = _basePropertyDefinitions[internalIndex];
+		Logger.LogDebug("Setting base property with index {index} on entity {Name} ({id})", internalIndex, Name, Id);
+		var propertyDefinition = BasePropertyDefinitions[internalIndex];
 		var propertyValue = propertyDefinition.GetValue(reader, propertyDefinition.XmlNode);
 		BaseProperties[propertyDefinition.Name] = propertyValue;
+	}
+
+	public virtual void SetBaseProperties(BinaryReader reader)
+	{
+		for (int i = 0; i < BasePropertyDefinitions.Length; i++)
+			SetBaseProperty(i, reader);
 	}
 }

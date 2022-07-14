@@ -4,48 +4,54 @@ using System.Reflection;
 using System.Xml;
 
 namespace Nodsoft.WowsReplaysUnpack.Core.Definitions;
-
-public class DefinitionStore
+public interface IDefinitionStore
 {
-	private const string ENTITIES_XML = "entities.xml";
-	private readonly Assembly _assembly;
+	ADataTypeBase GetDataType(Version clientVersion, XmlNode typeOrArgXmlNode);
+	EntityDefinition GetEntityDefinitionByIndex(Version clientVersion, int index);
+	EntityDefinition GetEntityDefinitionByName(Version clientVersion, string name);
+	XmlDocument GetFileAsXml(Version clientVersion, string name, params string[] directoryNames);
+}
+public class DefaultDefinitionStore : IDefinitionStore
+{
+	protected const string ENTITIES_XML = "entities.xml";
+	protected readonly Assembly _assembly;
 
 	/// <summary>
 	/// Version -> Definitions Directory
 	/// </summary>
-	private readonly Dictionary<string, DefinitionDirectory> _directoryCache = new();
+	protected readonly Dictionary<string, DefinitionDirectory> _directoryCache = new();
 
 	/// <summary>
 	/// version_name -> Definition
 	/// </summary>
-	private readonly Dictionary<string, EntityDefinition> _EntityDefinitionCache = new();
+	protected readonly Dictionary<string, EntityDefinition> _EntityDefinitionCache = new();
 
 	/// <summary>
 	/// version_index -> name
 	/// </summary>
-	private readonly Dictionary<string, string> _entityDefinitionIndexNameCache = new();
+	protected readonly Dictionary<string, string> _entityDefinitionIndexNameCache = new();
 	/// <summary>
 	/// version_name -> index
 	/// </summary>
-	private readonly Dictionary<string, int> _entityDefinitionNameIndexCache = new();
+	protected readonly Dictionary<string, int> _entityDefinitionNameIndexCache = new();
 
 	/// <summary>
 	/// Version -> DataType Name -> Data Type Name
 	/// </summary>
-	private readonly Dictionary<string, Dictionary<string, XmlNode>> _typeMappings = new();
+	protected readonly Dictionary<string, Dictionary<string, XmlNode>> _typeMappings = new();
 
-	public DefinitionStore()
+	public DefaultDefinitionStore()
 	{
-		_assembly = typeof(DefinitionStore).Assembly;
+		_assembly = typeof(DefaultDefinitionStore).Assembly;
 	}
 
 	#region EntityDefinitions
-	public EntityDefinition GetEntityDefinitionByIndex(Version clientVersion, int index)
+	public virtual EntityDefinition GetEntityDefinitionByIndex(Version clientVersion, int index)
 	{
 		var name = GetEntityDefinitionNameByIndex(clientVersion, index);
 		return GetEntityDefinitionByName(clientVersion, name);
 	}
-	public EntityDefinition GetEntityDefinitionByName(Version clientVersion, string name)
+	public virtual EntityDefinition GetEntityDefinitionByName(Version clientVersion, string name)
 	{
 		var cacheKey = CacheKey(clientVersion.ToString(), name);
 		if (_EntityDefinitionCache.TryGetValue(cacheKey, out var definition))
@@ -67,7 +73,7 @@ public class DefinitionStore
 	//	return _entityDefinitionNameIndexCache[cacheKey];
 	//}
 
-	private string GetEntityDefinitionNameByIndex(Version clientVersion, int index)
+	protected virtual string GetEntityDefinitionNameByIndex(Version clientVersion, int index)
 	{
 		var cacheKey = CacheKey(clientVersion.ToString(), index.ToString());
 		if (_entityDefinitionIndexNameCache.TryGetValue(cacheKey, out var name))
@@ -78,28 +84,32 @@ public class DefinitionStore
 		return _entityDefinitionIndexNameCache[cacheKey];
 	}
 
-	private Dictionary<int, string> GetEntityIndexes(Version clientVersion)
+	protected virtual Dictionary<int, string> GetEntityIndexes(Version clientVersion)
 	{
-		return GetFileAsXml(clientVersion, ENTITIES_XML).DocumentElement!.SelectSingleNode("ClientServerEntities")!.ChildNodes.Cast<XmlNode>()
+		return GetFileAsXml(clientVersion, ENTITIES_XML).DocumentElement!.SelectSingleNode("ClientServerEntities")!.ChildNodes()
 			.Select((node, index) => new { node, index }).ToDictionary(i => i.index, i => i.node.Name);
 	}
 	#endregion
 
 
-	public XmlDocument GetFileAsXml(Version clientVersion, string name, params string[] directoryNames)
+	public virtual XmlDocument GetFileAsXml(Version clientVersion, string name, params string[] directoryNames)
 	{
 		var directory = FindDirectory(clientVersion, directoryNames);
 		var file = directory.Files.SingleOrDefault(f => f.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
 		if (file is null)
 			throw new Exception("File could not be found");
-
+		var settings = new XmlReaderSettings
+		{
+			IgnoreComments = true
+		};
+		var reader = XmlReader.Create(_assembly.GetManifestResourceStream(file.Path) ?? throw new Exception("File not found"), settings);
 		var xmlDocument = new XmlDocument();
-		xmlDocument.Load(_assembly.GetManifestResourceStream(file.Path) ?? throw new Exception("File not found"));
+		xmlDocument.Load(reader);
 		return xmlDocument;
 	}
 
 
-	private DefinitionDirectory FindDirectory(Version clientVersion, string[] directoryNames)
+	protected virtual DefinitionDirectory FindDirectory(Version clientVersion, string[] directoryNames)
 	{
 		DefinitionDirectory folder = GetRootDirectory(clientVersion);
 		foreach (var folderName in directoryNames)
@@ -112,12 +122,12 @@ public class DefinitionStore
 		return folder;
 	}
 
-	private DefinitionDirectory GetRootDirectory(Version clientVersion)
+	protected virtual DefinitionDirectory GetRootDirectory(Version clientVersion)
 	{
 		if (_directoryCache.TryGetValue(clientVersion.ToString(), out var rootDirectory))
 			return rootDirectory;
 
-		var scriptsDirectory = JoinPath(_assembly.FullName!.GetStringBeforeIndex(','), "Versions", "_" + clientVersion.ToString().Replace('.', '_'), "scripts");
+		var scriptsDirectory = JoinPath(_assembly.FullName!.GetStringBeforeIndex(','), "Definitions", "Versions", "_" + clientVersion.ToString().Replace('.', '_'), "scripts");
 		var fileNames = _assembly.GetManifestResourceNames()
 			.Where(name => name.StartsWith(scriptsDirectory))
 			.ToArray();
@@ -127,11 +137,11 @@ public class DefinitionStore
 		return rootDirectory;
 	}
 
-	public ADataTypeBase GetDataType(Version clientVersion, XmlNode xmlNode)
+	public virtual ADataTypeBase GetDataType(Version clientVersion, XmlNode typeOrArgXmlNode)
 	{
 		var versionString = clientVersion.ToString();
 		if (_typeMappings.ContainsKey(versionString) && _typeMappings.TryGetValue(versionString, out var typeMapping))
-			return GetDataTypeInternal(typeMapping, xmlNode);
+			return GetDataTypeInternal(clientVersion, typeMapping, typeOrArgXmlNode);
 
 		var aliasXml = GetFileAsXml(clientVersion, "alias.xml", "entity_defs");
 		typeMapping = new Dictionary<string, XmlNode>();
@@ -140,21 +150,21 @@ public class DefinitionStore
 			typeMapping[node.Name.Trim()] = node;
 		}
 		_typeMappings.Add(versionString, typeMapping);
-		return GetDataTypeInternal(typeMapping, xmlNode);
+		return GetDataTypeInternal(clientVersion, typeMapping, typeOrArgXmlNode);
 	}
-	private ADataTypeBase GetDataTypeInternal(Dictionary<string, XmlNode> typeMapping, XmlNode xmlNode)
+	protected virtual ADataTypeBase GetDataTypeInternal(Version clientVersion, Dictionary<string, XmlNode> typeMapping, XmlNode typeOrArgXmlNode)
 	{
-		var tagName = xmlNode.Name.Trim();
-		if (typeMapping.TryGetValue(xmlNode.Name.Trim(), out var mappedNode))
-			return GetDataTypeInternal(typeMapping, mappedNode);
-		else if (TypeConsts.SimpleTypeMappings.TryGetValue(tagName, out var dataType))
-			return (ADataTypeBase)Activator.CreateInstance(dataType, xmlNode)!;
+		var typeName = typeOrArgXmlNode.ChildNodes().First(n => n.NodeType is XmlNodeType.Text).TrimmedText();
+		if (typeMapping.TryGetValue(typeName, out var mappedNode))
+			return GetDataTypeInternal(clientVersion, typeMapping, mappedNode);
+		else if (TypeConsts.SimpleTypeMappings.TryGetValue(typeName, out var dataType))
+			return (ADataTypeBase)Activator.CreateInstance(dataType, clientVersion, this, typeOrArgXmlNode)!;
 		else
-			throw new NotSupportedException($"DataType {tagName} is not supported");
+			throw new NotSupportedException($"DataType {typeName} is not supported");
 	}
 
-	private static string JoinPath(params string[] parts)
+	protected static string JoinPath(params string[] parts)
 		=> string.Join(".", parts);
-	private static string CacheKey(params string[] values)
+	protected static string CacheKey(params string[] values)
 		=> string.Join('_', values);
 }

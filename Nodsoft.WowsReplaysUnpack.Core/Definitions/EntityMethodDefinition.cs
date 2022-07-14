@@ -1,4 +1,5 @@
 ﻿using Nodsoft.WowsReplaysUnpack.Core.DataTypes;
+using Nodsoft.WowsReplaysUnpack.Core.Extensions;
 using System.Xml;
 
 namespace Nodsoft.WowsReplaysUnpack.Core.Definitions;
@@ -11,7 +12,7 @@ public class EntityMethodDefinition
 	public int HeaderSize { get; } = DEFAULT_HEADER_SIZE;
 
 	public int DataSize { get; }
-	public EntityMethodDefinition(Version clientVersion, DefinitionStore definitionStore,
+	public EntityMethodDefinition(Version clientVersion, IDefinitionStore definitionStore,
 		XmlNode node)
 	{
 		Name = node.Name;
@@ -20,12 +21,12 @@ public class EntityMethodDefinition
 		var args = node.SelectSingleNode("Args");
 		if (args is not null)
 		{
-			foreach (var arg in args.ChildNodes.Cast<XmlNode>())
+			foreach (var arg in args.ChildNodes())
 				Arguments.Add(new EntityMethodArgumentDefinition(arg, arg.Name, definitionStore.GetDataType(clientVersion, arg)));
 		}
 		else if (node.SelectNodes("Arg") is not null)
 		{
-			foreach (var arg in node.SelectNodes("Arg")!.Cast<XmlNode>())
+			foreach (var arg in node.SelectXmlNodes("Arg"))
 			{
 				Arguments.Add(new EntityMethodArgumentDefinition(arg, null, definitionStore.GetDataType(clientVersion, arg)));
 			}
@@ -34,7 +35,7 @@ public class EntityMethodDefinition
 		// Set Header Size
 		var variableLengthHeaderSizeNode = node.SelectSingleNode("VariableLengthHeaderSize");
 		if (variableLengthHeaderSizeNode is not null)
-			try { HeaderSize = int.Parse(variableLengthHeaderSizeNode.FirstChild!.InnerText.Trim()); }
+			try { HeaderSize = int.Parse(variableLengthHeaderSizeNode.FirstChild!.TrimmedText()); }
 			catch { HeaderSize = DEFAULT_HEADER_SIZE; }
 		else
 			HeaderSize = DEFAULT_HEADER_SIZE;

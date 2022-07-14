@@ -1,34 +1,35 @@
-﻿using System.Xml;
+﻿using Nodsoft.WowsReplaysUnpack.Core.Extensions;
+using System.Xml;
 
 namespace Nodsoft.WowsReplaysUnpack.Core.Definitions;
 
 public abstract class ABaseDefinition
 {
 	protected Version ClientVersion { get; }
-	protected DefinitionStore DefinitionStore { get; }
+	protected IDefinitionStore DefinitionStore { get; }
 	protected List<PropertyDefinition> Properties { get; } = new();
 	public string Name { get; }
 	public string Folder { get; }
 	public Dictionary<string, object> VolatileProperties { get; } = new();
 
-	public ABaseDefinition(Version clientVersion, DefinitionStore definitionStore, string name, string folder)
+	public ABaseDefinition(Version clientVersion, IDefinitionStore definitionStore, string name, string folder)
 	{
 		ClientVersion = clientVersion;
 		DefinitionStore = definitionStore;
 		Name = name;
 		Folder = folder;
-		ParseDefinitionFile(DefinitionStore.GetFileAsXml(ClientVersion, Name, Folder).DocumentElement!);
+		ParseDefinitionFile(DefinitionStore.GetFileAsXml(ClientVersion, Name + ".def", Folder).DocumentElement!);
 	}
 	public PropertyDefinition[] GetPropertiesByFlags(EntityFlag entityFlag, bool orderBySize = false)
 	{
-		var properties = Properties.Where(p => p.Flag.HasFlag(entityFlag));
+		var properties = Properties.Where(p => entityFlag.HasFlag(p.Flag));
 		if (!orderBySize)
 			return properties.ToArray();
 		return properties.OrderBy(p => p.DataSize).ToArray();
 	}
 	protected virtual void ParseDefinitionFile(XmlElement xml)
 	{
-		ParseImplements(xml.SelectNodes("Implements/Interface")!.Cast<XmlNode>().Select(node => node.InnerText.Trim()).ToArray());
+		ParseImplements(xml.SelectXmlNodes("Implements/Interface").Select(node => node.TrimmedText()).ToArray());
 		ParseProperties(xml.SelectSingleNode("Properties"));
 		ParseVolatile();
 	}
@@ -46,7 +47,7 @@ public abstract class ABaseDefinition
 		if (propertiesNode is null)
 			return;
 
-		foreach (var propertyNode in propertiesNode.ChildNodes!.Cast<XmlNode>())
+		foreach (var propertyNode in propertiesNode.ChildNodes())
 		{
 			// when same-named properties are in interface and in definition, game client uses last one
 			var propertyIndex = Properties.FindIndex(x => x.Name == propertyNode.Name);

@@ -9,13 +9,13 @@ using System.Text.RegularExpressions;
 
 namespace Nodsoft.WowsReplaysUnpack.Services;
 
-public class ReplayDataParser : IReplayDataParser
+public class DefaultReplayDataParser : IReplayDataParser
 {
-	private readonly ILogger<ReplayDataParser> _logger;
+	private readonly ILogger<DefaultReplayDataParser> _logger;
 	private readonly MemoryStream _packetBuffer = new();
 	private readonly BinaryReader _packetBufferReader;
 
-	public ReplayDataParser(ILogger<ReplayDataParser> logger)
+	public DefaultReplayDataParser(ILogger<DefaultReplayDataParser> logger)
 	{
 		_logger = logger;
 		_packetBufferReader = new BinaryReader(_packetBuffer);
@@ -44,6 +44,7 @@ public class ReplayDataParser : IReplayDataParser
 
 			// Reset packet buffer, write current data and set position to start
 			_packetBuffer.SetLength(packetSize);
+			_packetBuffer.Seek(0, SeekOrigin.Begin);
 			_packetBuffer.Write(packetData);
 			_packetBuffer.Seek(0, SeekOrigin.Begin);
 

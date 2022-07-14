@@ -8,7 +8,8 @@ public class UnpackedReplay
 	public Version ClientVersion { get; }
 	public ArenaInfo ArenaInfo { get; }
 	public List<JsonElement> ExtraJsonData { get; } = new();
-	public List<Entity> Entities { get; } = new();
+	public Dictionary<int, Entity> Entities { get; } = new();
+	public int? PlayerEntityId { get; set; }
 
 	public UnpackedReplay(ArenaInfo arenaInfo)
 	{

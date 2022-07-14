@@ -10,6 +10,9 @@ public static class StreamExtensions
 		}
 	}
 
-	public static byte[] ReadRemainingBytes(this BinaryReader binaryReader)
-		  => binaryReader.ReadBytes((int)binaryReader.BaseStream.Length - (int)binaryReader.BaseStream.Position);
+	public static byte[] ReadBytesWithHeader(this BinaryReader binaryReader)
+	{
+		var size = binaryReader.ReadUInt32();
+		return binaryReader.ReadBytes((int)size);
+	}
 }

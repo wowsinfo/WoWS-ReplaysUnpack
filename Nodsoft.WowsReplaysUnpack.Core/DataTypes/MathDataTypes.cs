@@ -8,7 +8,7 @@ internal class VectorDataType : ADataTypeBase
 {
 	private readonly int _itemCount;
 
-	protected VectorDataType(Version version, DefinitionStore definitionStore, XmlNode xmlNode, int itemCount)
+	protected VectorDataType(Version version, IDefinitionStore definitionStore, XmlNode xmlNode, int itemCount)
 		: base(version, definitionStore, xmlNode, typeof(float[]))
 	{
 		_itemCount = itemCount;
@@ -46,20 +46,20 @@ internal class VectorDataType : ADataTypeBase
 internal class Vector2DataType : VectorDataType
 {
 	public override int DataSize => 8;
-	public Vector2DataType(Version version, DefinitionStore definitionStore, XmlNode xmlNode) 
+	public Vector2DataType(Version version, IDefinitionStore definitionStore, XmlNode xmlNode) 
 		: base(version, definitionStore, xmlNode, 2) { }
 }
 
 internal class Vector3DataType : VectorDataType
 {
 	public override int DataSize => 12;
-	public Vector3DataType(Version version, DefinitionStore definitionStore, XmlNode xmlNode) 
+	public Vector3DataType(Version version, IDefinitionStore definitionStore, XmlNode xmlNode) 
 		: base(version, definitionStore, xmlNode, 3) { }
 }
 
 internal class Vector4DataType : VectorDataType
 {
 	public override int DataSize => 16;
-	public Vector4DataType(Version version, DefinitionStore definitionStore, XmlNode xmlNode) 
+	public Vector4DataType(Version version, IDefinitionStore definitionStore, XmlNode xmlNode) 
 		: base(version, definitionStore, xmlNode, 4) { }
 }

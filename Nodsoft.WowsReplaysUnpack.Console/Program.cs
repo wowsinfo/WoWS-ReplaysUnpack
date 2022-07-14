@@ -3,8 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Nodsoft.WowsReplaysUnpack;
 using Nodsoft.WowsReplaysUnpack.Core.Models;
-using Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
-using Nodsoft.WowsReplaysUnpack.Data;
 using Nodsoft.WowsReplaysUnpack.Services;
 using System;
 using System.IO;
@@ -57,29 +55,12 @@ Console.ReadKey();
 
 
 #pragma warning disable CS8321
-static string GetGroupString(ReplayMessage msg) => msg.MessageGroup switch
-{
-	"battle_team" => "Team",
-	"battle_common" => "All",
-	_ => ""
-};
-
-public class TestReplay : UnpackedReplay
-{
-	public TestReplay(ArenaInfo arenaInfo) : base(arenaInfo)
-	{
-	}
-}
-public class TestReplayController : DefaultReplayController
-{
-	public new TestReplay? Replay { get; protected set; }
-
-	public override UnpackedReplay CreateUnpackedReplay(ArenaInfo arenaInfo)
-	{
-		Replay = new TestReplay(arenaInfo);
-		return Replay!;
-	}
-}
+//static string GetGroupString(ReplayMessage msg) => msg.MessageGroup switch
+//{
+//	"battle_team" => "Team",
+//	"battle_common" => "All",
+//	_ => ""
+//};
 
 #pragma warning restore CS8321
 

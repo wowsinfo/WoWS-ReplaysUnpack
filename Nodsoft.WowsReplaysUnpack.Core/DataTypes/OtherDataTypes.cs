@@ -1,4 +1,5 @@
 ﻿using Nodsoft.WowsReplaysUnpack.Core.Definitions;
+using Nodsoft.WowsReplaysUnpack.Core.Extensions;
 using Nodsoft.WowsReplaysUnpack.Core.Security;
 using Razorvine.Pickle;
 using System.Collections;
@@ -9,7 +10,7 @@ namespace Nodsoft.WowsReplaysUnpack.Core.DataTypes;
 
 public class BlobDataType : ADataTypeBase
 {
-	public BlobDataType(Version version, DefinitionStore definitionStore, XmlNode xmlNode)
+	public BlobDataType(Version version, IDefinitionStore definitionStore, XmlNode xmlNode)
 		: base(version, definitionStore, xmlNode, typeof(ArrayList))
 	{
 	}
@@ -37,7 +38,7 @@ public class BlobDataType : ADataTypeBase
 
 public class StringDataType : ADataTypeBase
 {
-	public StringDataType(Version version, DefinitionStore definitionStore, XmlNode xmlNode)
+	public StringDataType(Version version, IDefinitionStore definitionStore, XmlNode xmlNode)
 		: base(version, definitionStore, xmlNode, typeof(string))
 	{
 		DataSize = Consts.Infinity;
@@ -49,7 +50,7 @@ public class StringDataType : ADataTypeBase
 
 public class UnicodeStringDataType : ADataTypeBase
 {
-	public UnicodeStringDataType(Version version, DefinitionStore definitionStore, XmlNode xmlNode)
+	public UnicodeStringDataType(Version version, IDefinitionStore definitionStore, XmlNode xmlNode)
 		: base(version, definitionStore, xmlNode, typeof(string))
 	{
 		DataSize = Consts.Infinity;
@@ -61,7 +62,7 @@ public class UnicodeStringDataType : ADataTypeBase
 
 public class MailboxDataType : ADataTypeBase
 {
-	public MailboxDataType(Version version, DefinitionStore definitionStore, XmlNode xmlNode)
+	public MailboxDataType(Version version, IDefinitionStore definitionStore, XmlNode xmlNode)
 		: base(version, definitionStore, xmlNode, typeof(object))
 	{
 	}
@@ -74,7 +75,7 @@ public class MailboxDataType : ADataTypeBase
 public class ChildDataType : ADataTypeBase
 {
 	public ADataTypeBase ChildType { get; set; }
-	public ChildDataType(Version version, DefinitionStore definitionStore, XmlNode xmlNode)
+	public ChildDataType(Version version, IDefinitionStore definitionStore, XmlNode xmlNode)
 		: base(version, definitionStore, xmlNode, typeof(object))
 	{
 		var typeNode = xmlNode.SelectSingleNode("Type");
@@ -96,7 +97,7 @@ public class ArrayDataType : ADataTypeBase
 	public ADataTypeBase ChildType { get; }
 	public bool AllowNone { get; }
 	public int? ItemCount { get; }
-	public ArrayDataType(Version version, DefinitionStore definitionStore, XmlNode xmlNode)
+	public ArrayDataType(Version version, IDefinitionStore definitionStore, XmlNode xmlNode)
 		: base(version, definitionStore, xmlNode, typeof(Array))
 	{
 		var ofNode = xmlNode.SelectSingleNode("of")!;
@@ -104,16 +105,16 @@ public class ArrayDataType : ADataTypeBase
 		var sizeNode = xmlNode.SelectSingleNode("size");
 
 		ChildType = definitionStore.GetDataType(version, ofNode);
-		AllowNone = allowNoneNode is not null && allowNoneNode.InnerText.Trim() == "true";
+		AllowNone = allowNoneNode is not null && allowNoneNode.TrimmedText() == "true";
 		ClrType = Array.CreateInstance(ChildType.ClrType, 0).GetType();
 		if (sizeNode is not null)
 		{
-			ItemCount = int.Parse(sizeNode.InnerText.Trim());
+			ItemCount = int.Parse(sizeNode.TrimmedText());
 			DataSize = ChildType.DataSize * ItemCount.Value;
 		}
 	}
 	public override object? GetDefaultValue(XmlNode propertyOrArgumentNode, bool forArray = false)
-		=> propertyOrArgumentNode.SelectNodes("Default/item")?.Cast<XmlNode>().Select(node => ChildType.GetDefaultValue(node, true)).ToArray();
+		=> propertyOrArgumentNode.SelectXmlNodes("Default/item").Select(node => ChildType.GetDefaultValue(node, true)).ToArray();
 	protected override object? GetValueInternal(BinaryReader reader, XmlNode propertyOrArgumentNode, int headerSize)
 	{
 		var size = ItemCount ?? reader.ReadByte();
@@ -125,14 +126,14 @@ public class FixedDictDataType : ADataTypeBase
 {
 	public bool AllowNone { get; }
 	public Dictionary<string, ADataTypeBase> PropertyTypes { get; set; } = new();
-	public FixedDictDataType(Version version, DefinitionStore definitionStore, XmlNode xmlNode)
+	public FixedDictDataType(Version version, IDefinitionStore definitionStore, XmlNode xmlNode)
 		: base(version, definitionStore, xmlNode, typeof(Dictionary<string, object?>))
 	{
 		var allowNoneNode = xmlNode.SelectSingleNode("AllowNone");
-		AllowNone = allowNoneNode is not null && allowNoneNode.InnerText.Trim() == "true";
+		AllowNone = allowNoneNode is not null && allowNoneNode.TrimmedText() == "true";
 
-		foreach (var propertyNode in xmlNode.SelectNodes("Properties")!.Cast<XmlNode>())
-			PropertyTypes.Add(propertyNode.Name, definitionStore.GetDataType(version, propertyNode));
+		foreach (var propertyNode in xmlNode.SelectSingleNode("Properties")!.ChildNodes())
+			PropertyTypes.Add(propertyNode.Name, definitionStore.GetDataType(version, propertyNode.SelectSingleNode("Type")!));
 
 		if (!AllowNone)
 		{
