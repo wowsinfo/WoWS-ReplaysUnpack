@@ -98,14 +98,12 @@ public class ReplayUnpackerService
 		Decrypt(binaryReader, decryptedStream);
 
 		// Initial stream and reader not used anymore
-		binaryReader.Close();
 		binaryReader.Dispose();
 
 		using MemoryStream replayDataStream = new();
 		Decompress(decryptedStream, replayDataStream);
 
 		// Decrypted stream not used anymore
-		decryptedStream.Close();
 		decryptedStream.Dispose();
 
 

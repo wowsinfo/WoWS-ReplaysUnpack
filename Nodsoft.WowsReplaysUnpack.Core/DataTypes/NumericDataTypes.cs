@@ -15,7 +15,7 @@ internal class Float32DataType : ADataTypeBase
 	}
 
 	public override int DataSize => 4;
-	protected override object? GetValueInternal(BinaryReader reader, XmlNode propertyOrArgumentNode, int headerSize)
+	protected override object? GetValueInternal(BinaryReader reader, XmlNode? propertyOrArgumentNode, int headerSize)
 		=> reader.ReadSingle();
 }
 
@@ -30,7 +30,7 @@ internal class Float64DataType : ADataTypeBase
 	}
 
 	public override int DataSize => 8;
-	protected override object? GetValueInternal(BinaryReader reader, XmlNode propertyOrArgumentNode, int headerSize)
+	protected override object? GetValueInternal(BinaryReader reader, XmlNode? propertyOrArgumentNode, int headerSize)
 		=> reader.ReadDouble();
 }
 
@@ -45,7 +45,7 @@ internal class Int8DataType : ADataTypeBase
 	}
 
 	public override int DataSize => 1;
-	protected override object? GetValueInternal(BinaryReader reader, XmlNode propertyOrArgumentNode, int headerSize)
+	protected override object? GetValueInternal(BinaryReader reader, XmlNode? propertyOrArgumentNode, int headerSize)
 		=> reader.ReadByte();
 }
 
@@ -60,7 +60,7 @@ internal class Int16DataType : ADataTypeBase
 	}
 
 	public override int DataSize => 2;
-	protected override object? GetValueInternal(BinaryReader reader, XmlNode propertyOrArgumentNode, int headerSize)
+	protected override object? GetValueInternal(BinaryReader reader, XmlNode? propertyOrArgumentNode, int headerSize)
 		=> reader.ReadInt16();
 }
 
@@ -75,7 +75,7 @@ internal class Int32DataType : ADataTypeBase
 	}
 
 	public override int DataSize => 4;
-	protected override object? GetValueInternal(BinaryReader reader, XmlNode propertyOrArgumentNode, int headerSize)
+	protected override object? GetValueInternal(BinaryReader reader, XmlNode? propertyOrArgumentNode, int headerSize)
 		=> reader.ReadInt32();
 }
 
@@ -90,7 +90,7 @@ internal class Int64DataType : ADataTypeBase
 	}
 
 	public override int DataSize => 8;
-	protected override object? GetValueInternal(BinaryReader reader, XmlNode propertyOrArgumentNode, int headerSize)
+	protected override object? GetValueInternal(BinaryReader reader, XmlNode? propertyOrArgumentNode, int headerSize)
 		=> reader.ReadInt64();
 }
 
@@ -105,11 +105,11 @@ internal class UInt8DataType : ADataTypeBase
 	}
 
 	public override int DataSize => 1;
-	protected override object? GetValueInternal(BinaryReader reader, XmlNode propertyOrArgumentNode, int headerSize)
+	protected override object? GetValueInternal(BinaryReader reader, XmlNode? propertyOrArgumentNode, int headerSize)
 		=> reader.ReadByte() == 0x1;
 
-	public override object? GetDefaultValue(XmlNode propertyOrArgumentNode, bool forArray = false)
-		=> propertyOrArgumentNode.SelectSingleNodeText("Default")?.ToLower() == "true";
+	public override object? GetDefaultValue(XmlNode? propertyOrArgumentNode, bool forArray = false)
+		=> propertyOrArgumentNode?.SelectSingleNodeText("Default")?.ToLower() == "true";
 }
 
 /// <summary>
@@ -123,7 +123,7 @@ internal class UInt16DataType : ADataTypeBase
 	}
 
 	public override int DataSize => 2;
-	protected override object? GetValueInternal(BinaryReader reader, XmlNode propertyOrArgumentNode, int headerSize)
+	protected override object? GetValueInternal(BinaryReader reader, XmlNode? propertyOrArgumentNode, int headerSize)
 		=> reader.ReadUInt16();
 }
 
@@ -138,7 +138,7 @@ internal class UInt32DataType : ADataTypeBase
 	}
 
 	public override int DataSize => 4;
-	protected override object? GetValueInternal(BinaryReader reader, XmlNode propertyOrArgumentNode, int headerSize)
+	protected override object? GetValueInternal(BinaryReader reader, XmlNode? propertyOrArgumentNode, int headerSize)
 		=> reader.ReadUInt32();
 }
 
@@ -153,6 +153,6 @@ internal class UInt64DataType : ADataTypeBase
 	}
 
 	public override int DataSize => 8;
-	protected override object? GetValueInternal(BinaryReader reader, XmlNode propertyOrArgumentNode, int headerSize)
+	protected override object? GetValueInternal(BinaryReader reader, XmlNode? propertyOrArgumentNode, int headerSize)
 		=> reader.ReadUInt64();
 }

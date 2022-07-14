@@ -22,7 +22,7 @@ public abstract class ADataTypeBase
 		ClrType = clrType;
 	}
 
-	public object? GetValue(BinaryReader reader, XmlNode propertyOrArgumentNode, int headerSize = 1)
+	public object? GetValue(BinaryReader reader, XmlNode? propertyOrArgumentNode, int headerSize = 1)
 	{
 		object? value = GetValueInternal(reader, propertyOrArgumentNode, headerSize);
 		object? _defaultValue = GetDefaultValue(propertyOrArgumentNode);
@@ -32,9 +32,12 @@ public abstract class ADataTypeBase
 		return value ?? _defaultValue;
 	}
 
-	protected abstract object? GetValueInternal(BinaryReader reader, XmlNode propertyOrArgumentNode, int headerSize);
-	public virtual object? GetDefaultValue(XmlNode propertyOrArgumentNode, bool forArray = false)
+	protected abstract object? GetValueInternal(BinaryReader reader, XmlNode? propertyOrArgumentNode, int headerSize);
+	public virtual object? GetDefaultValue(XmlNode? propertyOrArgumentNode, bool forArray = false)
 	{
+		if (propertyOrArgumentNode is null)
+			return null;
+
 		if (!forArray)
 			return propertyOrArgumentNode.SelectSingleNodeText("Default");
 

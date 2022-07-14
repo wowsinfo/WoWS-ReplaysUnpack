@@ -8,7 +8,7 @@ internal static class CVEChecks
 {
 	private static readonly Regex CVE_2022_31265_Regex = new(@"cnt\ssystem|commands", RegexOptions.Compiled | RegexOptions.ExplicitCapture);
 
-	public static void ScanForCVE_2022_31265(byte[] data, string propertyOrArgumentName)
+	public static void ScanForCVE_2022_31265(byte[] data, string? propertyOrArgumentName)
 	{
 		/*
 		* Scan the UTF-8 blobs for any RCE injections.

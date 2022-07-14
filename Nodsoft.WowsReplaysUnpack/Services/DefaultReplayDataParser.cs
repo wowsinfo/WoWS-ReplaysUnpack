@@ -69,7 +69,6 @@ public class DefaultReplayDataParser : IReplayDataParser
 
 	public void Dispose()
 	{
-		_packetBufferReader.Close();
 		_packetBufferReader.Dispose();
 		GC.SuppressFinalize(this);
 	}

@@ -1,4 +1,5 @@
 ﻿using Nodsoft.WowsReplaysUnpack.Core.Extensions;
+using System.Numerics;
 using System.Xml;
 
 namespace Nodsoft.WowsReplaysUnpack.Core.Definitions;
@@ -64,7 +65,7 @@ public abstract class ABaseDefinition
 		foreach (var property in Properties)
 		{
 			if (property.Name == "position")
-				VolatileProperties[property.Name] = new[] { 0f, 0f, 0f };
+				VolatileProperties[property.Name] = new Vector3(0f, 0f, 0f);
 			else if (singleProps.Contains(property.Name))
 				VolatileProperties[property.Name] = 0.0f;
 		}

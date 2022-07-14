@@ -12,8 +12,8 @@ public class CellPlayerCreatePacket : INetworkPacket
 		_ = binaryReader.ReadInt32(); // spaceId;
 		_ = binaryReader.ReadInt16(); // unknown;
 		_ = binaryReader.ReadInt32(); // vehicleId;
-		_ = binaryReader.ReadBytes(12); // position (Vector3, 3xfloat)
-		_ = binaryReader.ReadBytes(12); // direction (Vector3, 3xfloat)
+		_ = binaryReader.ReadVector3(); // position (Vector3, 3xfloat)
+		_ = binaryReader.ReadVector3(); // direction (Vector3, 3xfloat)
 		Data = binaryReader.ReadBytesWithHeader();
 	}
 }

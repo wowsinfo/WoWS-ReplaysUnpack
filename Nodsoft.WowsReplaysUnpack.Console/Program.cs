@@ -5,12 +5,15 @@ using Nodsoft.WowsReplaysUnpack;
 using Nodsoft.WowsReplaysUnpack.Core.Models;
 using Nodsoft.WowsReplaysUnpack.Services;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 Console.WriteLine();
 
-var x = new byte[] { 20, 12, 45, 12 };
-var s = BitConverter.ToInt32(x);
+var x = new[] {"SA"};
+
+var s = x is Array;
 
 
 var serviceCollection = new ServiceCollection();

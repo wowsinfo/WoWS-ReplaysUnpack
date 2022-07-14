@@ -3,6 +3,7 @@ using Nodsoft.WowsReplaysUnpack.Core.Definitions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -42,6 +43,31 @@ public class Entity
 	public Dictionary<string, object> VolatileProperties { get; } = new();
 	public List<EntityMethodDefinition> MethodDefinitions => EntityDefinition.ClientMethods;
 
+
+	public Vector3 Position
+	{
+		get => VolatileProperties.ContainsKey("position") ? (Vector3)VolatileProperties["position"] : new Vector3();
+		set => VolatileProperties["position"] = value;
+	}
+
+	public float Yaw
+	{
+		get => VolatileProperties.ContainsKey("yaw") ? (float)VolatileProperties["yaw"] : 0f;
+		set => VolatileProperties["yaw"] = value;
+	}
+
+	public float Pitch
+	{
+		get => VolatileProperties.ContainsKey("pitch") ? (float)VolatileProperties["pitch"] : 0f;
+		set => VolatileProperties["pitch"] = value;
+	}
+
+	public float Roll
+	{
+		get => VolatileProperties.ContainsKey("roll") ? (float)VolatileProperties["roll"] : 0f;
+		set => VolatileProperties["roll"] = value;
+	}
+
 	public Entity(int id, string name, EntityDefinition entityDefinition,
 		Dictionary<string, MethodInfo> methodSubscriptions,
 		Dictionary<string, MethodInfo> propertyChangedSubscriptions,
@@ -66,6 +92,8 @@ public class Entity
 		BasePropertyDefinitions = EntityDefinition.GetPropertiesByFlags(EntityFlag.BASE_AND_CLIENT);
 	}
 
+	public string GetClientPropertyNameForIndex(int index)
+		=> ClientPropertyDefinitions[index].Name;
 
 	public virtual void CallClientMethod(int index, BinaryReader reader, object? subscriptionTarget)
 	{

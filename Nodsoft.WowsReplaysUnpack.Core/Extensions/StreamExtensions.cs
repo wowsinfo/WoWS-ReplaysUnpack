@@ -1,4 +1,6 @@
-﻿namespace Nodsoft.WowsReplaysUnpack.Core.Extensions;
+﻿using System.Numerics;
+
+namespace Nodsoft.WowsReplaysUnpack.Core.Extensions;
 
 public static class StreamExtensions
 {
@@ -14,5 +16,13 @@ public static class StreamExtensions
 	{
 		var size = binaryReader.ReadUInt32();
 		return binaryReader.ReadBytes((int)size);
+	}
+
+	public static BinaryReader GetBinaryReader(this byte[] data)
+		=> new(new MemoryStream(data));
+
+	public static Vector3 ReadVector3(this BinaryReader binaryReader)
+	{
+		return new Vector3(binaryReader.ReadSingle(), binaryReader.ReadSingle(), binaryReader.ReadSingle());
 	}
 }

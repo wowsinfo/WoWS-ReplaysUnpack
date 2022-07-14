@@ -21,7 +21,7 @@ internal class VectorDataType : ADataTypeBase
 	/// <param name="reader"></param>
 	/// <param name="itemCount"></param>
 	/// <returns></returns>
-	protected override object? GetValueInternal(BinaryReader reader, XmlNode propertyOrArgumentNode, int headerSize)
+	protected override object? GetValueInternal(BinaryReader reader, XmlNode? propertyOrArgumentNode, int headerSize)
 	{
 		// Size of a float value
 		int itemSize = 4;
@@ -36,8 +36,8 @@ internal class VectorDataType : ADataTypeBase
 		return values;
 	}
 
-	public override object? GetDefaultValue(XmlNode propertyOrArgumentNode, bool forArray = false)
-	=> propertyOrArgumentNode.SelectSingleNodeText("Default")?.Split(' ').Select(v => Convert.ToSingle(v)).ToArray();
+	public override object? GetDefaultValue(XmlNode? propertyOrArgumentNode, bool forArray = false)
+	=> propertyOrArgumentNode?.SelectSingleNodeText("Default")?.Split(' ').Select(v => Convert.ToSingle(v)).ToArray();
 }
 
 /// <summary>

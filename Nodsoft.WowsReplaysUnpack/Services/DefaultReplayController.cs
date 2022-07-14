@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Nodsoft.WowsReplaysUnpack.Core.Definitions;
 using Nodsoft.WowsReplaysUnpack.Core.Entities;
+using Nodsoft.WowsReplaysUnpack.Core.Extensions;
 using Nodsoft.WowsReplaysUnpack.Core.Models;
 using Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
 using System.Collections.Generic;
@@ -62,8 +63,7 @@ public class DefaultReplayController : IReplayController
 		if (!Replay!.Entities.TryGetValue(packet.EntityId, out var basePlayer))
 			basePlayer = CreateEntity(packet.EntityId, "Avatar");
 
-		using var memoryStream = new MemoryStream(packet.Data);
-		using var binaryReader = new BinaryReader(memoryStream);
+		using var binaryReader = packet.Data.GetBinaryReader();
 		basePlayer.SetBaseProperties(binaryReader);
 		Replay!.PlayerEntityId = packet.EntityId;
 	}
