@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Nodsoft.WowsReplaysUnpack.Core.Definitions;
+using Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,7 +26,7 @@ public class Entity
 	protected Dictionary<string, MethodInfo> PropertyChangedSubscriptions { get; }
 
 	protected PropertyDefinition[] ClientPropertyDefinitions { get; }
-	protected PropertyDefinition[] ClientPropertyInternalDefinitions { get; }
+	protected PropertyDefinition[] InternalClientPropertyDefinitions { get; }
 	protected PropertyDefinition[] CellPropertyDefinitions { get; }
 	protected PropertyDefinition[] BasePropertyDefinitions { get; }
 
@@ -35,7 +36,7 @@ public class Entity
 	/// <summary>
 	/// Is in Area of Influence (visible area)
 	/// </summary>
-	public bool IsInAoI { get; }
+	public bool IsInAoI { get; set; }
 
 	public Dictionary<string, object?> ClientProperties { get; } = new();
 	public Dictionary<string, object?> CellProperties { get; } = new();
@@ -44,7 +45,7 @@ public class Entity
 	public List<EntityMethodDefinition> MethodDefinitions => EntityDefinition.ClientMethods;
 
 
-	public Vector3 Position
+	public Vector3 VPosition
 	{
 		get => VolatileProperties.ContainsKey("position") ? (Vector3)VolatileProperties["position"] : new Vector3();
 		set => VolatileProperties["position"] = value;
@@ -84,7 +85,7 @@ public class Entity
 		ClientPropertyDefinitions = EntityDefinition.GetPropertiesByFlags(EntityFlag.ALL_CLIENTS | EntityFlag.BASE_AND_CLIENT | EntityFlag.OTHER_CLIENTS
 			| EntityFlag.OWN_CLIENT | EntityFlag.CELL_PUBLIC_AND_OWN, true);
 
-		ClientPropertyInternalDefinitions = EntityDefinition.GetPropertiesByFlags(EntityFlag.ALL_CLIENTS | EntityFlag.OTHER_CLIENTS
+		InternalClientPropertyDefinitions = EntityDefinition.GetPropertiesByFlags(EntityFlag.ALL_CLIENTS | EntityFlag.OTHER_CLIENTS
 			| EntityFlag.OWN_CLIENT | EntityFlag.CELL_PUBLIC_AND_OWN);
 
 		CellPropertyDefinitions = EntityDefinition.GetPropertiesByFlags(EntityFlag.CELL_PUBLIC_AND_OWN | EntityFlag.CELL_PUBLIC);
@@ -166,10 +167,10 @@ public class Entity
 		}
 	}
 
-	public virtual void SetClientPropertyInternal(int internalIndex, BinaryReader reader)
+	public virtual void SetInternalClientProperty(int internalIndex, BinaryReader reader)
 	{
 		Logger.LogDebug("Setting internal client property with index {index} on entity {Name} ({id})", internalIndex, Name, Id);
-		var propertyDefinition = ClientPropertyInternalDefinitions[internalIndex];
+		var propertyDefinition = InternalClientPropertyDefinitions[internalIndex];
 		var propertyValue = propertyDefinition.GetValue(reader, propertyDefinition.XmlNode);
 		ClientProperties[propertyDefinition.Name] = propertyValue;
 	}
@@ -195,4 +196,21 @@ public class Entity
 		for (int i = 0; i < BasePropertyDefinitions.Length; i++)
 			SetBaseProperty(i, reader);
 	}
+
+	public virtual void SetInternalClientProperties(BinaryReader reader)
+	{
+		for (int i = 0; i < InternalClientPropertyDefinitions.Length; i++)
+			SetInternalClientProperty(i, reader);
+	}
+
+	public void SetPosition(PositionContainer position)
+	{
+		VPosition = position.Position;
+		Yaw = position.Yaw;
+		Pitch = position.Pitch;
+		Roll = position.Roll;
+	}
+
+	public PositionContainer GetPosition()
+		=> new(VPosition, Yaw, Pitch, Roll);
 }

@@ -51,17 +51,17 @@ public class DefaultReplayDataParser : IReplayDataParser
 			yield return packetType switch
 			{
 				NetworkPacketTypes.BasePlayerCreate => new BasePlayerCreatePacket(_packetBufferReader),
-				//NetworkPacketTypes.CellPlayerCreate => throw new NotImplementedException(),
-				//NetworkPacketTypes.EntityControl => throw new NotImplementedException(),
-				//NetworkPacketTypes.EntityEnter => throw new NotImplementedException(),
-				//NetworkPacketTypes.EntityLeave => throw new NotImplementedException(),
-				//NetworkPacketTypes.EntityCreate => throw new NotImplementedException(),
-				//NetworkPacketTypes.EntityProperty => throw new NotImplementedException(),
-				//NetworkPacketTypes.EntityMethod => throw new NotImplementedException(),
+				NetworkPacketTypes.CellPlayerCreate => new CellPlayerCreatePacket(_packetBufferReader),
+				NetworkPacketTypes.EntityControl => new EntityControlPacket(_packetBufferReader),
+				NetworkPacketTypes.EntityEnter => new EntityEnterPacket(_packetBufferReader),
+				NetworkPacketTypes.EntityLeave => new EntityLeavePacket(_packetBufferReader),
+				NetworkPacketTypes.EntityCreate => new EntityCreatePacket(_packetBufferReader),
+				NetworkPacketTypes.EntityProperty => new EntityPropertyPacket(_packetBufferReader),
+				NetworkPacketTypes.EntityMethod => new EntityMethodPacket(_packetBufferReader),
 				NetworkPacketTypes.Map => new MapPacket(_packetBufferReader),
-				//NetworkPacketTypes.NestedProperty => throw new NotImplementedException(),
-				//NetworkPacketTypes.Position => throw new NotImplementedException(),
-				//NetworkPacketTypes.PlayerPosition => throw new NotImplementedException(),
+				NetworkPacketTypes.NestedProperty => new NestedPropertyPacket(_packetBufferReader),
+				NetworkPacketTypes.Position => new PositionPacket(_packetBufferReader),
+				NetworkPacketTypes.PlayerPosition => new PlayerPositionPacket(_packetBufferReader),
 				_ => new UnknownPacket(_packetBufferReader)
 			};
 		}

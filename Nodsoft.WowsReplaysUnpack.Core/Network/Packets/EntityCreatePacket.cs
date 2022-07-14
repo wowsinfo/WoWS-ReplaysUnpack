@@ -2,7 +2,7 @@
 
 namespace Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
 
-internal class EntityCreatePacket : INetworkPacket
+public class EntityCreatePacket : INetworkPacket
 {
 	public int EntityId { get; }
 	public short Type { get; }
@@ -18,7 +18,6 @@ internal class EntityCreatePacket : INetworkPacket
 		SpaceId = binaryReader.ReadInt32();
 		_ = binaryReader.ReadVector3(); // position
 		_ = binaryReader.ReadVector3(); // direction
-		_ = binaryReader.ReadInt32(); // unknown
 		Data = binaryReader.ReadBytesWithHeader();
 	}
 }
