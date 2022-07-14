@@ -39,7 +39,7 @@ public class NestedPropertyPacket : INetworkPacket
 			var maxBits = BitReader.BitsRequired(length);
 			var propertyIndex = bitReader.ReadBits(maxBits);
 			if (obj is FixedDictionary __d)
-				obj = __d.ElementAt(propertyIndex);
+				obj = __d.ElementValueAt(propertyIndex);
 			else if (obj is FixedList __a)
 				obj = __a.ElementAt(propertyIndex);
 			else if (obj is Entity __e)
@@ -68,7 +68,7 @@ public class NestedPropertyPacket : INetworkPacket
 				maxBits = BitReader.BitsRequired(list.Length + 1);
 
 			var index = bitReader.ReadBits(maxBits);
-			var endIndex = IsSlice ? BitReader.BitsRequired(maxBits) : 0;
+			var endIndex = IsSlice ? bitReader.ReadBits(maxBits) : 0;
 
 			var data = bitReader.ReadRest();
 			if (data.Length <= 0)
@@ -88,9 +88,11 @@ public class NestedPropertyPacket : INetworkPacket
 
 			if (IsSlice)
 				foreach (var newElementValueIndex in Enumerable.Range(index, newElementValues.Count))
-					list[newElementValueIndex] = newElementValues[newElementValueIndex - index];
+				{
+					list.AddAndExtend(newElementValueIndex, newElementValues[newElementValueIndex - index]);
+				}
 			else
-				list[index] = newElementValues[0];
+				list.AddAndExtend(index, newElementValues[0]);
 		}
 	}
 }

@@ -10,13 +10,11 @@ public class UnpackedReplay
 	public List<JsonElement> ExtraJsonData { get; } = new();
 	public Dictionary<int, Entity> Entities { get; } = new();
 	public int? PlayerEntityId { get; set; }
+	public string? MapName { get; set; }
 
 	public UnpackedReplay(ArenaInfo arenaInfo)
 	{
 		ArenaInfo = arenaInfo;
 		ClientVersion = Version.Parse(string.Join('.', ArenaInfo.ClientVersionFromExe.Split(',')[..3]));
 	}
-	//public ReplayMetadata ReplayMetadata { get; }
-	//public List<ReplayMessage> ChatMessages { get; init; } = new();
-	//public List<ReplayPlayer> ReplayPlayers { get; init; } = new();
 }

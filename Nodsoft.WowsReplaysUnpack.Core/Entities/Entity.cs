@@ -213,4 +213,6 @@ public class Entity
 
 	public PositionContainer GetPosition()
 		=> new(VPosition, Yaw, Pitch, Roll);
+
+	public override string ToString() => $"{Name} <{Id}>";
 }

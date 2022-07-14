@@ -2,19 +2,11 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Nodsoft.WowsReplaysUnpack;
-using Nodsoft.WowsReplaysUnpack.Core.Models;
 using Nodsoft.WowsReplaysUnpack.Services;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
 Console.WriteLine();
-
-var x = new[] {"SA"};
-
-var s = x is Array;
-
 
 var serviceCollection = new ServiceCollection();
 serviceCollection.AddReplayUnpacker();
@@ -30,7 +22,7 @@ var replayUnpacker = services.GetRequiredService<ReplayUnpackerService>();
 
 FileStream fs = File.OpenRead(Path.Join(Directory.GetCurrentDirectory(), "sampleData", "0.11.2.wowsreplay"));
 //FileStream fs = File.OpenRead(Path.Join(Directory.GetCurrentDirectory(), "../../../..", "Nodsoft.WowsReplaysUnpack.Tests", "Samples", "payload.wowsreplay"));
-replayUnpacker.Unpack(fs);
+var x = replayUnpacker.Unpack(fs);
 //BenchmarkRunner.Run<UnpackBenchmark>(DefaultConfig.Instance
 //	.WithOptions(ConfigOptions.DisableOptimizationsValidator)
 //	.AddJob(Job.Default.WithRuntime(CoreRuntime.Core50))

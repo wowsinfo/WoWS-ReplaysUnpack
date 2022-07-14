@@ -51,7 +51,7 @@ public static class ServiceCollectionExtensions
 
 		public ReplayUnpackerBuilder WithDefinitionStore<T>() where T : class, IDefinitionStore
 		{
-			_services.AddScoped<IDefinitionStore, T>();
+			_services.AddSingleton<IDefinitionStore, T>();
 			return this;
 		}
 	}

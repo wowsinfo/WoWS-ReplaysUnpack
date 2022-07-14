@@ -21,9 +21,8 @@ public class BitReader : BinaryReader
 
 	public static IEnumerable<short> StringBits(byte value)
 	{
-		foreach (var bit in value.ToString().Select(s => short.Parse(s.ToString())))
-			foreach (var i in Enumerable.Range(0, 8).Reverse().Cast<short>())
-				yield return (short)((bit >> i) & 1);
+			foreach (var i in Enumerable.Range(0, 8).Reverse())
+				yield return (short)((value >> i) & 1);
 	}
 
 	public byte ReadNextByte() => ReadByte();
