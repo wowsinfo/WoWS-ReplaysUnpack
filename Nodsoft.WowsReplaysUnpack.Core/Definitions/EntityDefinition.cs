@@ -4,13 +4,14 @@ namespace Nodsoft.WowsReplaysUnpack.Core.Definitions;
 
 public class EntityDefinition : ABaseDefinition
 {
+	private const string ENTITY_DEFS = "entity_defs";
 
 	public List<EntityMethodDefinition> CellMethods { get; set; } = new();
 	public List<EntityMethodDefinition> BaseMethods { get; set; } = new();
 	public List<EntityMethodDefinition> ClientMethods { get; set; } = new();
 
 	public EntityDefinition(Version clientVersion, DefinitionStore definitionStore,
-		string name, string folder) : base(clientVersion, definitionStore, name, folder)
+		string name) : base(clientVersion, definitionStore, name, ENTITY_DEFS)
 	{
 	}
 

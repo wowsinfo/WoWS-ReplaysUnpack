@@ -10,22 +10,22 @@ namespace Nodsoft.WowsReplaysUnpack.Core.DataTypes;
 public class BlobDataType : ADataTypeBase
 {
 	public BlobDataType(Version version, DefinitionStore definitionStore, XmlNode xmlNode)
-		: base(version, definitionStore, xmlNode)
+		: base(version, definitionStore, xmlNode, typeof(ArrayList))
 	{
 	}
 
 	protected override object? GetValueInternal(BinaryReader reader, XmlNode propertyOrArgumentNode, int headerSize)
 	{
-		var bytes = reader.ReadBytes(GetActualDataSize(reader));
+		var bytes = reader.ReadBytes(GetSizeFromHeader(reader));
 		CVEChecks.ScanForCVE_2022_31265(bytes, XmlNode.Name);
 		using Unpickler unpickler = new();
 		using MemoryStream buffer = new(bytes);
 		return unpickler.load(buffer) as ArrayList;
 	}
 
-	protected override int GetActualDataSize(BinaryReader reader)
+	protected override int GetSizeFromHeader(BinaryReader reader)
 	{
-		var size = base.GetActualDataSize(reader);
+		var size = base.GetSizeFromHeader(reader);
 		if (size is 0xff) // 255
 		{
 			size = reader.ReadInt16();
@@ -38,31 +38,31 @@ public class BlobDataType : ADataTypeBase
 public class StringDataType : ADataTypeBase
 {
 	public StringDataType(Version version, DefinitionStore definitionStore, XmlNode xmlNode)
-		: base(version, definitionStore, xmlNode)
+		: base(version, definitionStore, xmlNode, typeof(string))
 	{
 		DataSize = Consts.Infinity;
 	}
 
 	protected override object? GetValueInternal(BinaryReader reader, XmlNode propertyOrArgumentNode, int headerSize)
-		=> Encoding.UTF8.GetString(reader.ReadBytes(GetActualDataSize(reader)));
+		=> Encoding.UTF8.GetString(reader.ReadBytes(GetSizeFromHeader(reader)));
 }
 
 public class UnicodeStringDataType : ADataTypeBase
 {
 	public UnicodeStringDataType(Version version, DefinitionStore definitionStore, XmlNode xmlNode)
-		: base(version, definitionStore, xmlNode)
+		: base(version, definitionStore, xmlNode, typeof(string))
 	{
 		DataSize = Consts.Infinity;
 	}
 
 	protected override object? GetValueInternal(BinaryReader reader, XmlNode propertyOrArgumentNode, int headerSize)
-		=> Encoding.Unicode.GetString(reader.ReadBytes(GetActualDataSize(reader)));
+		=> Encoding.Unicode.GetString(reader.ReadBytes(GetSizeFromHeader(reader)));
 }
 
 public class MailboxDataType : ADataTypeBase
 {
 	public MailboxDataType(Version version, DefinitionStore definitionStore, XmlNode xmlNode)
-		: base(version, definitionStore, xmlNode)
+		: base(version, definitionStore, xmlNode, typeof(object))
 	{
 	}
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
@@ -71,14 +71,15 @@ public class MailboxDataType : ADataTypeBase
 		=> "<Mailbox>";
 }
 
-public class UserType : ADataTypeBase
+public class ChildDataType : ADataTypeBase
 {
 	public ADataTypeBase ChildType { get; set; }
-	public UserType(Version version, DefinitionStore definitionStore, XmlNode xmlNode)
-		: base(version, definitionStore, xmlNode)
+	public ChildDataType(Version version, DefinitionStore definitionStore, XmlNode xmlNode)
+		: base(version, definitionStore, xmlNode, typeof(object))
 	{
 		var typeNode = xmlNode.SelectSingleNode("Type");
 		ChildType = typeNode is null ? new BlobDataType(version, definitionStore, xmlNode) : definitionStore.GetDataType(version, typeNode);
+		ClrType = ChildType.ClrType;
 	}
 
 	protected override object? GetValueInternal(BinaryReader reader, XmlNode propertyOrArgumentNode, int headerSize)
@@ -87,5 +88,71 @@ public class UserType : ADataTypeBase
 		if (ChildType is not BlobDataType)
 			_ = reader.ReadBytes(headerSize);
 		return ChildType.GetValue(reader, propertyOrArgumentNode, headerSize);
+	}
+}
+
+public class ArrayDataType : ADataTypeBase
+{
+	public ADataTypeBase ChildType { get; }
+	public bool AllowNone { get; }
+	public int? ItemCount { get; }
+	public ArrayDataType(Version version, DefinitionStore definitionStore, XmlNode xmlNode)
+		: base(version, definitionStore, xmlNode, typeof(Array))
+	{
+		var ofNode = xmlNode.SelectSingleNode("of")!;
+		var allowNoneNode = xmlNode.SelectSingleNode("AllowNone");
+		var sizeNode = xmlNode.SelectSingleNode("size");
+
+		ChildType = definitionStore.GetDataType(version, ofNode);
+		AllowNone = allowNoneNode is not null && allowNoneNode.InnerText.Trim() == "true";
+		ClrType = Array.CreateInstance(ChildType.ClrType, 0).GetType();
+		if (sizeNode is not null)
+		{
+			ItemCount = int.Parse(sizeNode.InnerText.Trim());
+			DataSize = ChildType.DataSize * ItemCount.Value;
+		}
+	}
+	public override object? GetDefaultValue(XmlNode propertyOrArgumentNode, bool forArray = false)
+		=> propertyOrArgumentNode.SelectNodes("Default/item")?.Cast<XmlNode>().Select(node => ChildType.GetDefaultValue(node, true)).ToArray();
+	protected override object? GetValueInternal(BinaryReader reader, XmlNode propertyOrArgumentNode, int headerSize)
+	{
+		var size = ItemCount ?? reader.ReadByte();
+		return Enumerable.Range(0, size).Select(_ => ChildType.GetValue(reader, propertyOrArgumentNode, headerSize)).ToArray();
+	}
+}
+
+public class FixedDictDataType : ADataTypeBase
+{
+	public bool AllowNone { get; }
+	public Dictionary<string, ADataTypeBase> PropertyTypes { get; set; } = new();
+	public FixedDictDataType(Version version, DefinitionStore definitionStore, XmlNode xmlNode)
+		: base(version, definitionStore, xmlNode, typeof(Dictionary<string, object?>))
+	{
+		var allowNoneNode = xmlNode.SelectSingleNode("AllowNone");
+		AllowNone = allowNoneNode is not null && allowNoneNode.InnerText.Trim() == "true";
+
+		foreach (var propertyNode in xmlNode.SelectNodes("Properties")!.Cast<XmlNode>())
+			PropertyTypes.Add(propertyNode.Name, definitionStore.GetDataType(version, propertyNode));
+
+		if (!AllowNone)
+		{
+			DataSize = PropertyTypes.Select(p => p.Value.DataSize).Sum();
+		}
+	}
+
+	protected override object? GetValueInternal(BinaryReader reader, XmlNode propertyOrArgumentNode, int headerSize)
+	{
+		var originalStreamPosition = reader.BaseStream.Position;
+		if (AllowNone)
+		{
+			var flag = reader.ReadByte();
+			if (flag == 0x00) // empty dict
+				return null;
+			else if (flag == 0x01) { } // non empty dict
+			else
+				reader.BaseStream.Seek(originalStreamPosition, SeekOrigin.Begin);
+		}
+
+		return PropertyTypes.ToDictionary(kv => kv.Key, kv => kv.Value.GetValue(reader, propertyOrArgumentNode, headerSize));
 	}
 }

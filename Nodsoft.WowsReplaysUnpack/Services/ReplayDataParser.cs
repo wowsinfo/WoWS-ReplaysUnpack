@@ -42,10 +42,10 @@ public class ReplayDataParser : IReplayDataParser
 
 			byte[] packetData = binaryReader.ReadBytes((int)packetSize);
 
-				// Reset packet buffer, write current data and set position to start
-				_packetBuffer.SetLength(packetSize);
-				_packetBuffer.Write(packetData);
-				_packetBuffer.Seek(0, SeekOrigin.Begin);
+			// Reset packet buffer, write current data and set position to start
+			_packetBuffer.SetLength(packetSize);
+			_packetBuffer.Write(packetData);
+			_packetBuffer.Seek(0, SeekOrigin.Begin);
 
 			yield return packetType switch
 			{
@@ -57,7 +57,7 @@ public class ReplayDataParser : IReplayDataParser
 				//NetworkPacketTypes.EntityCreate => throw new NotImplementedException(),
 				//NetworkPacketTypes.EntityProperty => throw new NotImplementedException(),
 				//NetworkPacketTypes.EntityMethod => throw new NotImplementedException(),
-				//NetworkPacketTypes.Map => throw new NotImplementedException(),
+				NetworkPacketTypes.Map => new MapPacket(_packetBufferReader),
 				//NetworkPacketTypes.NestedProperty => throw new NotImplementedException(),
 				//NetworkPacketTypes.Position => throw new NotImplementedException(),
 				//NetworkPacketTypes.PlayerPosition => throw new NotImplementedException(),

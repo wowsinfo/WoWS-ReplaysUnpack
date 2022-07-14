@@ -9,7 +9,7 @@ internal class VectorDataType : ADataTypeBase
 	private readonly int _itemCount;
 
 	protected VectorDataType(Version version, DefinitionStore definitionStore, XmlNode xmlNode, int itemCount)
-		: base(version, definitionStore, xmlNode)
+		: base(version, definitionStore, xmlNode, typeof(float[]))
 	{
 		_itemCount = itemCount;
 	}
@@ -36,7 +36,7 @@ internal class VectorDataType : ADataTypeBase
 		return values;
 	}
 
-	protected override object? GetDefaultValue(XmlNode propertyOrArgumentNode)
+	public override object? GetDefaultValue(XmlNode propertyOrArgumentNode, bool forArray = false)
 	=> propertyOrArgumentNode.SelectSingleNodeText("Default")?.Split(' ').Select(v => Convert.ToSingle(v)).ToArray();
 }
 

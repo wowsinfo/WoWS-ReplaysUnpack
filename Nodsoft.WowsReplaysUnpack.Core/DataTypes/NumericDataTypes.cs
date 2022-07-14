@@ -10,7 +10,7 @@ namespace Nodsoft.WowsReplaysUnpack.Core.DataTypes;
 internal class Float32DataType : ADataTypeBase
 {
 	public Float32DataType(Version version, DefinitionStore definitionStore, XmlNode xmlNode)
-		: base(version, definitionStore, xmlNode)
+		: base(version, definitionStore, xmlNode, typeof(float))
 	{
 	}
 
@@ -25,7 +25,7 @@ internal class Float32DataType : ADataTypeBase
 internal class Float64DataType : ADataTypeBase
 {
 	public Float64DataType(Version version, DefinitionStore definitionStore, XmlNode xmlNode)
-		: base(version, definitionStore, xmlNode)
+		: base(version, definitionStore, xmlNode, typeof(double))
 	{
 	}
 
@@ -40,7 +40,7 @@ internal class Float64DataType : ADataTypeBase
 internal class Int8DataType : ADataTypeBase
 {
 	public Int8DataType(Version version, DefinitionStore definitionStore, XmlNode xmlNode)
-		: base(version, definitionStore, xmlNode)
+		: base(version, definitionStore, xmlNode, typeof(byte))
 	{
 	}
 
@@ -55,7 +55,7 @@ internal class Int8DataType : ADataTypeBase
 internal class Int16DataType : ADataTypeBase
 {
 	public Int16DataType(Version version, DefinitionStore definitionStore, XmlNode xmlNode)
-		: base(version, definitionStore, xmlNode)
+		: base(version, definitionStore, xmlNode, typeof(short))
 	{
 	}
 
@@ -70,7 +70,7 @@ internal class Int16DataType : ADataTypeBase
 internal class Int32DataType : ADataTypeBase
 {
 	public Int32DataType(Version version, DefinitionStore definitionStore, XmlNode xmlNode)
-		: base(version, definitionStore, xmlNode)
+		: base(version, definitionStore, xmlNode, typeof(int))
 	{
 	}
 
@@ -85,7 +85,7 @@ internal class Int32DataType : ADataTypeBase
 internal class Int64DataType : ADataTypeBase
 {
 	public Int64DataType(Version version, DefinitionStore definitionStore, XmlNode xmlNode)
-		: base(version, definitionStore, xmlNode)
+		: base(version, definitionStore, xmlNode, typeof(long))
 	{
 	}
 
@@ -100,7 +100,7 @@ internal class Int64DataType : ADataTypeBase
 internal class UInt8DataType : ADataTypeBase
 {
 	public UInt8DataType(Version version, DefinitionStore definitionStore, XmlNode xmlNode)
-		: base(version, definitionStore, xmlNode)
+		: base(version, definitionStore, xmlNode, typeof(bool))
 	{
 	}
 
@@ -108,7 +108,7 @@ internal class UInt8DataType : ADataTypeBase
 	protected override object? GetValueInternal(BinaryReader reader, XmlNode propertyOrArgumentNode, int headerSize)
 		=> reader.ReadByte() == 0x1;
 
-	protected override object? GetDefaultValue(XmlNode propertyOrArgumentNode)
+	public override object? GetDefaultValue(XmlNode propertyOrArgumentNode, bool forArray = false)
 		=> propertyOrArgumentNode.SelectSingleNodeText("Default")?.ToLower() == "true";
 }
 
@@ -118,7 +118,7 @@ internal class UInt8DataType : ADataTypeBase
 internal class UInt16DataType : ADataTypeBase
 {
 	public UInt16DataType(Version version, DefinitionStore definitionStore, XmlNode xmlNode)
-		: base(version, definitionStore, xmlNode)
+		: base(version, definitionStore, xmlNode, typeof(ushort))
 	{
 	}
 
@@ -133,7 +133,7 @@ internal class UInt16DataType : ADataTypeBase
 internal class UInt32DataType : ADataTypeBase
 {
 	public UInt32DataType(Version version, DefinitionStore definitionStore, XmlNode xmlNode)
-		: base(version, definitionStore, xmlNode)
+		: base(version, definitionStore, xmlNode, typeof(uint))
 	{
 	}
 
@@ -148,7 +148,7 @@ internal class UInt32DataType : ADataTypeBase
 internal class UInt64DataType : ADataTypeBase
 {
 	public UInt64DataType(Version version, DefinitionStore definitionStore, XmlNode xmlNode)
-		: base(version, definitionStore, xmlNode)
+		: base(version, definitionStore, xmlNode, typeof(ulong))
 	{
 	}
 

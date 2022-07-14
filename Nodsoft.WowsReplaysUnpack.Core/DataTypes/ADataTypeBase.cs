@@ -11,12 +11,15 @@ public abstract class ADataTypeBase
 	protected XmlNode XmlNode { get; }
 
 	public virtual int DataSize { get; protected set; } = Consts.Infinity;
+	public Type ClrType { get; protected set; }
 
-	public ADataTypeBase(Version version, DefinitionStore definitionStore, XmlNode xmlNode)
+	public ADataTypeBase(Version version, DefinitionStore definitionStore, XmlNode xmlNode,
+		Type clrType)
 	{
 		Version = version;
 		DefinitionStore = definitionStore;
 		XmlNode = xmlNode;
+		ClrType = clrType;
 	}
 
 	public object? GetValue(BinaryReader reader, XmlNode propertyOrArgumentNode, int headerSize = 1)
@@ -30,8 +33,13 @@ public abstract class ADataTypeBase
 	}
 
 	protected abstract object? GetValueInternal(BinaryReader reader, XmlNode propertyOrArgumentNode, int headerSize);
-	protected virtual object? GetDefaultValue(XmlNode propertyOrArgumentNode)
-		=> propertyOrArgumentNode.SelectSingleNodeText("Default");
-	protected virtual int GetActualDataSize(BinaryReader reader)
+	public virtual object? GetDefaultValue(XmlNode propertyOrArgumentNode, bool forArray = false)
+	{
+		if (!forArray)
+			return propertyOrArgumentNode.SelectSingleNodeText("Default");
+
+		return propertyOrArgumentNode.InnerText?.Trim();
+	}
+	protected virtual int GetSizeFromHeader(BinaryReader reader)
 		=> reader.ReadByte();
 }

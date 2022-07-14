@@ -10,8 +10,11 @@ public class PropertyDefinition
 	public ADataTypeBase DataType { get; }
 	public EntityFlag Flag { get; } = EntityFlag.CELL_PRIVATE;
 	public int DataSize => Math.Min(DataType.DataSize, Consts.Infinity);
+	public XmlNode XmlNode { get; }
+
 	public PropertyDefinition(Version clientVersion, DefinitionStore definitionStore, XmlNode xmlNode)
 	{
+		XmlNode = xmlNode;
 		Name = xmlNode.Name;
 		DataType = definitionStore.GetDataType(clientVersion, xmlNode.SelectSingleNode("Type")!);
 

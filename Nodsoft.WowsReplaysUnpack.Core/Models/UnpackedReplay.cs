@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using Nodsoft.WowsReplaysUnpack.Core.Entities;
+using System.Text.Json;
 
 namespace Nodsoft.WowsReplaysUnpack.Core.Models;
 
@@ -6,7 +7,8 @@ public class UnpackedReplay
 {
 	public Version ClientVersion { get; }
 	public ArenaInfo ArenaInfo { get; }
-	public List<JsonElement> ExtraJsonData { get; internal set; } = new();
+	public List<JsonElement> ExtraJsonData { get; } = new();
+	public List<Entity> Entities { get; } = new();
 
 	public UnpackedReplay(ArenaInfo arenaInfo)
 	{
