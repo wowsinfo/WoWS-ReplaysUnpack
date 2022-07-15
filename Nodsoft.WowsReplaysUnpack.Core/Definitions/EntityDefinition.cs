@@ -22,6 +22,9 @@ public class EntityDefinition : ABaseDefinition
 		ParseMethods(xml.SelectSingleNode("CellMethods"), CellMethods);
 		//ParseMethods(xml.SelectSingleNode("BaseMethods"), BaseMethods);
 		ParseMethods(xml.SelectSingleNode("ClientMethods"), ClientMethods);
+
+		CellMethods = CellMethods.OrderBy(m => m.DataSize).ToList();
+		ClientMethods = ClientMethods.OrderBy(m => m.DataSize).ToList();
 	}
 
 	private void ParseMethods(XmlNode? methodsNode, List<EntityMethodDefinition> methods)
@@ -31,7 +34,5 @@ public class EntityDefinition : ABaseDefinition
 
 		foreach (XmlNode node in methodsNode.ChildNodes())
 			methods.Add(new EntityMethodDefinition(ClientVersion, DefinitionStore, node));
-
-		methods = methods.OrderBy(m => m.DataSize).ToList();
 	}
 }

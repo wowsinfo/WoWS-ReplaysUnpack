@@ -39,7 +39,7 @@ public class NestedPropertyPacket : ANetworkPacket
 			else if (obj is Entity __e)
 			{
 				string? field = __e.GetClientPropertyNameForIndex(propertyIndex);
-				obj = __e.ClientProperties[field];
+				obj = field is null ? null : __e.ClientProperties[field];
 			}
 		}
 

@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace Nodsoft.WowsReplaysUnpack.Core.Security;
 
-internal static class CVEChecks
+public static class CVEChecks
 {
 	private static readonly Regex CVE_2022_31265_Regex = new(@"cnt\ssystem|commands", RegexOptions.Compiled | RegexOptions.ExplicitCapture);
 

@@ -21,7 +21,7 @@ public struct PositionContainer
 
 public class PositionPacket : ANetworkPacket
 {
-	public int EntityId { get; }
+	public uint EntityId { get; }
 	public int VehicleId { get; }
 	public PositionContainer Position { get; }
 	public Vector3 PositionError { get; }
@@ -29,7 +29,7 @@ public class PositionPacket : ANetworkPacket
 
 	public PositionPacket(int packetIndex, BinaryReader binaryReader) : base(packetIndex)
 	{
-		EntityId = binaryReader.ReadInt32();
+		EntityId = (uint)binaryReader.ReadInt32();
 		VehicleId = binaryReader.ReadInt32();
 		Vector3 position = binaryReader.ReadVector3();
 		PositionError = binaryReader.ReadVector3();

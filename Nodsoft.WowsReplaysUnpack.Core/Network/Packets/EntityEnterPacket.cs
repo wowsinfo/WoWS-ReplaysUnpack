@@ -6,12 +6,12 @@
 /// </summary>
 public class EntityEnterPacket : ANetworkPacket
 {
-	public int EntityId { get; }
+	public uint EntityId { get; }
 	public int SpaceId { get; }
 	public int VehicleId { get; }
 	public EntityEnterPacket(int packetIndex, BinaryReader binaryReader) : base(packetIndex)
 	{
-		EntityId = binaryReader.ReadInt32();
+		EntityId = (uint)binaryReader.ReadInt32();
 		SpaceId = binaryReader.ReadInt32();
 		VehicleId = binaryReader.ReadInt32();
 	}

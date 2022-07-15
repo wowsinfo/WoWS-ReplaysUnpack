@@ -26,9 +26,11 @@ public class EntityMethodDefinition
 		}
 		else if (node.SelectNodes("Arg") is not null)
 		{
+			int index = 0;
 			foreach (XmlNode arg in node.SelectXmlNodes("Arg"))
 			{
-				Arguments.Add(new EntityMethodArgumentDefinition(arg, null, definitionStore.GetDataType(clientVersion, arg)));
+				Arguments.Add(new EntityMethodArgumentDefinition(arg, index.ToString(), definitionStore.GetDataType(clientVersion, arg)));
+				index++;
 			}
 		}
 
@@ -62,16 +64,18 @@ public class EntityMethodDefinition
 		}
 		return (unnamed, named);
 	}
+
+	public override string ToString() => $"{Name} <{DataSize}, {HeaderSize}>";
 }
 
 public class EntityMethodArgumentDefinition
 {
 	private readonly XmlNode _node;
 
-	public string? Name { get; }
+	public string Name { get; }
 	public ADataTypeBase DataType { get; }
 
-	public EntityMethodArgumentDefinition(XmlNode node, string? name, ADataTypeBase dataType)
+	public EntityMethodArgumentDefinition(XmlNode node, string name, ADataTypeBase dataType)
 	{
 		_node = node;
 		Name = name;

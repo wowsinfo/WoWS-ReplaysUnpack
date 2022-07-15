@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Nodsoft.WowsReplaysUnpack.Controllers;
 using Nodsoft.WowsReplaysUnpack.Core;
 using Nodsoft.WowsReplaysUnpack.Core.Exceptions;
 using Nodsoft.WowsReplaysUnpack.Core.Extensions;
@@ -102,7 +103,7 @@ public class ReplayUnpackerService<TController> : IReplayUnpackerService
 
 
 		foreach (ANetworkPacket networkPacket in _replayDataParser.ParseNetworkPackets(replayDataStream, options))
-			_replayController.HandleNetworkPacket(networkPacket);
+			_replayController.HandleNetworkPacket(networkPacket, options);
 
 		return replay;
 	}

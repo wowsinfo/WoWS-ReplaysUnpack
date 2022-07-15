@@ -6,11 +6,11 @@
 /// </summary>
 public class EntityLeavePacket : ANetworkPacket
 {
-	public int EntityId { get; }
+	public uint EntityId { get; }
 
 	public EntityLeavePacket(int packetIndex, BinaryReader binaryReader) : base(packetIndex)
 	{
-		EntityId = binaryReader.ReadInt32();
+		EntityId = (uint)binaryReader.ReadInt32();
 	}
 
 }

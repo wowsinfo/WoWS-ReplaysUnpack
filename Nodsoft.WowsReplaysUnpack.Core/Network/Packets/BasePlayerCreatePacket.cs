@@ -10,12 +10,12 @@ namespace Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
 /// </summary>
 public class BasePlayerCreatePacket : ANetworkPacket
 {
-	public int EntityId { get; }
+	public uint EntityId { get; }
 	public short EntityType { get; }
 	public byte[] Data { get; }
 	public BasePlayerCreatePacket(int packetIndex, BinaryReader binaryReader) : base(packetIndex)
 	{
-		EntityId = binaryReader.ReadInt32();
+		EntityId = (uint)binaryReader.ReadInt32();
 		EntityType = binaryReader.ReadInt16();
 		Data = binaryReader.ReadBytesWithHeader();
 	}

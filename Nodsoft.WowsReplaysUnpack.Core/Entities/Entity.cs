@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
 using Nodsoft.WowsReplaysUnpack.Core.Definitions;
+using Nodsoft.WowsReplaysUnpack.Core.Exceptions;
 using Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
 using System.Numerics;
 using System.Reflection;
+using System.Text;
 
 namespace Nodsoft.WowsReplaysUnpack.Core.Entities;
 public enum EntityType
@@ -17,15 +19,15 @@ public class Entity
 
 	protected EntityDefinition EntityDefinition { get; }
 
-	protected Dictionary<string, MethodInfo> MethodSubscriptions { get; }
-	protected Dictionary<string, MethodInfo> PropertyChangedSubscriptions { get; }
+	protected Dictionary<string, MethodInfo[]> MethodSubscriptions { get; }
+	protected Dictionary<string, MethodInfo[]> PropertyChangedSubscriptions { get; }
 
 	protected PropertyDefinition[] ClientPropertyDefinitions { get; }
 	protected PropertyDefinition[] InternalClientPropertyDefinitions { get; }
 	protected PropertyDefinition[] CellPropertyDefinitions { get; }
 	protected PropertyDefinition[] BasePropertyDefinitions { get; }
 
-	public int Id { get; }
+	public uint Id { get; }
 	public string Name { get; }
 
 	/// <summary>
@@ -64,9 +66,9 @@ public class Entity
 		set => VolatileProperties["roll"] = value;
 	}
 
-	public Entity(int id, string name, EntityDefinition entityDefinition,
-		Dictionary<string, MethodInfo> methodSubscriptions,
-		Dictionary<string, MethodInfo> propertyChangedSubscriptions,
+	public Entity(uint id, string name, EntityDefinition entityDefinition,
+		Dictionary<string, MethodInfo[]> methodSubscriptions,
+		Dictionary<string, MethodInfo[]> propertyChangedSubscriptions,
 		ILogger<Entity> logger)
 	{
 		Id = id;
@@ -91,47 +93,107 @@ public class Entity
 	public string? GetClientPropertyNameForIndex(int index)
 		=> ClientPropertyDefinitions.ElementAtOrDefault(index)?.Name;
 
-	public string? GetClientMethodNameForIndex(int index)
-		=> MethodDefinitions.ElementAtOrDefault(index)?.Name;
+	public string? GetClientMethodNameForIndex(uint index)
+		=> MethodDefinitions.ElementAtOrDefault((int)index)?.Name;
 
-	public virtual void CallClientMethod(int index, BinaryReader reader, object? subscriptionTarget)
+	public virtual void CallClientMethod(uint index, BinaryReader reader, object? subscriptionTarget)
 	{
 		if (subscriptionTarget is null)
 			return;
 
-		EntityMethodDefinition? methodDefinition = MethodDefinitions.ElementAtOrDefault(index);
+		EntityMethodDefinition? methodDefinition = MethodDefinitions.ElementAtOrDefault((int)index);
 		if (methodDefinition is null)
 		{
 			Logger.LogError("Method with index {index} was not found on entity with name {Name} ({Id})", index, Name, Id);
 			return;
 		}
 		string hash = $"{Name}_{methodDefinition.Name}";
-		if (MethodSubscriptions.TryGetValue(hash, out MethodInfo? methodInfo))
+		if (MethodSubscriptions.TryGetValue(hash, out MethodInfo[]? methodInfos))
 		{
-			ParameterInfo[] methodParameters = methodInfo.GetParameters();
-			if (methodDefinition.Arguments.Count != methodParameters.Length - 1
-				|| methodParameters[0].ParameterType != typeof(Entity)
-				|| !methodDefinition.Arguments.Select(a => a.DataType.ClrType).SequenceEqual(methodParameters.Skip(1).Select(m => m.ParameterType))
-			)
+			foreach (var methodInfo in methodInfos)
 			{
-				Logger.LogError("Arguments of method definition and method subscription does not match");
-				return;
-			}
-			try
-			{
-				object?[] methodArgumentValues = methodDefinition.Arguments.Select(a => a.GetValue(reader))
-					.Prepend(this).ToArray();
-				Logger.LogDebug("Calling method subscription with hash {hash}", hash);
-				methodInfo.Invoke(subscriptionTarget, methodArgumentValues);
-			}
-			catch (Exception ex)
-			{
-				Logger.LogError(ex, "Error when calling method subscription with hash {hash}", hash);
+				var attribute = methodInfo.GetCustomAttribute<MethodSubscriptionAttribute>()!;
+				if (attribute.ParamsAsDictionary)
+					CallClientMethodWithDictionary(reader, subscriptionTarget, methodDefinition, hash, methodInfo);
+				else
+					CallClientMethodWithParameters(reader, subscriptionTarget, methodDefinition, hash, methodInfo);
 			}
 		}
 	}
 
-	public virtual void SetClientProperty(int exposedIndex, BinaryReader reader, object? subscriptionTarget)
+	private void CallClientMethodWithParameters(BinaryReader reader, object? subscriptionTarget,
+		EntityMethodDefinition methodDefinition, string hash, MethodInfo methodInfo)
+	{
+		ParameterInfo[] methodParameters = methodInfo.GetParameters();
+		if (methodDefinition.Arguments.Count != methodParameters.Length - 1
+			|| methodParameters[0].ParameterType != typeof(Entity)
+			|| !methodDefinition.Arguments.Select(a => a.DataType.ClrType).SequenceEqual(methodParameters.Skip(1).Select(m => m.ParameterType))
+		)
+		{
+			StringBuilder sb = new StringBuilder("Arguments of method definition and method subscription do not match")
+						.AppendLine()
+						.Append("Method Name: ").AppendLine(methodDefinition.Name)
+						.Append("Subscription Name: ").AppendLine(methodInfo.Name)
+					  .Append("Expected Arguments: ")
+							.AppendLine(string.Join(", ", methodDefinition.Arguments.Select(a => $"{a.DataType.ClrType.Name} {a.Name}").Prepend("Entity entity")))
+					  .Append("Actual Parameters: ")
+							.AppendLine(string.Join(", ", methodParameters.Select(a => $"{a.ParameterType.Name} {a.Name}")));
+			Logger.LogError(sb.ToString());
+			return;
+		}
+		try
+		{
+			object?[] methodArgumentValues = methodDefinition.Arguments.Select(a => a.GetValue(reader))
+				.Prepend(this).ToArray();
+			Logger.LogDebug("Calling method subscription with hash {hash}", hash);
+			methodInfo.Invoke(subscriptionTarget, methodArgumentValues);
+		}
+		catch (Exception ex)
+		{
+			if (ex.InnerException is CVESecurityException cveEx)
+				throw ex.InnerException;
+			Logger.LogError(ex, "Error when calling method subscription with hash {hash}", hash);
+		}
+	}
+
+	private void CallClientMethodWithDictionary(BinaryReader reader, object? subscriptionTarget,
+		EntityMethodDefinition methodDefinition, string hash, MethodInfo methodInfo)
+	{
+		ParameterInfo[] methodParameters = methodInfo.GetParameters();
+		if (methodParameters.Length != 2
+			|| methodParameters[0].ParameterType != typeof(Entity)
+			|| methodParameters[1].ParameterType?.GetGenericTypeDefinition() != typeof(Dictionary<,>)
+			|| methodParameters[1].ParameterType.GenericTypeArguments.Length != 2
+			|| methodParameters[1].ParameterType.GenericTypeArguments[0] != typeof(string)
+			|| methodParameters[1].ParameterType.GenericTypeArguments[1] != typeof(object)
+
+		)
+		{
+			StringBuilder sb = new StringBuilder("Arguments of method definition and method subscription do not match")
+						.AppendLine()
+						.Append("Method Name: ").AppendLine(methodDefinition.Name)
+						.Append("Subscription Name: ").AppendLine(methodInfo.Name)
+					  .AppendLine("Expected Arguments: Entity entity, Dictionary<string, object> arguments")
+					  .Append("Actual Parameters: ")
+							.AppendLine(string.Join(", ", methodParameters.Select(a => $"{a.ParameterType.Name} {a.Name}")));
+			Logger.LogError(sb.ToString());
+			return;
+		}
+		try
+		{
+			object[] methodArgumentValues = new object[] { this, methodDefinition.Arguments.ToDictionary(a => a.Name, a => a.GetValue(reader)) };
+			Logger.LogDebug("Calling method subscription with hash {hash}", hash);
+			methodInfo.Invoke(subscriptionTarget, methodArgumentValues);
+		}
+		catch (Exception ex)
+		{
+			if (ex.InnerException is CVESecurityException cveEx)
+				throw ex.InnerException;
+			Logger.LogError(ex, "Error when calling method subscription with hash {hash}", hash);
+		}
+	}
+
+	public virtual void SetClientProperty(uint exposedIndex, BinaryReader reader, object? subscriptionTarget)
 	{
 		Logger.LogDebug("Setting client property with index {index} on entity {Name} ({id})", exposedIndex, Name, Id);
 		PropertyDefinition propertyDefinition = ClientPropertyDefinitions[exposedIndex];
@@ -142,25 +204,36 @@ public class Entity
 			return;
 
 		string hash = $"{Name}_{propertyDefinition.Name}";
-		if (PropertyChangedSubscriptions.TryGetValue(hash, out MethodInfo? methodInfo))
+		if (PropertyChangedSubscriptions.TryGetValue(hash, out MethodInfo[]? methodInfos))
 		{
-			ParameterInfo[] methodParameters = methodInfo.GetParameters();
-			if (methodParameters.Length != 2
-					|| methodParameters[0].ParameterType != typeof(Entity)
-					|| methodParameters[1].ParameterType != propertyDefinition.DataType.ClrType
-			)
+			foreach (var methodInfo in methodInfos)
 			{
-				Logger.LogError("Arguments of property definition and property changed subscription does not match");
-				return;
-			}
-			try
-			{
-				Logger.LogDebug("Calling property changed subscription with hash {hash}", hash);
-				methodInfo.Invoke(subscriptionTarget, new[] { this, propertyValue });
-			}
-			catch (Exception ex)
-			{
-				Logger.LogError(ex, "Error when calling property changed subscription with hash {hash}", hash);
+				ParameterInfo[] methodParameters = methodInfo.GetParameters();
+				if (methodParameters.Length != 2
+						|| methodParameters[0].ParameterType != typeof(Entity)
+						|| methodParameters[1].ParameterType != propertyDefinition.DataType.ClrType
+				)
+				{
+					StringBuilder sb = new StringBuilder("Arguments of property definition and property changed subscription does not match")
+								.AppendLine()
+								.Append("Property Name: ").AppendLine(propertyDefinition.Name)
+								.Append("Subscription Name: ").AppendLine(methodInfo.Name)
+							  .Append("Expected Arguments: ")
+									.AppendLine($"Entity entity, {propertyDefinition.DataType.ClrType.Name} value")
+							  .Append("Actual Parameters: ")
+									.AppendLine(string.Join(", ", methodParameters.Select(a => $"{a.ParameterType.Name} {a.Name}")));
+					Logger.LogError(sb.ToString());
+					return;
+				}
+				try
+				{
+					Logger.LogDebug("Calling property changed subscription with hash {hash}", hash);
+					methodInfo.Invoke(subscriptionTarget, new[] { this, propertyValue });
+				}
+				catch (Exception ex)
+				{
+					Logger.LogError(ex, "Error when calling property changed subscription with hash {hash}", hash);
+				}
 			}
 		}
 	}

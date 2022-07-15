@@ -4,14 +4,15 @@ using Nodsoft.WowsReplaysUnpack.Core.Entities;
 using Nodsoft.WowsReplaysUnpack.Core.Extensions;
 using Nodsoft.WowsReplaysUnpack.Core.Models;
 using Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
+using Nodsoft.WowsReplaysUnpack.Core.Security;
 using System.Reflection;
 
-namespace Nodsoft.WowsReplaysUnpack.Services;
+namespace Nodsoft.WowsReplaysUnpack.Controllers;
 
 public abstract class AReplayControllerBase<T> : IReplayController
 {
-	private static readonly Dictionary<string, MethodInfo> _methodSubscriptions;
-	private static readonly Dictionary<string, MethodInfo> _propertyChangedSubscriptions;
+	private static readonly Dictionary<string, MethodInfo[]> _methodSubscriptions;
+	private static readonly Dictionary<string, MethodInfo[]> _propertyChangedSubscriptions;
 	protected IDefinitionStore DefinitionStore { get; }
 	protected ILogger<Entity> EntityLogger { get; }
 
@@ -22,12 +23,14 @@ public abstract class AReplayControllerBase<T> : IReplayController
 		_methodSubscriptions = typeof(T).GetMethods()
 			.Select(m => new { Attribute = m.GetCustomAttribute<MethodSubscriptionAttribute>(), MethodInfo = m })
 			.Where(m => m.Attribute is not null)
-			.ToDictionary(m => $"{m.Attribute!.EntityName}_{m.Attribute.MethodName}", m => m.MethodInfo);
+			.GroupBy(m => $"{m.Attribute!.EntityName}_{m.Attribute.MethodName}")
+			.ToDictionary(m => m.Key, m => m.Select(m => m.MethodInfo).ToArray());
 
 		_propertyChangedSubscriptions = typeof(T).GetMethods()
 			.Select(m => new { Attribute = m.GetCustomAttribute<PropertyChangedSubscriptionAttribute>(), MethodInfo = m })
 			.Where(m => m.Attribute is not null)
-			.ToDictionary(m => $"{m.Attribute!.EntityName}_{m.Attribute.PropertyName}", m => m.MethodInfo);
+			.GroupBy(m => $"{m.Attribute!.EntityName}_{m.Attribute.PropertyName}")
+			.ToDictionary(m => m.Key, m => m.Select(m => m.MethodInfo).ToArray());
 	}
 
 #pragma warning disable CS8618 // Replay Property is never null because after creating the controller, CreateUnpackedReplay is called
@@ -45,7 +48,8 @@ public abstract class AReplayControllerBase<T> : IReplayController
 		return Replay;
 	}
 
-	public virtual void HandleNetworkPacket(ANetworkPacket networkPacket)
+	#region Packet Handling
+	public virtual void HandleNetworkPacket(ANetworkPacket networkPacket, ReplayUnpackerOptions options)
 	{
 		if (networkPacket is MapPacket mapPacket)
 			OnMap(mapPacket);
@@ -75,6 +79,7 @@ public abstract class AReplayControllerBase<T> : IReplayController
 	{
 		Replay.MapName = packet.Name;
 	}
+
 	public virtual void OnBasePlayerCreate(BasePlayerCreatePacket packet)
 	{
 		Replay.Entities.GetOrAddValue(packet.EntityId, out Entity? entity, () => CreateEntity(packet.EntityId, "Avatar"));
@@ -154,6 +159,7 @@ public abstract class AReplayControllerBase<T> : IReplayController
 		using BinaryReader methodDataReader = packet.Data.GetBinaryReader();
 		entity.CallClientMethod(packet.MessageId, methodDataReader, this);
 	}
+
 	public virtual void OnEntityProperty(EntityPropertyPacket packet)
 	{
 		if (!Replay.Entities.ContainsKey(packet.EntityId))
@@ -166,19 +172,33 @@ public abstract class AReplayControllerBase<T> : IReplayController
 
 	public virtual void OnNestedProperty(NestedPropertyPacket packet)
 	{
-		if (!Replay.Entities.ContainsKey((int)packet.EntityId))
+		if (!Replay.Entities.ContainsKey(packet.EntityId))
 			return;
 
-		Entity entity = Replay.Entities[(int)packet.EntityId];
+		Entity entity = Replay.Entities[packet.EntityId];
 		packet.Apply(entity);
 	}
 
-	protected virtual Entity CreateEntity(int id, string name)
+	protected virtual Entity CreateEntity(uint id, string name)
 		=> new(id, name, DefinitionStore.GetEntityDefinitionByName(Replay.ClientVersion, name), _methodSubscriptions, _propertyChangedSubscriptions, EntityLogger);
 
-	protected virtual Entity CreateEntity(int id, int index)
+	protected virtual Entity CreateEntity(uint id, int index)
 	{
 		EntityDefinition definition = DefinitionStore.GetEntityDefinitionByIndex(Replay.ClientVersion, index - 1);
 		return new(id, definition.Name, definition, _methodSubscriptions, _propertyChangedSubscriptions, EntityLogger);
 	}
+
+	#endregion
+
+	#region Subscriptions
+
+	[MethodSubscription("Avatar", "onArenaStateReceived", true)]
+	public void OnArenaStateReceivedCVECheck(Entity entity, Dictionary<string, object?> arguments)
+	{
+		CVEChecks.ScanForCVE_2022_31265((byte[])arguments["preBattlesInfo"]!, "Avatar_onArenaStateReceived_preBattlesInfo");
+		CVEChecks.ScanForCVE_2022_31265((byte[])arguments["playersStates"]!, "Avatar_onArenaStateReceived_playersStates");
+		CVEChecks.ScanForCVE_2022_31265((byte[])arguments["observersState"]!, "Avatar_onArenaStateReceived_observersState");
+		CVEChecks.ScanForCVE_2022_31265((byte[])arguments["buildingsInfo"]!, "Avatar_onArenaStateReceived_buildingsInfo");
+	}
+	#endregion
 }
