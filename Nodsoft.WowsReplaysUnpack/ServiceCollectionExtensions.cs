@@ -36,6 +36,7 @@ public static class ServiceCollectionExtensions
 		private bool replayDataParserAdded;
 		private bool definitionStoreAdded;
 
+		public IServiceCollection Services => _services;
 		public ReplayUnpackerBuilder(IServiceCollection services)
 		{
 			_services = services;

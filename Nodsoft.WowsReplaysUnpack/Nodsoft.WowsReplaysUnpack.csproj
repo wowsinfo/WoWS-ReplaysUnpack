@@ -26,15 +26,10 @@
 	<ItemGroup>
 		<None Remove="**/*.DotSettings" />
 		<None Include="../README.md" Pack="true" PackagePath="/" />
-		<None Include="CamouflageInfo.cs" />
 		<Compile Remove="_Infrastructure\**\*" />
 		<None Include="_Infrastructure\**\*" />
 		<Compile Remove="_Data\**\*" />
 		<None Include="_Data\**\*" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<Compile Remove="CamouflageInfo.cs" />
 	</ItemGroup>
 
 	<ItemGroup>

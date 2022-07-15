@@ -3,6 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Nodsoft.WowsReplaysUnpack;
 using Nodsoft.WowsReplaysUnpack.Controllers;
+using Nodsoft.WowsReplaysUnpack.ExtendedData;
+using Nodsoft.WowsReplaysUnpack.ExtendedData.Models;
 using Nodsoft.WowsReplaysUnpack.Services;
 using System;
 using System.IO;
@@ -14,7 +16,8 @@ FileStream GetReplayFile(string name)
 var services = new ServiceCollection()
 	.AddWowsReplayUnpacker(builder =>
 	{
-		builder.AddReplayController<CVECheckOnlyController>();
+		//builder.AddReplayController<CVECheckOnlyController>();
+		builder.AddExtendedData();
 	})
 	.AddLogging(logging =>
 	{
@@ -27,7 +30,8 @@ var services = new ServiceCollection()
 var replayUnpacker = services.GetRequiredService<ReplayUnpackerFactory>();
 
 //var unpackedReplay = replayUnpacker.GetUnpacker().Unpack(GetReplayFile("payload.wowsreplay"));
-var unpackedReplay = replayUnpacker.GetUnpacker<CVECheckOnlyController>().Unpack(GetReplayFile("payload.wowsreplay"));
+//var unpackedReplay = replayUnpacker.GetUnpacker<CVECheckOnlyController>().Unpack(GetReplayFile("payload.wowsreplay"));
+var unpackedReplay = (ExtendedDataReplay)replayUnpacker.GetExtendedDataUnpacker().Unpack(GetReplayFile("good.wowsreplay"));
 
 //foreach (ReplayMessage msg in replay.ChatMessages)
 //{

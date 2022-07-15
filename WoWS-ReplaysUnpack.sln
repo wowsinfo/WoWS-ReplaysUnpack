@@ -16,7 +16,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nodsoft.WowsReplaysUnpack.T
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nodsoft.WowsReplaysUnpack.Core", "Nodsoft.WowsReplaysUnpack.Core\Nodsoft.WowsReplaysUnpack.Core.csproj", "{18EF6FA2-5AF1-4277-81F4-7104BB35B3BD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nodsoft.WowsReplaysUnpack.Benchmark", "Nodsoft.WowsReplaysUnpack.Benchmark\Nodsoft.WowsReplaysUnpack.Benchmark.csproj", "{1B61AA91-1578-4E90-94B3-BBE721327AC0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nodsoft.WowsReplaysUnpack.Benchmark", "Nodsoft.WowsReplaysUnpack.Benchmark\Nodsoft.WowsReplaysUnpack.Benchmark.csproj", "{1B61AA91-1578-4E90-94B3-BBE721327AC0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Replay-Samples", "Replay-Samples", "{4A21D0B7-4A7F-49B7-A579-AB399D2637D2}"
 	ProjectSection(SolutionItems) = preProject
@@ -29,6 +29,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Replay-Samples", "Replay-Sa
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Library", "Library", "{367BF192-3EC3-4A87-B8E4-3E444E7019D0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nodsoft.WowsReplaysUnpack.ExtendedData", "Nodsoft.WowsReplaysUnpack.ExtendedData\Nodsoft.WowsReplaysUnpack.ExtendedData.csproj", "{A9D51B91-8D9E-4E8E-A1A7-26BD5223EC53}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -56,6 +58,10 @@ Global
 		{1B61AA91-1578-4E90-94B3-BBE721327AC0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1B61AA91-1578-4E90-94B3-BBE721327AC0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1B61AA91-1578-4E90-94B3-BBE721327AC0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A9D51B91-8D9E-4E8E-A1A7-26BD5223EC53}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A9D51B91-8D9E-4E8E-A1A7-26BD5223EC53}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A9D51B91-8D9E-4E8E-A1A7-26BD5223EC53}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A9D51B91-8D9E-4E8E-A1A7-26BD5223EC53}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -63,6 +69,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{B7A3AA8B-E20E-4DE9-B63A-A1A96741EFCD} = {367BF192-3EC3-4A87-B8E4-3E444E7019D0}
 		{18EF6FA2-5AF1-4277-81F4-7104BB35B3BD} = {367BF192-3EC3-4A87-B8E4-3E444E7019D0}
+		{A9D51B91-8D9E-4E8E-A1A7-26BD5223EC53} = {367BF192-3EC3-4A87-B8E4-3E444E7019D0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {26B5CF6B-2C64-417B-8149-3DFD8E93D497}

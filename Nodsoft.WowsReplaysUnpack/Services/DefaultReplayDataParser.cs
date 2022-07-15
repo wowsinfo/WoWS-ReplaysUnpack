@@ -33,7 +33,7 @@ public class DefaultReplayDataParser : IReplayDataParser
 		{
 			uint packetSize = binaryReader.ReadUInt32();
 			uint packetType = binaryReader.ReadUInt32();
-			float packetTime = binaryReader.ReadSingle();
+			float packetTime = binaryReader.ReadSingle(); // Time in seconds from battle start
 
 			_logger.LogDebug("Packet parsed of type '{packetType}' with size '{packetSize}' and timestamp '{packetTime}'",
 				NetworkPacketTypes.GetName(packetType), packetSize, packetTime);
@@ -55,7 +55,7 @@ public class DefaultReplayDataParser : IReplayDataParser
 				NetworkPacketTypes.EntityLeave => new EntityLeavePacket(packetIndex, _packetBufferReader),
 				NetworkPacketTypes.EntityCreate => new EntityCreatePacket(packetIndex, _packetBufferReader),
 				NetworkPacketTypes.EntityProperty => new EntityPropertyPacket(packetIndex, _packetBufferReader),
-				NetworkPacketTypes.EntityMethod => new EntityMethodPacket(packetIndex, _packetBufferReader),
+				NetworkPacketTypes.EntityMethod => new EntityMethodPacket(packetIndex, packetTime, _packetBufferReader),
 				NetworkPacketTypes.Map => new MapPacket(packetIndex, _packetBufferReader),
 				NetworkPacketTypes.NestedProperty => new NestedPropertyPacket(packetIndex, _packetBufferReader),
 				NetworkPacketTypes.Position => new PositionPacket(packetIndex, _packetBufferReader),

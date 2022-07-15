@@ -96,7 +96,7 @@ public class Entity
 	public string? GetClientMethodNameForIndex(uint index)
 		=> MethodDefinitions.ElementAtOrDefault((int)index)?.Name;
 
-	public virtual void CallClientMethod(uint index, BinaryReader reader, object? subscriptionTarget)
+	public virtual void CallClientMethod(uint index, float packetTime, BinaryReader reader, object? subscriptionTarget)
 	{
 		if (subscriptionTarget is null)
 			return;
@@ -114,83 +114,98 @@ public class Entity
 			{
 				var attribute = methodInfo.GetCustomAttribute<MethodSubscriptionAttribute>()!;
 				if (attribute.ParamsAsDictionary)
-					CallClientMethodWithDictionary(reader, subscriptionTarget, methodDefinition, hash, methodInfo);
+					CallClientMethodWithDictionary(reader, packetTime, subscriptionTarget, methodDefinition, hash, methodInfo, attribute);
 				else
-					CallClientMethodWithParameters(reader, subscriptionTarget, methodDefinition, hash, methodInfo);
+					CallClientMethodWithParameters(reader, packetTime, subscriptionTarget, methodDefinition, hash, methodInfo, attribute);
+				reader.BaseStream.Seek(0, SeekOrigin.Begin);
 			}
 		}
 	}
 
-	private void CallClientMethodWithParameters(BinaryReader reader, object? subscriptionTarget,
-		EntityMethodDefinition methodDefinition, string hash, MethodInfo methodInfo)
+	private void CallClientMethodWithParameters(BinaryReader reader, float packetTime, object? subscriptionTarget,
+		EntityMethodDefinition methodDefinition, string hash, MethodInfo methodInfo, MethodSubscriptionAttribute attribute)
 	{
-		ParameterInfo[] methodParameters = methodInfo.GetParameters();
-		if (methodDefinition.Arguments.Count != methodParameters.Length - 1
-			|| methodParameters[0].ParameterType != typeof(Entity)
-			|| !methodDefinition.Arguments.Select(a => a.DataType.ClrType).SequenceEqual(methodParameters.Skip(1).Select(m => m.ParameterType))
-		)
+		if (!ValidateParameterTypes(methodDefinition, methodInfo, attribute))
+			return;
+		try
+		{
+			IEnumerable<object?> methodArgumentValues = methodDefinition.Arguments.Select(a => a.GetValue(reader));
+
+			if (attribute.IncludeEntity)
+				methodArgumentValues = methodArgumentValues.Prepend(this);
+			if (attribute.IncludePacketTime)
+				methodArgumentValues = methodArgumentValues.Prepend(packetTime);
+
+			Logger.LogDebug("Calling method subscription with hash {hash}", hash);
+			methodInfo.Invoke(subscriptionTarget, methodArgumentValues.ToArray());
+		}
+		catch (Exception ex)
+		{
+			if (ex.InnerException is CVESecurityException cveEx)
+				throw ex.InnerException;
+			Logger.LogError(ex, "Error when calling method subscription with hash {hash}", hash);
+		}
+	}
+
+	private void CallClientMethodWithDictionary(BinaryReader reader, float packetTime, object? subscriptionTarget,
+		EntityMethodDefinition methodDefinition, string hash, MethodInfo methodInfo, MethodSubscriptionAttribute attribute)
+	{
+		if (!ValidateParameterTypes(methodDefinition, methodInfo, attribute))
+			return;
+
+		try
+		{
+			IEnumerable<object> methodArgumentValues = new object[]
+			{
+				methodDefinition.Arguments.ToDictionary(a => a.Name, a => a.GetValue(reader))
+			};
+			if (attribute.IncludeEntity)
+				methodArgumentValues = methodArgumentValues.Prepend(this);
+			if (attribute.IncludePacketTime)
+				methodArgumentValues = methodArgumentValues.Prepend(packetTime);
+
+			Logger.LogDebug("Calling method subscription with hash {hash}", hash);
+			methodInfo.Invoke(subscriptionTarget, methodArgumentValues.ToArray());
+		}
+		catch (Exception ex)
+		{
+			if (ex.InnerException is CVESecurityException cveEx)
+				throw ex.InnerException;
+			Logger.LogError(ex, "Error when calling method subscription with hash {hash}", hash);
+		}
+	}
+
+	private bool ValidateParameterTypes(EntityMethodDefinition methodDefinition, MethodInfo methodInfo, MethodSubscriptionAttribute attribute)
+	{
+		var actualParameterTypes = methodInfo.GetParameters().Select(p => p.ParameterType).ToArray();
+		var expectedParameterTypes = new[]
+		{
+			(attribute.IncludeEntity ? new { Type = typeof(Entity) , Name = "entity"} : null),
+			(attribute.IncludePacketTime ? new { Type = typeof(float) , Name = "packetTime"} : null)
+		};
+		if (attribute.ParamsAsDictionary)
+			expectedParameterTypes = expectedParameterTypes.Append(new { Type = typeof(Dictionary<string, object?>), Name = "arguments" })
+				.Where(t => t is not null).ToArray();
+		else
+			expectedParameterTypes = expectedParameterTypes
+				.Concat(methodDefinition.Arguments.Select(a => new { Type = a.DataType.ClrType, Name = a.Name }))
+				.Where(t => t is not null).ToArray();
+
+		if (!actualParameterTypes.SequenceEqual(expectedParameterTypes.Select(t => t!.Type)))
 		{
 			StringBuilder sb = new StringBuilder("Arguments of method definition and method subscription do not match")
 						.AppendLine()
 						.Append("Method Name: ").AppendLine(methodDefinition.Name)
 						.Append("Subscription Name: ").AppendLine(methodInfo.Name)
 					  .Append("Expected Arguments: ")
-							.AppendLine(string.Join(", ", methodDefinition.Arguments.Select(a => $"{a.DataType.ClrType.Name} {a.Name}").Prepend("Entity entity")))
+							.AppendLine(string.Join(", ", expectedParameterTypes.Select((t, i) => $"{t!.Type.Name} {t.Name}")))
 					  .Append("Actual Parameters: ")
-							.AppendLine(string.Join(", ", methodParameters.Select(a => $"{a.ParameterType.Name} {a.Name}")));
+							.AppendLine(string.Join(", ", methodInfo.GetParameters().Select(a => $"{a.ParameterType.Name} {a.Name}")));
 			Logger.LogError(sb.ToString());
-			return;
+			return false;
 		}
-		try
-		{
-			object?[] methodArgumentValues = methodDefinition.Arguments.Select(a => a.GetValue(reader))
-				.Prepend(this).ToArray();
-			Logger.LogDebug("Calling method subscription with hash {hash}", hash);
-			methodInfo.Invoke(subscriptionTarget, methodArgumentValues);
-		}
-		catch (Exception ex)
-		{
-			if (ex.InnerException is CVESecurityException cveEx)
-				throw ex.InnerException;
-			Logger.LogError(ex, "Error when calling method subscription with hash {hash}", hash);
-		}
-	}
 
-	private void CallClientMethodWithDictionary(BinaryReader reader, object? subscriptionTarget,
-		EntityMethodDefinition methodDefinition, string hash, MethodInfo methodInfo)
-	{
-		ParameterInfo[] methodParameters = methodInfo.GetParameters();
-		if (methodParameters.Length != 2
-			|| methodParameters[0].ParameterType != typeof(Entity)
-			|| methodParameters[1].ParameterType?.GetGenericTypeDefinition() != typeof(Dictionary<,>)
-			|| methodParameters[1].ParameterType.GenericTypeArguments.Length != 2
-			|| methodParameters[1].ParameterType.GenericTypeArguments[0] != typeof(string)
-			|| methodParameters[1].ParameterType.GenericTypeArguments[1] != typeof(object)
-
-		)
-		{
-			StringBuilder sb = new StringBuilder("Arguments of method definition and method subscription do not match")
-						.AppendLine()
-						.Append("Method Name: ").AppendLine(methodDefinition.Name)
-						.Append("Subscription Name: ").AppendLine(methodInfo.Name)
-					  .AppendLine("Expected Arguments: Entity entity, Dictionary<string, object> arguments")
-					  .Append("Actual Parameters: ")
-							.AppendLine(string.Join(", ", methodParameters.Select(a => $"{a.ParameterType.Name} {a.Name}")));
-			Logger.LogError(sb.ToString());
-			return;
-		}
-		try
-		{
-			object[] methodArgumentValues = new object[] { this, methodDefinition.Arguments.ToDictionary(a => a.Name, a => a.GetValue(reader)) };
-			Logger.LogDebug("Calling method subscription with hash {hash}", hash);
-			methodInfo.Invoke(subscriptionTarget, methodArgumentValues);
-		}
-		catch (Exception ex)
-		{
-			if (ex.InnerException is CVESecurityException cveEx)
-				throw ex.InnerException;
-			Logger.LogError(ex, "Error when calling method subscription with hash {hash}", hash);
-		}
+		return true;
 	}
 
 	public virtual void SetClientProperty(uint exposedIndex, BinaryReader reader, object? subscriptionTarget)

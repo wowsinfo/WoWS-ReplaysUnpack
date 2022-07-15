@@ -32,6 +32,6 @@ public class CVECheckOnlyController : AReplayControllerBase<CVECheckOnlyControll
 		if (entity.Name != "Avatar" && entity.GetClientMethodNameForIndex(packet.MessageId) != "onArenaStateReceived")
 			return;
 		using BinaryReader methodDataReader = packet.Data.GetBinaryReader();
-		entity.CallClientMethod(packet.MessageId, methodDataReader, this);
+		entity.CallClientMethod(packet.MessageId, packet.PacketTime, methodDataReader, this);
 	}
 }

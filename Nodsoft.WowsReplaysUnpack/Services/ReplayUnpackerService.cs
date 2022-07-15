@@ -13,7 +13,7 @@ using System.Text.Json;
 namespace Nodsoft.WowsReplaysUnpack.Services;
 
 
-public class ReplayUnpackerService<TController> : IReplayUnpackerService
+public sealed class ReplayUnpackerService<TController> : IReplayUnpackerService
 	where TController : IReplayController
 {
 	private static readonly byte[] BlowfishKey = "\x29\xB7\xC9\x09\x38\x3F\x84\x88\xFA\x98\xEC\x4E\x13\x19\x79\xFB"

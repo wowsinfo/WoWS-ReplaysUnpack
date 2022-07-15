@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Nodsoft.WowsReplaysUnpack.Core\Nodsoft.WowsReplaysUnpack.Core.csproj" />
+    <ProjectReference Include="..\Nodsoft.WowsReplaysUnpack.ExtendedData\Nodsoft.WowsReplaysUnpack.ExtendedData.csproj" />
     <ProjectReference Include="..\Nodsoft.WowsReplaysUnpack\Nodsoft.WowsReplaysUnpack.csproj" />
   </ItemGroup>
 

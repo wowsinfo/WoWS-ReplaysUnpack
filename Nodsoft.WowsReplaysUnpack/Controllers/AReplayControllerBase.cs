@@ -10,13 +10,14 @@ using System.Reflection;
 namespace Nodsoft.WowsReplaysUnpack.Controllers;
 
 public abstract class AReplayControllerBase<T> : IReplayController
+	where T : class, IReplayController
 {
 	private static readonly Dictionary<string, MethodInfo[]> _methodSubscriptions;
 	private static readonly Dictionary<string, MethodInfo[]> _propertyChangedSubscriptions;
 	protected IDefinitionStore DefinitionStore { get; }
 	protected ILogger<Entity> EntityLogger { get; }
 
-	public virtual UnpackedReplay Replay { get; protected set; }
+	public UnpackedReplay Replay { get; protected set; }
 
 	static AReplayControllerBase()
 	{
@@ -157,7 +158,7 @@ public abstract class AReplayControllerBase<T> : IReplayController
 
 		Entity entity = Replay.Entities[packet.EntityId];
 		using BinaryReader methodDataReader = packet.Data.GetBinaryReader();
-		entity.CallClientMethod(packet.MessageId, methodDataReader, this);
+		entity.CallClientMethod(packet.MessageId, packet.PacketTime, methodDataReader, this);
 	}
 
 	public virtual void OnEntityProperty(EntityPropertyPacket packet)

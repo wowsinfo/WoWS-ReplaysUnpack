@@ -11,12 +11,13 @@ public class EntityMethodPacket : ANetworkPacket
 	public uint EntityId { get; }
 	public uint MessageId { get; }
 	public byte[] Data { get; }
+	public float PacketTime { get; } // Time in seconds from battle start
 
-	public EntityMethodPacket(int packetIndex, BinaryReader binaryReader) : base(packetIndex)
+	public EntityMethodPacket(int packetIndex, float packetTime, BinaryReader binaryReader) : base(packetIndex)
 	{
 		EntityId = binaryReader.ReadUInt32();
 		MessageId = binaryReader.ReadUInt32();
 		Data = binaryReader.ReadBytesWithHeader();
+		PacketTime = packetTime;
 	}
-
 }
