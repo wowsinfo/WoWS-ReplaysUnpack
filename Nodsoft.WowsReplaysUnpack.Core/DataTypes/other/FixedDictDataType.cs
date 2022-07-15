@@ -1,8 +1,6 @@
 ﻿using Nodsoft.WowsReplaysUnpack.Core.Definitions;
 using Nodsoft.WowsReplaysUnpack.Core.Extensions;
 using Nodsoft.WowsReplaysUnpack.Core.Models;
-using System.Collections;
-using System.Text;
 using System.Xml;
 
 namespace Nodsoft.WowsReplaysUnpack.Core.DataTypes;
@@ -14,10 +12,10 @@ public class FixedDictDataType : ADataTypeBase
 	public FixedDictDataType(Version version, IDefinitionStore definitionStore, XmlNode xmlNode)
 		: base(version, definitionStore, xmlNode, typeof(Dictionary<string, object?>))
 	{
-		var allowNoneNode = xmlNode.SelectSingleNode("AllowNone");
+		XmlNode? allowNoneNode = xmlNode.SelectSingleNode("AllowNone");
 		AllowNone = allowNoneNode is not null && allowNoneNode.TrimmedText() == "true";
 
-		foreach (var propertyNode in xmlNode.SelectSingleNode("Properties")!.ChildNodes())
+		foreach (XmlNode propertyNode in xmlNode.SelectSingleNode("Properties")!.ChildNodes())
 			PropertyTypes.Add(propertyNode.Name, definitionStore.GetDataType(version, propertyNode.SelectSingleNode("Type")!));
 
 		if (!AllowNone)
@@ -28,10 +26,10 @@ public class FixedDictDataType : ADataTypeBase
 
 	protected override object? GetValueInternal(BinaryReader reader, XmlNode? propertyOrArgumentNode, int headerSize)
 	{
-		var originalStreamPosition = reader.BaseStream.Position;
+		long originalStreamPosition = reader.BaseStream.Position;
 		if (AllowNone)
 		{
-			var flag = reader.ReadByte();
+			byte flag = reader.ReadByte();
 			if (flag == 0x00) // empty dict
 				return null;
 			else if (flag == 0x01) { } // non empty dict

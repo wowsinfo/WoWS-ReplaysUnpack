@@ -1,9 +1,4 @@
 ﻿using Nodsoft.WowsReplaysUnpack.Core.Extensions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
 

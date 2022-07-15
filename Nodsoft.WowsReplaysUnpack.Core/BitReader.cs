@@ -3,7 +3,7 @@
 public class BitReader : BinaryReader
 {
 	private byte readBits = 0;
-	private List<short> bitsCache = new List<short>();
+	private List<short> bitsCache = new();
 
 	public byte BytesRead => (byte)Math.Ceiling(readBits / 8d);
 	public BitReader(Stream input) : base(input)
@@ -21,7 +21,7 @@ public class BitReader : BinaryReader
 
 	public static IEnumerable<short> StringBits(byte value)
 	{
-			foreach (var i in Enumerable.Range(0, 8).Reverse())
+			foreach (int i in Enumerable.Range(0, 8).Reverse())
 				yield return (short)((value >> i) & 1);
 	}
 
@@ -31,12 +31,12 @@ public class BitReader : BinaryReader
 	{
 		if (bitsCache.Count == 0)
 		{
-			var nextByte = ReadNextByte();
+			byte nextByte = ReadNextByte();
 			bitsCache = StringBits(nextByte).ToList();
 		}
 		readBits += 1;
 
-		var returnValue = bitsCache[0];
+		short returnValue = bitsCache[0];
 		bitsCache.RemoveAt(0);
 		return returnValue;
 	}
@@ -48,7 +48,7 @@ public class BitReader : BinaryReader
 		int value = 0;
 		while (bitsCount > 0)
 		{
-			var bit = ReadNextBit();
+			int bit = ReadNextBit();
 			value = ((value << 1) | bit);
 			bitsCount -= 1;
 		}

@@ -31,11 +31,11 @@ public class PositionPacket : ANetworkPacket
 	{
 		EntityId = binaryReader.ReadInt32();
 		VehicleId = binaryReader.ReadInt32();
-		var position = binaryReader.ReadVector3();
+		Vector3 position = binaryReader.ReadVector3();
 		PositionError = binaryReader.ReadVector3();
-		var yaw = binaryReader.ReadSingle();
-		var pitch = binaryReader.ReadSingle();
-		var roll = binaryReader.ReadSingle();
+		float yaw = binaryReader.ReadSingle();
+		float pitch = binaryReader.ReadSingle();
+		float roll = binaryReader.ReadSingle();
 		IsError = binaryReader.ReadBoolean();
 
 		Position = new(position, yaw, pitch, roll);

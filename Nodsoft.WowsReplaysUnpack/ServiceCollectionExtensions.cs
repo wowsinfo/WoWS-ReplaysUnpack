@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Nodsoft.WowsReplaysUnpack.Core.Definitions;
 using Nodsoft.WowsReplaysUnpack.Services;
-using System;
 
 namespace Nodsoft.WowsReplaysUnpack;
 
@@ -20,7 +19,7 @@ public static class ServiceCollectionExtensions
 																  });
 	public static IServiceCollection AddWowsReplayUnpacker(this IServiceCollection services, Action<ReplayUnpackerBuilder> builderAction)
 	{
-		var builder = new ReplayUnpackerBuilder(services);
+		ReplayUnpackerBuilder builder = new(services);
 		builderAction(builder);
 		builder.Build();
 

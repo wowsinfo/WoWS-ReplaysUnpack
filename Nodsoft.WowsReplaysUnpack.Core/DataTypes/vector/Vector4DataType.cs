@@ -12,7 +12,7 @@ internal class Vector4DataType : VectorDataType
 
 	protected override object? GetValueInternal(BinaryReader reader, XmlNode? propertyOrArgumentNode, int headerSize)
 	{
-		var values = (float[]?)base.GetValueInternal(reader, propertyOrArgumentNode, headerSize);
+		float[]? values = (float[]?)base.GetValueInternal(reader, propertyOrArgumentNode, headerSize);
 		return values is null ? null : new Vector4(values[0], values[1], values[2], values[3]);
 	}
 }

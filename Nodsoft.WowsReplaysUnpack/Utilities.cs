@@ -1,8 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO;
-
-
-namespace Nodsoft.WowsReplaysUnpack;
+﻿namespace Nodsoft.WowsReplaysUnpack;
 
 
 public class Utilities

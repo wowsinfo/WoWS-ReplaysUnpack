@@ -5,10 +5,7 @@ using Nodsoft.WowsReplaysUnpack.Core.Extensions;
 using Nodsoft.WowsReplaysUnpack.Core.Json;
 using Nodsoft.WowsReplaysUnpack.Core.Models;
 using Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
-using System;
-using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Text;
 using System.Text.Json;
 
@@ -114,7 +111,7 @@ public class ReplayUnpackerService<TController> : IReplayUnpackerService
 	{
 		if (jsonBlockCount > 1)
 		{
-			foreach (var _ in Enumerable.Range(0, jsonBlockCount - 1))
+			foreach (int _ in Enumerable.Range(0, jsonBlockCount - 1))
 				replay.ExtraJsonData.Add(ReadJsonBlock<JsonElement>(binaryReader));
 		}
 	}

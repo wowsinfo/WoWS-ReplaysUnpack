@@ -18,7 +18,7 @@ public class PropertyDefinition
 		Name = propertyXmlNode.Name;
 		DataType = definitionStore.GetDataType(clientVersion, propertyXmlNode.SelectSingleNode("Type")!);
 
-		var flag = propertyXmlNode.SelectSingleNodeText("Flags");
+		string? flag = propertyXmlNode.SelectSingleNodeText("Flags");
 		if (!string.IsNullOrEmpty(flag))
 		{
 			Flag = (EntityFlag)Enum.Parse(typeof(EntityFlag), flag);

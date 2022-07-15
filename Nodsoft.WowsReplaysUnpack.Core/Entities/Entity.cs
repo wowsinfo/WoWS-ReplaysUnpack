@@ -1,14 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using Nodsoft.WowsReplaysUnpack.Core.Definitions;
-using Nodsoft.WowsReplaysUnpack.Core.Models;
 using Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Nodsoft.WowsReplaysUnpack.Core.Entities;
 public enum EntityType
@@ -102,16 +96,16 @@ public class Entity
 		if (subscriptionTarget is null)
 			return;
 
-		var methodDefinition = MethodDefinitions.ElementAtOrDefault(index);
+		EntityMethodDefinition? methodDefinition = MethodDefinitions.ElementAtOrDefault(index);
 		if (methodDefinition is null)
 		{
 			Logger.LogError("Method with index {index} was not found on entity with name {Name} ({Id})", index, Name, Id);
 			return;
 		}
-		var hash = $"{Name}_{methodDefinition.Name}";
-		if (MethodSubscriptions.TryGetValue(hash, out var methodInfo))
+		string hash = $"{Name}_{methodDefinition.Name}";
+		if (MethodSubscriptions.TryGetValue(hash, out MethodInfo? methodInfo))
 		{
-			var methodParameters = methodInfo.GetParameters();
+			ParameterInfo[] methodParameters = methodInfo.GetParameters();
 			if (methodDefinition.Arguments.Count != methodParameters.Length - 1
 				|| methodParameters[0].ParameterType != typeof(Entity)
 				|| !methodDefinition.Arguments.Select(a => a.DataType.ClrType).SequenceEqual(methodParameters.Skip(1).Select(m => m.ParameterType))
@@ -122,7 +116,7 @@ public class Entity
 			}
 			try
 			{
-				var methodArgumentValues = methodDefinition.Arguments.Select(a => a.GetValue(reader))
+				object?[] methodArgumentValues = methodDefinition.Arguments.Select(a => a.GetValue(reader))
 					.Prepend(this).ToArray();
 				Logger.LogDebug("Calling method subscription with hash {hash}", hash);
 				methodInfo.Invoke(subscriptionTarget, methodArgumentValues);
@@ -137,17 +131,17 @@ public class Entity
 	public virtual void SetClientProperty(int exposedIndex, BinaryReader reader, object? subscriptionTarget)
 	{
 		Logger.LogDebug("Setting client property with index {index} on entity {Name} ({id})", exposedIndex, Name, Id);
-		var propertyDefinition = ClientPropertyDefinitions[exposedIndex];
-		var propertyValue = propertyDefinition.GetValue(reader, propertyDefinition.XmlNode);
+		PropertyDefinition propertyDefinition = ClientPropertyDefinitions[exposedIndex];
+		object? propertyValue = propertyDefinition.GetValue(reader, propertyDefinition.XmlNode);
 		ClientProperties[propertyDefinition.Name] = propertyValue;
 
 		if (subscriptionTarget is null)
 			return;
 
-		var hash = $"{Name}_{propertyDefinition.Name}";
-		if (PropertyChangedSubscriptions.TryGetValue(hash, out var methodInfo))
+		string hash = $"{Name}_{propertyDefinition.Name}";
+		if (PropertyChangedSubscriptions.TryGetValue(hash, out MethodInfo? methodInfo))
 		{
-			var methodParameters = methodInfo.GetParameters();
+			ParameterInfo[] methodParameters = methodInfo.GetParameters();
 			if (methodParameters.Length != 2
 					|| methodParameters[0].ParameterType != typeof(Entity)
 					|| methodParameters[1].ParameterType != propertyDefinition.DataType.ClrType
@@ -171,24 +165,24 @@ public class Entity
 	public virtual void SetInternalClientProperty(int internalIndex, BinaryReader reader)
 	{
 		Logger.LogDebug("Setting internal client property with index {index} on entity {Name} ({id})", internalIndex, Name, Id);
-		var propertyDefinition = InternalClientPropertyDefinitions[internalIndex];
-		var propertyValue = propertyDefinition.GetValue(reader, propertyDefinition.XmlNode);
+		PropertyDefinition propertyDefinition = InternalClientPropertyDefinitions[internalIndex];
+		object? propertyValue = propertyDefinition.GetValue(reader, propertyDefinition.XmlNode);
 		ClientProperties[propertyDefinition.Name] = propertyValue;
 	}
 
 	public virtual void SetCellProperty(int internalIndex, BinaryReader reader)
 	{
 		Logger.LogDebug("Setting cell property with index {index} on entity {Name} ({id})", internalIndex, Name, Id);
-		var propertyDefinition = CellPropertyDefinitions[internalIndex];
-		var propertyValue = propertyDefinition.GetValue(reader, propertyDefinition.XmlNode);
+		PropertyDefinition propertyDefinition = CellPropertyDefinitions[internalIndex];
+		object? propertyValue = propertyDefinition.GetValue(reader, propertyDefinition.XmlNode);
 		CellProperties[propertyDefinition.Name] = propertyValue;
 	}
 
 	public virtual void SetBaseProperty(int internalIndex, BinaryReader reader)
 	{
 		Logger.LogDebug("Setting base property with index {index} on entity {Name} ({id})", internalIndex, Name, Id);
-		var propertyDefinition = BasePropertyDefinitions[internalIndex];
-		var propertyValue = propertyDefinition.GetValue(reader, propertyDefinition.XmlNode);
+		PropertyDefinition propertyDefinition = BasePropertyDefinitions[internalIndex];
+		object? propertyValue = propertyDefinition.GetValue(reader, propertyDefinition.XmlNode);
 		BaseProperties[propertyDefinition.Name] = propertyValue;
 	}
 

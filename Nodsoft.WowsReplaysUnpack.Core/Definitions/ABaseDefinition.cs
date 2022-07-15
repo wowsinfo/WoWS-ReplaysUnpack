@@ -23,7 +23,7 @@ public abstract class ABaseDefinition
 	}
 	public PropertyDefinition[] GetPropertiesByFlags(EntityFlag entityFlag, bool orderBySize = false)
 	{
-		var properties = Properties.Where(p => entityFlag.HasFlag(p.Flag));
+		IEnumerable<PropertyDefinition> properties = Properties.Where(p => entityFlag.HasFlag(p.Flag));
 		if (!orderBySize)
 			return properties.ToArray();
 		return properties.OrderBy(p => p.DataSize).ToArray();
@@ -37,10 +37,8 @@ public abstract class ABaseDefinition
 
 	private void ParseImplements(string[] @interfaces)
 	{
-		foreach (var @interface in @interfaces)
-		{
+		foreach (string @interface in @interfaces)
 			ParseDefinitionFile(DefinitionStore.GetFileAsXml(ClientVersion, @interface + ".def", Folder, "interfaces").DocumentElement!);
-		}
 	}
 
 	private void ParseProperties(XmlNode? propertiesNode)
@@ -48,10 +46,10 @@ public abstract class ABaseDefinition
 		if (propertiesNode is null)
 			return;
 
-		foreach (var propertyNode in propertiesNode.ChildNodes())
+		foreach (XmlNode propertyNode in propertiesNode.ChildNodes())
 		{
 			// when same-named properties are in interface and in definition, game client uses last one
-			var propertyIndex = Properties.FindIndex(x => x.Name == propertyNode.Name);
+			int propertyIndex = Properties.FindIndex(x => x.Name == propertyNode.Name);
 			if (propertyIndex > -1)
 				Properties.RemoveAt(propertyIndex);
 
@@ -61,8 +59,8 @@ public abstract class ABaseDefinition
 
 	private void ParseVolatile()
 	{
-		var singleProps = new[] { "yaw", "pitch", "roll" };
-		foreach (var property in Properties)
+		string[] singleProps = new[] { "yaw", "pitch", "roll" };
+		foreach (PropertyDefinition? property in Properties)
 		{
 			if (property.Name == "position")
 				VolatileProperties[property.Name] = new Vector3(0f, 0f, 0f);

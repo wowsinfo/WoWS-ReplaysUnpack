@@ -29,7 +29,7 @@ public class EntityDefinition : ABaseDefinition
 		if (methodsNode is null)
 			return;
 
-		foreach (var node in methodsNode.ChildNodes())
+		foreach (XmlNode node in methodsNode.ChildNodes())
 			methods.Add(new EntityMethodDefinition(ClientVersion, DefinitionStore, node));
 
 		methods = methods.OrderBy(m => m.DataSize).ToList();

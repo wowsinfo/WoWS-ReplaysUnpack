@@ -13,9 +13,9 @@ public class ArrayDataType : ADataTypeBase
 	public ArrayDataType(Version version, IDefinitionStore definitionStore, XmlNode xmlNode)
 		: base(version, definitionStore, xmlNode, typeof(Array))
 	{
-		var ofNode = xmlNode.SelectSingleNode("of")!;
-		var allowNoneNode = xmlNode.SelectSingleNode("AllowNone");
-		var sizeNode = xmlNode.SelectSingleNode("size");
+		XmlNode ofNode = xmlNode.SelectSingleNode("of")!;
+		XmlNode? allowNoneNode = xmlNode.SelectSingleNode("AllowNone");
+		XmlNode? sizeNode = xmlNode.SelectSingleNode("size");
 
 		ElementType = definitionStore.GetDataType(version, ofNode);
 		AllowNone = allowNoneNode is not null && allowNoneNode.TrimmedText() == "true";
@@ -30,7 +30,7 @@ public class ArrayDataType : ADataTypeBase
 		=> propertyOrArgumentNode?.SelectXmlNodes("Default/item").Select(node => ElementType.GetDefaultValue(node, true)).ToArray();
 	protected override object? GetValueInternal(BinaryReader reader, XmlNode? propertyOrArgumentNode, int headerSize)
 	{
-		var size = ItemCount ?? reader.ReadByte();
+		int size = ItemCount ?? reader.ReadByte();
 		return new FixedList(ElementType, Enumerable.Range(0, size).Select(_ => ElementType.GetValue(reader, propertyOrArgumentNode, headerSize)).ToArray());
 	}
 }

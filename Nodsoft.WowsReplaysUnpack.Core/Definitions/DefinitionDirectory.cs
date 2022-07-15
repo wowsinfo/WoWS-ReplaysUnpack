@@ -1,6 +1,4 @@
 ﻿using Nodsoft.WowsReplaysUnpack.Core.Extensions;
-using System.Reflection;
-using System.Xml;
 
 namespace Nodsoft.WowsReplaysUnpack.Core.Definitions;
 
@@ -22,16 +20,16 @@ public class DefinitionDirectory
 	private void ParseChildrenRecursive(string[] fileNames)
 	{
 		fileNames = fileNames.Where(name => name.StartsWith(Path)).ToArray();
-		foreach (var fileName in fileNames)
+		foreach (string fileName in fileNames)
 		{
-			var actualFileName = fileName.GetStringAfterLength(Path + ".");
+			string actualFileName = fileName.GetStringAfterLength(Path + ".");
 			if (actualFileName.Count(c => c == '.') == 1)
 			{
 				Files.Add(new DefinitionFile(actualFileName, fileName));
 			}
 			else
 			{
-				var directoryName = actualFileName.GetStringBeforeIndex('.');
+				string directoryName = actualFileName.GetStringBeforeIndex('.');
 				if (!Directories.Any(d => d.Name == directoryName))
 					Directories.Add(new DefinitionDirectory(actualFileName.GetStringBeforeIndex('.'),
 						fileName.GetStringBeforeIndex("." + actualFileName.GetStringAfterIndex('.')), fileNames));

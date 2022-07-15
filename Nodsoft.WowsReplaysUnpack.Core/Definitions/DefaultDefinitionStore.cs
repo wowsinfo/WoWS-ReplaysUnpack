@@ -44,7 +44,7 @@ public class DefaultDefinitionStore : IDefinitionStore
 		_assembly = typeof(DefaultDefinitionStore).Assembly;
 		_logger = logger;
 
-		var versionsDirectory = JoinPath(_assembly.FullName!.GetStringBeforeIndex(Consts.COMMA), "Definitions", "Versions");
+		string versionsDirectory = JoinPath(_assembly.FullName!.GetStringBeforeIndex(Consts.COMMA), "Definitions", "Versions");
 
 		_supportedVersions = _assembly.GetManifestResourceNames()
 			.Where(name => name.StartsWith(versionsDirectory))
@@ -60,14 +60,14 @@ public class DefaultDefinitionStore : IDefinitionStore
 	public virtual EntityDefinition GetEntityDefinitionByIndex(Version clientVersion, int index)
 	{
 		clientVersion = GetActualVersion(clientVersion);
-		var name = GetEntityDefinitionNameByIndex(clientVersion, index);
+		string name = GetEntityDefinitionNameByIndex(clientVersion, index);
 		return GetEntityDefinitionByName(clientVersion, name);
 	}
 	public virtual EntityDefinition GetEntityDefinitionByName(Version clientVersion, string name)
 	{
 		clientVersion = GetActualVersion(clientVersion);
-		var cacheKey = CacheKey(clientVersion.ToString(), name);
-		if (_EntityDefinitionCache.TryGetValue(cacheKey, out var definition))
+		string cacheKey = CacheKey(clientVersion.ToString(), name);
+		if (_EntityDefinitionCache.TryGetValue(cacheKey, out EntityDefinition? definition))
 			return definition;
 
 		definition = new EntityDefinition(clientVersion, this, name);
@@ -88,11 +88,11 @@ public class DefaultDefinitionStore : IDefinitionStore
 
 	protected virtual string GetEntityDefinitionNameByIndex(Version clientVersion, int index)
 	{
-		var cacheKey = CacheKey(clientVersion.ToString(), (index - 1).ToString());
-		if (_entityDefinitionIndexNameCache.TryGetValue(cacheKey, out var name))
+		string cacheKey = CacheKey(clientVersion.ToString(), (index - 1).ToString());
+		if (_entityDefinitionIndexNameCache.TryGetValue(cacheKey, out string? name))
 			return name;
 
-		var names = GetEntityIndexes(clientVersion);
+		Dictionary<int, string> names = GetEntityIndexes(clientVersion);
 		_entityDefinitionIndexNameCache[cacheKey] = names[index];
 		return _entityDefinitionIndexNameCache[cacheKey];
 	}
@@ -108,16 +108,16 @@ public class DefaultDefinitionStore : IDefinitionStore
 	public virtual XmlDocument GetFileAsXml(Version clientVersion, string name, params string[] directoryNames)
 	{
 		clientVersion = GetActualVersion(clientVersion);
-		var directory = FindDirectory(clientVersion, directoryNames);
-		var file = directory.Files.SingleOrDefault(f => f.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
+		DefinitionDirectory directory = FindDirectory(clientVersion, directoryNames);
+		DefinitionFile? file = directory.Files.SingleOrDefault(f => f.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
 		if (file is null)
 			throw new Exception("File could not be found");
-		var settings = new XmlReaderSettings
+		XmlReaderSettings settings = new()
 		{
 			IgnoreComments = true
 		};
-		var reader = XmlReader.Create(_assembly.GetManifestResourceStream(file.Path) ?? throw new Exception("File not found"), settings);
-		var xmlDocument = new XmlDocument();
+		XmlReader reader = XmlReader.Create(_assembly.GetManifestResourceStream(file.Path) ?? throw new Exception("File not found"), settings);
+		XmlDocument xmlDocument = new();
 		xmlDocument.Load(reader);
 		return xmlDocument;
 	}
@@ -125,11 +125,11 @@ public class DefaultDefinitionStore : IDefinitionStore
 	public virtual ADataTypeBase GetDataType(Version clientVersion, XmlNode typeOrArgXmlNode)
 	{
 		clientVersion = GetActualVersion(clientVersion);
-		var versionString = clientVersion.ToString();
-		if (_typeMappings.ContainsKey(versionString) && _typeMappings.TryGetValue(versionString, out var typeMapping))
+		string versionString = clientVersion.ToString();
+		if (_typeMappings.ContainsKey(versionString) && _typeMappings.TryGetValue(versionString, out Dictionary<string, XmlNode>? typeMapping))
 			return GetDataTypeInternal(clientVersion, typeMapping, typeOrArgXmlNode);
 
-		var aliasXml = GetFileAsXml(clientVersion, "alias.xml", "entity_defs");
+		XmlDocument aliasXml = GetFileAsXml(clientVersion, "alias.xml", "entity_defs");
 		typeMapping = new Dictionary<string, XmlNode>();
 		foreach (XmlNode node in aliasXml.DocumentElement!.ChildNodes)
 		{
@@ -142,9 +142,9 @@ public class DefaultDefinitionStore : IDefinitionStore
 	protected virtual DefinitionDirectory FindDirectory(Version clientVersion, string[] directoryNames)
 	{
 		DefinitionDirectory folder = GetRootDirectory(clientVersion);
-		foreach (var folderName in directoryNames)
+		foreach (string? folderName in directoryNames)
 		{
-			var foundFolder = folder.Directories.SingleOrDefault(f => f.Name.Equals(folderName, StringComparison.InvariantCultureIgnoreCase));
+			DefinitionDirectory? foundFolder = folder.Directories.SingleOrDefault(f => f.Name.Equals(folderName, StringComparison.InvariantCultureIgnoreCase));
 			if (foundFolder is null)
 				break;
 			folder = foundFolder;
@@ -154,12 +154,12 @@ public class DefaultDefinitionStore : IDefinitionStore
 
 	protected virtual DefinitionDirectory GetRootDirectory(Version clientVersion)
 	{
-		if (_directoryCache.TryGetValue(clientVersion.ToString(), out var rootDirectory))
+		if (_directoryCache.TryGetValue(clientVersion.ToString(), out DefinitionDirectory? rootDirectory))
 			return rootDirectory;
 
-		var scriptsDirectory = JoinPath(_assembly.FullName!.GetStringBeforeIndex(Consts.COMMA),
+		string scriptsDirectory = JoinPath(_assembly.FullName!.GetStringBeforeIndex(Consts.COMMA),
 			"Definitions", "Versions", Consts.UNDERSCORE + clientVersion.ToString().Replace(Consts.DOT, Consts.UNDERSCORE), "scripts");
-		var fileNames = _assembly.GetManifestResourceNames()
+		string[]? fileNames = _assembly.GetManifestResourceNames()
 			.Where(name => name.StartsWith(scriptsDirectory))
 			.ToArray();
 
@@ -170,10 +170,10 @@ public class DefaultDefinitionStore : IDefinitionStore
 
 	protected virtual ADataTypeBase GetDataTypeInternal(Version clientVersion, Dictionary<string, XmlNode> typeMapping, XmlNode typeOrArgXmlNode)
 	{
-		var typeName = typeOrArgXmlNode.ChildNodes().First(n => n.NodeType is XmlNodeType.Text).TrimmedText();
-		if (typeMapping.TryGetValue(typeName, out var mappedNode))
+		string typeName = typeOrArgXmlNode.ChildNodes().First(n => n.NodeType is XmlNodeType.Text).TrimmedText();
+		if (typeMapping.TryGetValue(typeName, out XmlNode? mappedNode))
 			return GetDataTypeInternal(clientVersion, typeMapping, mappedNode);
-		else if (TypeConsts.SimpleTypeMappings.TryGetValue(typeName, out var dataType))
+		else if (TypeConsts.SimpleTypeMappings.TryGetValue(typeName, out Type? dataType))
 			return (ADataTypeBase)Activator.CreateInstance(dataType, clientVersion, this, typeOrArgXmlNode)!;
 		else
 			throw new NotSupportedException($"DataType {typeName} is not supported");
@@ -181,7 +181,7 @@ public class DefaultDefinitionStore : IDefinitionStore
 
 	protected Version GetActualVersion(Version version)
 	{
-		var actualVersion = _supportedVersions.FirstOrDefault(v => version >= v) ?? throw new VersionNotSupportedException(_supportedVersions.Last(), version);
+		Version actualVersion = _supportedVersions.FirstOrDefault(v => version >= v) ?? throw new VersionNotSupportedException(_supportedVersions.Last(), version);
 		if (actualVersion != version)
 			_logger.LogWarning("The requested version does not match the latest supported version. Requested: {requested}, Latest: {latest}", version, actualVersion);
 		return actualVersion;

@@ -1,9 +1,4 @@
-﻿using Nodsoft.WowsReplaysUnpack.Core.Extensions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
 
 namespace Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
 
@@ -18,10 +13,10 @@ public class MapPacket : ANetworkPacket
 		SpaceId = binaryReader.ReadInt32();
 		ArenaId = binaryReader.ReadInt64();
 
-		var nameSize = binaryReader.ReadInt32();
+		int nameSize = binaryReader.ReadInt32();
 
 		// I assume this is some useless stuff about the map that we have to skip
-		var stream = binaryReader.BaseStream;
+		Stream stream = binaryReader.BaseStream;
 		if (stream.Position + nameSize + 16 * 4 != stream.Length)
 		{
 			_ = binaryReader.ReadBytes(16 * 8 + 4);

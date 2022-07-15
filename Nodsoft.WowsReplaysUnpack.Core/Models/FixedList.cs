@@ -16,7 +16,7 @@ public class FixedList : List<object?>, IFixedLength
 
 	public void Slice(int start, int end, IEnumerable<object?> newItems)
 	{
-		var newList = this.Take(start).Concat(newItems).Concat(this.Skip(end)).ToList();
+		List<object?> newList = this.Take(start).Concat(newItems).Concat(this.Skip(end)).ToList();
 		Clear();
 		AddRange(newList);
 	}

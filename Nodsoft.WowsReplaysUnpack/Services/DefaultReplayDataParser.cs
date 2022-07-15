@@ -2,9 +2,6 @@
 using Nodsoft.WowsReplaysUnpack.Core.Models;
 using Nodsoft.WowsReplaysUnpack.Core.Network;
 using Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Text.RegularExpressions;
 
 namespace Nodsoft.WowsReplaysUnpack.Services;
@@ -30,13 +27,13 @@ public class DefaultReplayDataParser : IReplayDataParser
 	/// <param name="replayDataStream"></param>
 	public virtual IEnumerable<ANetworkPacket> ParseNetworkPackets(MemoryStream replayDataStream, ReplayUnpackerOptions options)
 	{
-		var packetIndex = 0;
+		int packetIndex = 0;
 		using BinaryReader binaryReader = new(replayDataStream);
 		while (replayDataStream.Position != replayDataStream.Length)
 		{
-			var packetSize = binaryReader.ReadUInt32();
-			var packetType = binaryReader.ReadUInt32();
-			var packetTime = binaryReader.ReadSingle();
+			uint packetSize = binaryReader.ReadUInt32();
+			uint packetType = binaryReader.ReadUInt32();
+			float packetTime = binaryReader.ReadSingle();
 
 			_logger.LogDebug("Packet parsed of type '{packetType}' with size '{packetSize}' and timestamp '{packetTime}'",
 				NetworkPacketTypes.GetName(packetType), packetSize, packetTime);

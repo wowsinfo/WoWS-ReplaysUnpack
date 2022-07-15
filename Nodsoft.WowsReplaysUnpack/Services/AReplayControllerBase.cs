@@ -4,10 +4,6 @@ using Nodsoft.WowsReplaysUnpack.Core.Entities;
 using Nodsoft.WowsReplaysUnpack.Core.Extensions;
 using Nodsoft.WowsReplaysUnpack.Core.Models;
 using Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Reflection;
 
 namespace Nodsoft.WowsReplaysUnpack.Services;
@@ -81,34 +77,31 @@ public abstract class AReplayControllerBase<T> : IReplayController
 	}
 	public virtual void OnBasePlayerCreate(BasePlayerCreatePacket packet)
 	{
-		Replay.Entities.GetOrAddValue(packet.EntityId, out var entity, () => CreateEntity(packet.EntityId, "Avatar"));
+		Replay.Entities.GetOrAddValue(packet.EntityId, out Entity? entity, () => CreateEntity(packet.EntityId, "Avatar"));
 
-		using var binaryReader = packet.Data.GetBinaryReader();
+		using BinaryReader binaryReader = packet.Data.GetBinaryReader();
 		entity.SetBaseProperties(binaryReader);
 		Replay.PlayerEntityId = packet.EntityId;
 	}
 
 	public virtual void OnCellPlayerCreate(CellPlayerCreatePacket packet)
 	{
-		Replay.Entities.GetOrAddValue(packet.EntityId, out var entity, () => CreateEntity(packet.EntityId, "Avatar"));
+		Replay.Entities.GetOrAddValue(packet.EntityId, out Entity? entity, () => CreateEntity(packet.EntityId, "Avatar"));
 
-		using var binaryReader = packet.Data.GetBinaryReader();
+		using BinaryReader binaryReader = packet.Data.GetBinaryReader();
 		entity.SetInternalClientProperties(binaryReader);
 	}
 
 	public virtual void OnEntityCreate(EntityCreatePacket packet)
 	{
-		var entity = CreateEntity(packet.EntityId, packet.Type);
-
-
+		Entity entity = CreateEntity(packet.EntityId, packet.Type);
 
 		Replay.Entities[packet.EntityId] = entity;
 		using BinaryReader binaryReader = packet.Data.GetBinaryReader();
-		var ms = binaryReader.BaseStream as MemoryStream;
-		var valuesCount = binaryReader.ReadByte();
-		foreach (var i in Enumerable.Range(0, valuesCount))
+		byte valuesCount = binaryReader.ReadByte();
+		foreach (int i in Enumerable.Range(0, valuesCount))
 		{
-			var propertyIndex = binaryReader.ReadByte();
+			byte propertyIndex = binaryReader.ReadByte();
 			entity.SetClientProperty(propertyIndex, binaryReader, this);
 		}
 	}
@@ -117,7 +110,7 @@ public abstract class AReplayControllerBase<T> : IReplayController
 	{
 		if (!Replay.Entities.ContainsKey(packet.EntityId))
 			return;
-		var entity = Replay.Entities[packet.EntityId];
+		Entity entity = Replay.Entities[packet.EntityId];
 		entity.SetPosition(packet.Position);
 	}
 
@@ -138,8 +131,8 @@ public abstract class AReplayControllerBase<T> : IReplayController
 				is, rather than by the position field.
 				e.g. Assigning the Avatar the position of the Vehicle
 			 */
-			var masterEntity = Replay.Entities[packet.EntityId2];
-			var slaveEntity = Replay.Entities[packet.EntityId1];
+			Entity? masterEntity = Replay.Entities[packet.EntityId2];
+			Entity? slaveEntity = Replay.Entities[packet.EntityId1];
 
 			slaveEntity.SetPosition(slaveEntity.GetPosition());
 		}
@@ -147,7 +140,7 @@ public abstract class AReplayControllerBase<T> : IReplayController
 			&& Replay.Entities.ContainsKey(packet.EntityId1))
 		{
 			// This is a regular update for entity 1, without entity 2
-			var entity = Replay.Entities[packet.EntityId1];
+			Entity? entity = Replay.Entities[packet.EntityId1];
 			entity.SetPosition(packet.Position);
 		}
 	}
@@ -157,7 +150,7 @@ public abstract class AReplayControllerBase<T> : IReplayController
 		if (!Replay.Entities.ContainsKey(packet.EntityId))
 			return;
 
-		var entity = Replay.Entities[packet.EntityId];
+		Entity entity = Replay.Entities[packet.EntityId];
 		using BinaryReader methodDataReader = packet.Data.GetBinaryReader();
 		entity.CallClientMethod(packet.MessageId, methodDataReader, this);
 	}
@@ -166,7 +159,7 @@ public abstract class AReplayControllerBase<T> : IReplayController
 		if (!Replay.Entities.ContainsKey(packet.EntityId))
 			return;
 
-		var entity = Replay.Entities[packet.EntityId];
+		Entity entity = Replay.Entities[packet.EntityId];
 		using BinaryReader propertyData = packet.Data.GetBinaryReader();
 		entity.SetClientProperty(packet.MessageId, propertyData, this);
 	}
@@ -176,7 +169,7 @@ public abstract class AReplayControllerBase<T> : IReplayController
 		if (!Replay.Entities.ContainsKey((int)packet.EntityId))
 			return;
 
-		var entity = Replay.Entities[(int)packet.EntityId];
+		Entity entity = Replay.Entities[(int)packet.EntityId];
 		packet.Apply(entity);
 	}
 
@@ -185,7 +178,7 @@ public abstract class AReplayControllerBase<T> : IReplayController
 
 	protected virtual Entity CreateEntity(int id, int index)
 	{
-		var definition = DefinitionStore.GetEntityDefinitionByIndex(Replay.ClientVersion, index - 1);
+		EntityDefinition definition = DefinitionStore.GetEntityDefinitionByIndex(Replay.ClientVersion, index - 1);
 		return new(id, definition.Name, definition, _methodSubscriptions, _propertyChangedSubscriptions, EntityLogger);
 	}
 }

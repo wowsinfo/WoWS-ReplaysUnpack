@@ -18,22 +18,22 @@ public class EntityMethodDefinition
 		Name = node.Name;
 
 		// Parse Args
-		var args = node.SelectSingleNode("Args");
+		XmlNode? args = node.SelectSingleNode("Args");
 		if (args is not null)
 		{
-			foreach (var arg in args.ChildNodes())
+			foreach (XmlNode arg in args.ChildNodes())
 				Arguments.Add(new EntityMethodArgumentDefinition(arg, arg.Name, definitionStore.GetDataType(clientVersion, arg)));
 		}
 		else if (node.SelectNodes("Arg") is not null)
 		{
-			foreach (var arg in node.SelectXmlNodes("Arg"))
+			foreach (XmlNode arg in node.SelectXmlNodes("Arg"))
 			{
 				Arguments.Add(new EntityMethodArgumentDefinition(arg, null, definitionStore.GetDataType(clientVersion, arg)));
 			}
 		}
 
 		// Set Header Size
-		var variableLengthHeaderSizeNode = node.SelectSingleNode("VariableLengthHeaderSize");
+		XmlNode? variableLengthHeaderSizeNode = node.SelectSingleNode("VariableLengthHeaderSize");
 		if (variableLengthHeaderSizeNode is not null)
 			try { HeaderSize = int.Parse(variableLengthHeaderSizeNode.FirstChild!.TrimmedText()); }
 			catch { HeaderSize = DEFAULT_HEADER_SIZE; }
@@ -50,11 +50,11 @@ public class EntityMethodDefinition
 
 	public (List<object?> unnamed, Dictionary<string, object?> named) GetValues(BinaryReader reader)
 	{
-		var unnamed = new List<object?>();
-		var named = new Dictionary<string, object?>();
-		foreach (var argument in Arguments)
+		List<object?> unnamed = new();
+		Dictionary<string, object?> named = new();
+		foreach (EntityMethodArgumentDefinition argument in Arguments)
 		{
-			var value = argument.GetValue(reader);
+			object? value = argument.GetValue(reader);
 			if (argument.Name is null)
 				unnamed.Add(value);
 			else

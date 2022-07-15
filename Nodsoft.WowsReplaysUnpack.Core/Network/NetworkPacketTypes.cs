@@ -21,7 +21,7 @@ public static class NetworkPacketTypes
 
 	static NetworkPacketTypes()
 	{
-		foreach (var field in typeof(NetworkPacketTypes).GetFields(BindingFlags.Public))
+		foreach (FieldInfo field in typeof(NetworkPacketTypes).GetFields(BindingFlags.Public))
 			_names.Add((uint)field.GetValue(null)!, field.Name);
 	}
 

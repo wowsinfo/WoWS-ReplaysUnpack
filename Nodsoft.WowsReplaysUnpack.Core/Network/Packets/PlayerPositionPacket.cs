@@ -14,10 +14,10 @@ public class PlayerPositionPacket : ANetworkPacket
 		EntityId1 = binaryReader.ReadInt32();
 		EntityId2 = binaryReader.ReadInt32();
 
-		var position = binaryReader.ReadVector3();
-		var yaw = binaryReader.ReadSingle();
-		var pitch = binaryReader.ReadSingle();
-		var roll = binaryReader.ReadSingle();
+		Vector3 position = binaryReader.ReadVector3();
+		float yaw = binaryReader.ReadSingle();
+		float pitch = binaryReader.ReadSingle();
+		float roll = binaryReader.ReadSingle();
 
 		Position = new(position, yaw, pitch, roll);
 	}

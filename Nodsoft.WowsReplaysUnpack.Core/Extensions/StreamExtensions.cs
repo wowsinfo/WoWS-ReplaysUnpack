@@ -14,7 +14,7 @@ public static class StreamExtensions
 
 	public static byte[] ReadBytesWithHeader(this BinaryReader binaryReader)
 	{
-		var size = binaryReader.ReadUInt32();
+		uint size = binaryReader.ReadUInt32();
 		return binaryReader.ReadBytes((int)size);
 	}
 

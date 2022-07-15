@@ -1,5 +1,4 @@
 ﻿using Nodsoft.WowsReplaysUnpack.Core.Models;
-using System.IO;
 
 namespace Nodsoft.WowsReplaysUnpack.Services;
 

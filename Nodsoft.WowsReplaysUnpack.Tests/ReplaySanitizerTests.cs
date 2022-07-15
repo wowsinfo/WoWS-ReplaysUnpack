@@ -15,11 +15,11 @@ public class ReplaySanitizerTests
 
 	public ReplaySanitizerTests()
 	{
-		var serviceCollection = new ServiceCollection();
-		serviceCollection.AddLogging(l => l.ClearProviders());
-		serviceCollection.AddWowsReplayUnpacker();
-		var services = serviceCollection.BuildServiceProvider();
-		_factory = services.GetRequiredService<ReplayUnpackerFactory>();
+		_factory = new ServiceCollection()
+			.AddLogging(l => l.ClearProviders())
+			.AddWowsReplayUnpacker()
+			.BuildServiceProvider()
+			.GetRequiredService<ReplayUnpackerFactory>();
 	}
 
 	/// <summary>

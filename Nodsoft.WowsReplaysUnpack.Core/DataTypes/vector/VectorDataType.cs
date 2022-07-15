@@ -24,13 +24,8 @@ internal class VectorDataType : ADataTypeBase
 	protected override object? GetValueInternal(BinaryReader reader, XmlNode? propertyOrArgumentNode, int headerSize)
 	{
 		// Size of a float value
-		var x = Enumerable.Range(0, _itemCount);
 		return Enumerable.Range(0, _itemCount)
-			.Select((_, index) =>
-			{
-				var s = x;
-				return reader.ReadSingle();
-			}).ToArray();
+			.Select(_ => reader.ReadSingle()).ToArray();
 	}
 
 	public override object? GetDefaultValue(XmlNode? propertyOrArgumentNode, bool forArray = false)

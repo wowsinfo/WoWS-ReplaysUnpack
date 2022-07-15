@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Nodsoft.WowsReplaysUnpack.Core.Exceptions;
+﻿namespace Nodsoft.WowsReplaysUnpack.Core.Exceptions;
 
 public class InvalidReplayException : Exception
 {

@@ -1,5 +1,4 @@
 ﻿using Nodsoft.WowsReplaysUnpack.Core.Definitions;
-using System.Collections;
 using System.Xml;
 
 namespace Nodsoft.WowsReplaysUnpack.Core.DataTypes;
@@ -16,7 +15,7 @@ public class BlobDataType : ADataTypeBase
 
 	protected override int GetSizeFromHeader(BinaryReader reader)
 	{
-		var size = base.GetSizeFromHeader(reader);
+		int size = base.GetSizeFromHeader(reader);
 		// hack for arenaStateReceived Method
 		if (size is 0xff) // 255
 		{
