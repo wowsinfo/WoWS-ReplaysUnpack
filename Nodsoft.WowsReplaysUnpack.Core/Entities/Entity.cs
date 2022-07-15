@@ -88,8 +88,11 @@ public class Entity
 		BasePropertyDefinitions = EntityDefinition.GetPropertiesByFlags(EntityFlag.BASE_AND_CLIENT);
 	}
 
-	public string GetClientPropertyNameForIndex(int index)
-		=> ClientPropertyDefinitions[index].Name;
+	public string? GetClientPropertyNameForIndex(int index)
+		=> ClientPropertyDefinitions.ElementAtOrDefault(index)?.Name;
+
+	public string? GetClientMethodNameForIndex(int index)
+		=> MethodDefinitions.ElementAtOrDefault(index)?.Name;
 
 	public virtual void CallClientMethod(int index, BinaryReader reader, object? subscriptionTarget)
 	{
