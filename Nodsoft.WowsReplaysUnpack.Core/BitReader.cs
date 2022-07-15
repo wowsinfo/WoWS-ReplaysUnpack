@@ -27,7 +27,7 @@ public class BitReader : BinaryReader
 
 	public byte ReadNextByte() => ReadByte();
 
-	public short ReadNextBit()
+	public int ReadNextBit()
 	{
 		if (bitsCache.Count == 0)
 		{
@@ -41,15 +41,15 @@ public class BitReader : BinaryReader
 		return returnValue;
 	}
 
-	public short ReadBits(int bitsCount)
+	public int ReadBits(int bitsCount)
 	{
 		if (bitsCount == 0)
 			return 0;
-		short value = 0;
+		int value = 0;
 		while (bitsCount > 0)
 		{
 			var bit = ReadNextBit();
-			value = (short)((value << 1) | bit);
+			value = ((value << 1) | bit);
 			bitsCount -= 1;
 		}
 		return value;

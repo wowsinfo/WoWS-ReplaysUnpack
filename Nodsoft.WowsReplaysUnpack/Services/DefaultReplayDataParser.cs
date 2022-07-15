@@ -28,8 +28,9 @@ public class DefaultReplayDataParser : IReplayDataParser
 	/// Parses the individual network packets
 	/// </summary>
 	/// <param name="replayDataStream"></param>
-	public virtual IEnumerable<INetworkPacket> ParseNetworkPackets(MemoryStream replayDataStream, ReplayUnpackerOptions options)
+	public virtual IEnumerable<ANetworkPacket> ParseNetworkPackets(MemoryStream replayDataStream, ReplayUnpackerOptions options)
 	{
+		var packetIndex = 0;
 		using BinaryReader binaryReader = new(replayDataStream);
 		while (replayDataStream.Position != replayDataStream.Length)
 		{
@@ -50,20 +51,21 @@ public class DefaultReplayDataParser : IReplayDataParser
 
 			yield return packetType switch
 			{
-				NetworkPacketTypes.BasePlayerCreate => new BasePlayerCreatePacket(_packetBufferReader),
-				NetworkPacketTypes.CellPlayerCreate => new CellPlayerCreatePacket(_packetBufferReader),
-				NetworkPacketTypes.EntityControl => new EntityControlPacket(_packetBufferReader),
-				NetworkPacketTypes.EntityEnter => new EntityEnterPacket(_packetBufferReader),
-				NetworkPacketTypes.EntityLeave => new EntityLeavePacket(_packetBufferReader),
-				NetworkPacketTypes.EntityCreate => new EntityCreatePacket(_packetBufferReader),
-				NetworkPacketTypes.EntityProperty => new EntityPropertyPacket(_packetBufferReader),
-				NetworkPacketTypes.EntityMethod => new EntityMethodPacket(_packetBufferReader),
-				NetworkPacketTypes.Map => new MapPacket(_packetBufferReader),
-				NetworkPacketTypes.NestedProperty => new NestedPropertyPacket(_packetBufferReader),
-				NetworkPacketTypes.Position => new PositionPacket(_packetBufferReader),
-				NetworkPacketTypes.PlayerPosition => new PlayerPositionPacket(_packetBufferReader),
-				_ => new UnknownPacket(_packetBufferReader)
+				NetworkPacketTypes.BasePlayerCreate => new BasePlayerCreatePacket(packetIndex, _packetBufferReader),
+				NetworkPacketTypes.CellPlayerCreate => new CellPlayerCreatePacket(packetIndex, _packetBufferReader),
+				NetworkPacketTypes.EntityControl => new EntityControlPacket(packetIndex, _packetBufferReader),
+				NetworkPacketTypes.EntityEnter => new EntityEnterPacket(packetIndex, _packetBufferReader),
+				NetworkPacketTypes.EntityLeave => new EntityLeavePacket(packetIndex, _packetBufferReader),
+				NetworkPacketTypes.EntityCreate => new EntityCreatePacket(packetIndex, _packetBufferReader),
+				NetworkPacketTypes.EntityProperty => new EntityPropertyPacket(packetIndex, _packetBufferReader),
+				NetworkPacketTypes.EntityMethod => new EntityMethodPacket(packetIndex, _packetBufferReader),
+				NetworkPacketTypes.Map => new MapPacket(packetIndex, _packetBufferReader),
+				NetworkPacketTypes.NestedProperty => new NestedPropertyPacket(packetIndex, _packetBufferReader),
+				NetworkPacketTypes.Position => new PositionPacket(packetIndex, _packetBufferReader),
+				NetworkPacketTypes.PlayerPosition => new PlayerPositionPacket(packetIndex, _packetBufferReader),
+				_ => new UnknownPacket(packetIndex, _packetBufferReader)
 			};
+			packetIndex++;
 		}
 	}
 

@@ -1,3 +1,10 @@
 ﻿namespace Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
 
-public interface INetworkPacket { }
+public abstract class ANetworkPacket
+{
+	public int PacketIndex { get; }
+	public ANetworkPacket(int packetIndex)
+	{
+		PacketIndex = packetIndex;
+	}
+}

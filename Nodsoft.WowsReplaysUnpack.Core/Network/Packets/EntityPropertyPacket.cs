@@ -11,13 +11,13 @@ namespace Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
 /// Fires when servers requests client to change
 /// entity's property with some arguments
 /// </summary>
-public class EntityPropertyPacket : INetworkPacket
+public class EntityPropertyPacket : ANetworkPacket
 {
 	public int EntityId { get; }
 	public int MessageId { get; }
 	public byte[] Data { get; }
 
-	public EntityPropertyPacket(BinaryReader binaryReader)
+	public EntityPropertyPacket(int packetIndex, BinaryReader binaryReader) : base(packetIndex)
 	{
 		EntityId = binaryReader.ReadInt32();
 		MessageId = binaryReader.ReadInt32();

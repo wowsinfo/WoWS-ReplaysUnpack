@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 
 namespace Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
 
-public class MapPacket : INetworkPacket
+public class MapPacket : ANetworkPacket
 {
 	public int SpaceId { get; }
 	public long ArenaId { get; }
 	public string Name { get; }
 
-	public MapPacket(BinaryReader binaryReader)
+	public MapPacket(int packetIndex, BinaryReader binaryReader) : base(packetIndex)
 	{
 		SpaceId = binaryReader.ReadInt32();
 		ArenaId = binaryReader.ReadInt64();

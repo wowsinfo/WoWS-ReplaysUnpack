@@ -5,6 +5,7 @@
 		<TargetFrameworks>net5.0;net6.0</TargetFrameworks>
 		<LangVersion>10</LangVersion>
 		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
 		<Version>0.5.2</Version>
 		<Company>Nodsoft Systems</Company>
 		<Authors>imkindaprogrammermyself, Sakura Akeno Isayeki, floribe2000</Authors>
@@ -18,20 +19,22 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="KaitaiStruct.Runtime.CSharp" Version="0.9.0" />
-		<PackageReference Include="Mapster" Version="7.2.0" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.1" />
-		<PackageReference Include="Razorvine.Pickle" Version="1.2.1" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<None Remove="**/*.DotSettings" />
 		<None Include="../README.md" Pack="true" PackagePath="/" />
+		<None Include="CamouflageInfo.cs" />
 		<Compile Remove="_Infrastructure\**\*" />
 		<None Include="_Infrastructure\**\*" />
 		<Compile Remove="_Data\**\*" />
 		<None Include="_Data\**\*" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Remove="CamouflageInfo.cs" />
 	</ItemGroup>
 
 	<ItemGroup>

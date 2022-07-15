@@ -1,21 +1,17 @@
 ﻿using Nodsoft.WowsReplaysUnpack.Core.Entities;
 using Nodsoft.WowsReplaysUnpack.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Collections.ObjectModel;
 
 namespace Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
 
-public class NestedPropertyPacket : INetworkPacket
+public class NestedPropertyPacket : ANetworkPacket
 {
 	public uint EntityId { get; }
 	public bool IsSlice { get; }
 	public byte DataSize { get; }
 	public byte[] Data { get; }
 
-	public NestedPropertyPacket(BinaryReader binaryReader)
+	public NestedPropertyPacket(int packetIndex, BinaryReader binaryReader) : base(packetIndex)
 	{
 		EntityId = binaryReader.ReadUInt32();
 		IsSlice = binaryReader.ReadBoolean();
@@ -23,7 +19,6 @@ public class NestedPropertyPacket : INetworkPacket
 		_ = binaryReader.ReadBytes(3); // unknown
 		Data = binaryReader.ReadBytes(DataSize);
 	}
-
 	public void Apply(Entity entity)
 	{
 		object? obj = entity;
@@ -65,7 +60,7 @@ public class NestedPropertyPacket : INetworkPacket
 			if (IsSlice)
 				maxBits = BitReader.BitsRequired(list.Length + 1);
 			else
-				maxBits = BitReader.BitsRequired(list.Length + 1);
+				maxBits = BitReader.BitsRequired(list.Length);
 
 			var index = bitReader.ReadBits(maxBits);
 			var endIndex = IsSlice ? bitReader.ReadBits(maxBits) : 0;
@@ -74,25 +69,25 @@ public class NestedPropertyPacket : INetworkPacket
 			if (data.Length <= 0)
 			{
 				if (IsSlice)
-					list.RemoveRange(index, endIndex - index);
+					list.Slice(index, endIndex, Array.Empty<object?>());
 				else
 					list[index] = null;
-
 				return;
 			}
 
 			var newElementValues = new List<object?>();
 			using BinaryReader elementsReader = new(new MemoryStream(data));
 			while (elementsReader.BaseStream.Position < elementsReader.BaseStream.Length)
-				newElementValues.Add(list.ElementType.GetValue(elementsReader, null));
+			{
+				var xValue = list.ElementType.GetValue(elementsReader, null);
+				newElementValues.Add(xValue);
+			}
+
 
 			if (IsSlice)
-				foreach (var newElementValueIndex in Enumerable.Range(index, newElementValues.Count))
-				{
-					list.AddAndExtend(newElementValueIndex, newElementValues[newElementValueIndex - index]);
-				}
+				list.Slice(index, endIndex, newElementValues);
 			else
-				list.AddAndExtend(index, newElementValues[0]);
+				list[index] = newElementValues[0];
 		}
 	}
 }

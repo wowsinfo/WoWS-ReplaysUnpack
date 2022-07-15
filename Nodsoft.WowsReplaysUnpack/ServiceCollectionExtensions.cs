@@ -7,23 +7,24 @@ namespace Nodsoft.WowsReplaysUnpack;
 
 public static class ServiceCollectionExtensions
 {
-	public static IServiceCollection AddReplayUnpacker(this IServiceCollection services)
-		=> services.AddReplayUnpacker<DefaultReplayDataParser, DefaultReplayController, DefaultDefinitionStore>();
-	public static IServiceCollection AddReplayUnpacker<TReplayDataParser, TReplayController, TDefinitionStore>(this IServiceCollection services)
+	public static IServiceCollection AddWowsReplayUnpacker(this IServiceCollection services)
+		=> services.AddWowsReplayUnpacker<DefaultReplayDataParser, DefaultDefinitionStore>();
+	public static IServiceCollection AddWowsReplayUnpacker<TReplayDataParser, TDefinitionStore>(this IServiceCollection services)
 		where TReplayDataParser : class, IReplayDataParser
-		where TReplayController : class, IReplayController
 		where TDefinitionStore : class, IDefinitionStore
-		=> services.AddReplayUnpacker(unpacker =>
+		=> services.AddWowsReplayUnpacker(unpacker =>
 																  {
 																	  unpacker
-																	  .WithReplayDataParser<TReplayDataParser>()
-																	  .WithReplayController<TReplayController>()
-																	  .WithDefinitionStore<TDefinitionStore>();
+																			.WithReplayDataParser<TReplayDataParser>()
+																			.WithDefinitionStore<TDefinitionStore>();
 																  });
-	public static IServiceCollection AddReplayUnpacker(this IServiceCollection services, Action<ReplayUnpackerBuilder> builderAction)
+	public static IServiceCollection AddWowsReplayUnpacker(this IServiceCollection services, Action<ReplayUnpackerBuilder> builderAction)
 	{
-		builderAction(new ReplayUnpackerBuilder(services));
-		services.AddScoped<ReplayUnpackerService>();
+		var builder = new ReplayUnpackerBuilder(services);
+		builderAction(builder);
+		builder.Build();
+
+		services.AddScoped<ReplayUnpackerFactory>();
 		return services;
 	}
 
@@ -32,27 +33,41 @@ public static class ServiceCollectionExtensions
 	public class ReplayUnpackerBuilder
 	{
 		private readonly IServiceCollection _services;
+		private bool replayDataParserAdded;
+		private bool definitionStoreAdded;
 
 		public ReplayUnpackerBuilder(IServiceCollection services)
 		{
 			_services = services;
+			AddReplayController<DefaultReplayController>();
 		}
 		public ReplayUnpackerBuilder WithReplayDataParser<T>() where T : class, IReplayDataParser
 		{
 			_services.AddScoped<IReplayDataParser, T>();
+			replayDataParserAdded = true;
 			return this;
 		}
 
-		public ReplayUnpackerBuilder WithReplayController<T>() where T : class, IReplayController
+		public ReplayUnpackerBuilder AddReplayController<T>() where T : class, IReplayController
 		{
-			_services.AddScoped<IReplayController, T>();
+			_services.AddScoped<ReplayUnpackerService<T>>();
+			_services.AddScoped<T>();
 			return this;
 		}
 
 		public ReplayUnpackerBuilder WithDefinitionStore<T>() where T : class, IDefinitionStore
 		{
 			_services.AddSingleton<IDefinitionStore, T>();
+			definitionStoreAdded = true;
 			return this;
+		}
+		public void Build()
+		{
+			if (!replayDataParserAdded)
+				WithReplayDataParser<DefaultReplayDataParser>();
+
+			if (!definitionStoreAdded)
+				WithDefinitionStore<DefaultDefinitionStore>();
 		}
 	}
 }

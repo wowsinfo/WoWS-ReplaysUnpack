@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Nodsoft.WowsReplaysUnpack.Core.Definitions;
+using Nodsoft.WowsReplaysUnpack.Core.Models;
 using Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
 using System;
 using System.Collections.Generic;

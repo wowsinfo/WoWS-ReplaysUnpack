@@ -2,7 +2,7 @@
 
 namespace Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
 
-public class EntityCreatePacket : INetworkPacket
+public class EntityCreatePacket : ANetworkPacket
 {
 	public int EntityId { get; }
 	public short Type { get; }
@@ -10,7 +10,7 @@ public class EntityCreatePacket : INetworkPacket
 	public int SpaceId { get; }
 	public byte[] Data { get; }
 
-	public EntityCreatePacket(BinaryReader binaryReader)
+	public EntityCreatePacket(int packetIndex, BinaryReader binaryReader) : base(packetIndex)
 	{
 		EntityId = binaryReader.ReadInt32();
 		Type = binaryReader.ReadInt16();

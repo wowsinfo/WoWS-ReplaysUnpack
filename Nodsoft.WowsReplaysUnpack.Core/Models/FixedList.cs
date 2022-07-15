@@ -14,10 +14,12 @@ public class FixedList : List<object?>, IFixedLength
 		ElementType = elementType;
 	}
 
-	public void AddAndExtend(int index, object? value)
+	public void Slice(int start, int end, IEnumerable<object?> newItems)
 	{
-		if (Count < index+1)
-			AddRange(new object?[(index+1)-Count]);
-		this[index] = value;
+		var newList = this.Take(start).Concat(newItems).Concat(this.Skip(end)).ToList();
+		Clear();
+		AddRange(newList);
 	}
+
+	public override string ToString() => $"[{string.Join(Consts.COMMA + " ", this)}]";
 }

@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Nodsoft.WowsReplaysUnpack;
+﻿namespace Nodsoft.WowsReplaysUnpack;
 
 public static class GlobalConstants
 {
-	
+
 
 	public static class ReplayPacketTypes
 	{

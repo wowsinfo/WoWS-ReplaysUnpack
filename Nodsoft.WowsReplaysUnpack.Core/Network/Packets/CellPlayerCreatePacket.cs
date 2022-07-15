@@ -2,11 +2,11 @@
 
 namespace Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
 
-public class CellPlayerCreatePacket : INetworkPacket
+public class CellPlayerCreatePacket : ANetworkPacket
 {
 	public int EntityId { get; }
 	public byte[] Data { get; }
-	public CellPlayerCreatePacket(BinaryReader binaryReader)
+	public CellPlayerCreatePacket(int packetIndex, BinaryReader binaryReader) : base(packetIndex)
 	{
 		EntityId = binaryReader.ReadInt32();
 		_ = binaryReader.ReadInt32(); // spaceId;

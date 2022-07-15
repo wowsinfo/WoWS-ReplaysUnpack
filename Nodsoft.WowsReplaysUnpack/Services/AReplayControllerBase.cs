@@ -4,6 +4,7 @@ using Nodsoft.WowsReplaysUnpack.Core.Entities;
 using Nodsoft.WowsReplaysUnpack.Core.Extensions;
 using Nodsoft.WowsReplaysUnpack.Core.Models;
 using Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -48,7 +49,7 @@ public abstract class AReplayControllerBase<T> : IReplayController
 		return Replay;
 	}
 
-	public virtual void HandleNetworkPacket(INetworkPacket networkPacket)
+	public virtual void HandleNetworkPacket(ANetworkPacket networkPacket)
 	{
 		if (networkPacket is MapPacket mapPacket)
 			OnMap(mapPacket);
@@ -98,6 +99,9 @@ public abstract class AReplayControllerBase<T> : IReplayController
 	public virtual void OnEntityCreate(EntityCreatePacket packet)
 	{
 		var entity = CreateEntity(packet.EntityId, packet.Type);
+
+
+
 		Replay.Entities[packet.EntityId] = entity;
 		using BinaryReader binaryReader = packet.Data.GetBinaryReader();
 		var ms = binaryReader.BaseStream as MemoryStream;

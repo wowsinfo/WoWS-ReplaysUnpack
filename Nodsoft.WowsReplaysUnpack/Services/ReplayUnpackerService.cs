@@ -15,7 +15,8 @@ using System.Text.Json;
 namespace Nodsoft.WowsReplaysUnpack.Services;
 
 
-public class ReplayUnpackerService
+public class ReplayUnpackerService<TController> : IReplayUnpackerService
+	where TController : IReplayController
 {
 	private static readonly byte[] BlowfishKey = "\x29\xB7\xC9\x09\x38\x3F\x84\x88\xFA\x98\xEC\x4E\x13\x19\x79\xFB"
 		  .Select(Convert.ToByte).ToArray();
@@ -23,18 +24,13 @@ public class ReplayUnpackerService
 	private static readonly byte[] ReplaySignature = Encoding.UTF8.GetBytes("\x12\x32\x34\x11");
 
 	private readonly JsonSerializerOptions _jsonSerializerOptions = new() { PropertyNameCaseInsensitive = true };
-	private readonly IServiceProvider _serviceProvider;
 	private readonly IReplayDataParser _replayDataParser;
 	private readonly IReplayController _replayController;
-	private readonly ILogger<ReplayUnpackerService> _logger;
+	private readonly ILogger<ReplayUnpackerService<TController>> _logger;
 
-	public ReplayUnpackerService(IServiceProvider serviceProvider,
-		IReplayDataParser replayDataParser,
-		IReplayController replayController,
-		ILogger<ReplayUnpackerService> logger)
+	public ReplayUnpackerService(IReplayDataParser replayDataParser, TController replayController, ILogger<ReplayUnpackerService<TController>> logger)
 	{
 		_jsonSerializerOptions.Converters.Add(new DateTimeJsonConverter());
-		_serviceProvider = serviceProvider;
 		_replayDataParser = replayDataParser;
 		_replayController = replayController;
 		_logger = logger;
@@ -43,7 +39,8 @@ public class ReplayUnpackerService
 
 	public UnpackedReplay Unpack(byte[] data, ReplayUnpackerOptions? options = null)
 	{
-		using MemoryStream memoryStream = new MemoryStream(data);
+		// Stream is disposed in Unpack method
+		MemoryStream memoryStream = new(data);
 		return Unpack(memoryStream, options);
 	}
 
@@ -107,7 +104,7 @@ public class ReplayUnpackerService
 		decryptedStream.Dispose();
 
 
-		foreach (INetworkPacket networkPacket in _replayDataParser.ParseNetworkPackets(replayDataStream, options))
+		foreach (ANetworkPacket networkPacket in _replayDataParser.ParseNetworkPackets(replayDataStream, options))
 			_replayController.HandleNetworkPacket(networkPacket);
 
 		return replay;

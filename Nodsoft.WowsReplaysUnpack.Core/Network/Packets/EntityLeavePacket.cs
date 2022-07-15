@@ -4,11 +4,11 @@
 /// Fires when entity leaves AOI and stops
 /// receiving updates from server
 /// </summary>
-public class EntityLeavePacket : INetworkPacket
+public class EntityLeavePacket : ANetworkPacket
 {
 	public int EntityId { get; }
 
-	public EntityLeavePacket(BinaryReader binaryReader)
+	public EntityLeavePacket(int packetIndex, BinaryReader binaryReader) : base(packetIndex)
 	{
 		EntityId = binaryReader.ReadInt32();
 	}

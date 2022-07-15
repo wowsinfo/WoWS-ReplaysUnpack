@@ -8,5 +8,5 @@ namespace Nodsoft.WowsReplaysUnpack.Services;
 
 public interface IReplayDataParser : IDisposable
 {
-	IEnumerable<INetworkPacket> ParseNetworkPackets(MemoryStream replayDataStream, ReplayUnpackerOptions options);
+	IEnumerable<ANetworkPacket> ParseNetworkPackets(MemoryStream replayDataStream, ReplayUnpackerOptions options);
 }

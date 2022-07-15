@@ -6,5 +6,5 @@ namespace Nodsoft.WowsReplaysUnpack.Services;
 public interface IReplayController
 {
 	UnpackedReplay CreateUnpackedReplay(ArenaInfo arenaInfo);
-	void HandleNetworkPacket(INetworkPacket networkPacket);
+	void HandleNetworkPacket(ANetworkPacket networkPacket);
 }

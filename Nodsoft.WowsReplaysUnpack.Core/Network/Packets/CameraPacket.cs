@@ -2,11 +2,11 @@
 
 namespace Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
 
-public class CameraPacket : INetworkPacket
+public class CameraPacket : ANetworkPacket
 {
 	public float Fov { get; }
 
-	public CameraPacket(BinaryReader binaryReader)
+	public CameraPacket(int packetIndex, BinaryReader binaryReader) : base(packetIndex)
 	{
 		// 7 x float (4 bytes) unknown values
 		_ = binaryReader.ReadBytes(7 * 4);
