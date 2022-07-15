@@ -5,17 +5,19 @@ public class MethodSubscriptionAttribute : Attribute
 {
 	public string EntityName { get; }
 	public string MethodName { get; }
-	public bool ParamsAsDictionary { get; }
-	public bool IncludeEntity { get; }
-	public bool IncludePacketTime { get; }
+	public bool ParamsAsDictionary { get; set; }
+	public bool IncludeEntity { get; set; }
+	public bool IncludePacketTime { get; set; }
 
-	public MethodSubscriptionAttribute(string entityName, string methodName, bool paramsAsDictionary = false,
-		bool includeEntity = true, bool includePacketTime = false)
+  /// <summary>
+  /// Order in which methods will be called. Smaller = better
+  /// -1 is reserved for security checks
+  /// </summary>
+	public int Priority { get; set; } = 0;
+
+	public MethodSubscriptionAttribute(string entityName, string methodName)
 	{
 		EntityName = entityName;
 		MethodName = methodName;
-		ParamsAsDictionary = paramsAsDictionary;
-		IncludeEntity = includeEntity;
-		IncludePacketTime = includePacketTime;
 	}
 }

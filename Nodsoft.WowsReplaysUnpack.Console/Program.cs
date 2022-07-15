@@ -31,7 +31,7 @@ var replayUnpacker = services.GetRequiredService<ReplayUnpackerFactory>();
 
 //var unpackedReplay = replayUnpacker.GetUnpacker().Unpack(GetReplayFile("payload.wowsreplay"));
 //var unpackedReplay = replayUnpacker.GetUnpacker<CVECheckOnlyController>().Unpack(GetReplayFile("payload.wowsreplay"));
-var unpackedReplay = (ExtendedDataReplay)replayUnpacker.GetExtendedDataUnpacker().Unpack(GetReplayFile("good.wowsreplay"));
+var unpackedReplay = (ExtendedDataReplay)replayUnpacker.GetExtendedDataUnpacker().Unpack(GetReplayFile("payload.wowsreplay"));
 
 //foreach (ReplayMessage msg in replay.ChatMessages)
 //{

@@ -25,7 +25,7 @@ public abstract class AReplayControllerBase<T> : IReplayController
 			.Select(m => new { Attribute = m.GetCustomAttribute<MethodSubscriptionAttribute>(), MethodInfo = m })
 			.Where(m => m.Attribute is not null)
 			.GroupBy(m => $"{m.Attribute!.EntityName}_{m.Attribute.MethodName}")
-			.ToDictionary(m => m.Key, m => m.Select(m => m.MethodInfo).ToArray());
+			.ToDictionary(m => m.Key, m => m.OrderBy(m => m.Attribute.Priority).Select(m => m.MethodInfo).ToArray());
 
 		_propertyChangedSubscriptions = typeof(T).GetMethods()
 			.Select(m => new { Attribute = m.GetCustomAttribute<PropertyChangedSubscriptionAttribute>(), MethodInfo = m })
@@ -193,8 +193,8 @@ public abstract class AReplayControllerBase<T> : IReplayController
 
 	#region Subscriptions
 
-	[MethodSubscription("Avatar", "onArenaStateReceived", true)]
-	public void OnArenaStateReceivedCVECheck(Entity entity, Dictionary<string, object?> arguments)
+	[MethodSubscription("Avatar", "onArenaStateReceived", ParamsAsDictionary = true, Priority = -1)]
+	public void OnArenaStateReceivedCVECheck(Dictionary<string, object?> arguments)
 	{
 		CVEChecks.ScanForCVE_2022_31265((byte[])arguments["preBattlesInfo"]!, "Avatar_onArenaStateReceived_preBattlesInfo");
 		CVEChecks.ScanForCVE_2022_31265((byte[])arguments["playersStates"]!, "Avatar_onArenaStateReceived_playersStates");

@@ -42,13 +42,13 @@ namespace Nodsoft.WowsReplaysUnpack.ExtendedData
 			return Replay;
 		}
 
-		[MethodSubscription("Avatar", "onChatMessage", includeEntity: false, includePacketTime: true)]
+		[MethodSubscription("Avatar", "onChatMessage", IncludePacketTime = true)]
 		public void OnChatMessage(float packetTime, int entityId, string messageGroup, string messageContent, string xx)
 		{
 			ExtendedReplay.ChatMessages.Add(new ChatMessage((uint)entityId, packetTime, messageGroup, messageContent));
 		}
 
-		[MethodSubscription("Avatar", "onArenaStateReceived", true, false)]
+		[MethodSubscription("Avatar", "onArenaStateReceived", ParamsAsDictionary = true)]
 		public void OnArenaStateReceived(Dictionary<string, object?> arguments)
 		{
 			byte[]? playerStatesData = (byte[]?)arguments["playersStates"];
