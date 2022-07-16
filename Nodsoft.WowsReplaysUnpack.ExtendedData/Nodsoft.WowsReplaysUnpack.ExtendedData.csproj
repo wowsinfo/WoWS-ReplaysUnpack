@@ -2,8 +2,17 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Version>0.5.2</Version>
+		<Company>Nodsoft Systems</Company>
+		<Authors>imkindaprogrammermyself, Sakura Akeno Isayeki, floribe2000</Authors>
+		<Product>WoWS Replays Unpack</Product>
+		<PackageProjectUrl>https://github.com/Nodsoft/WoWS-ReplaysUnpack</PackageProjectUrl>
+		<Description>Unpacking library for World of Warships replay files</Description>
+		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+		<RepositoryUrl>https://github.com/Nodsoft/WoWS-ReplaysUnpack</RepositoryUrl>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>

@@ -17,9 +17,6 @@ public class DefaultReplayDataParser : IReplayDataParser
 		_logger = logger;
 		_packetBufferReader = new BinaryReader(_packetBuffer);
 	}
-	protected static readonly Regex RceInjectionRegex = new(
-		@"cnt\ssystem|commands",
-		RegexOptions.Compiled | RegexOptions.ExplicitCapture);
 
 	/// <summary>
 	/// Parses the individual network packets

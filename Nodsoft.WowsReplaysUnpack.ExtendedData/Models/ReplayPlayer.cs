@@ -99,8 +99,6 @@ public class ReplayPlayer
 
 			while (memoryStream.Position != memoryStream.Length)
 				configDumpList.Add(binaryReader.ReadUInt32());
-			var x = ProcessShipConfigDumpX(configDumpList, shipConfigMapping);
-			var y= ProcessShipConfigDump(configDumpList);
 			return new(ProcessShipConfigDump(configDumpList), shipConfigMapping);
 		});
 	}
@@ -125,39 +123,5 @@ public class ReplayPlayer
 		}
 
 		return resultList;
-	}
-
-	private static IReadOnlyList<IReadOnlyList<uint>> ProcessShipConfigDumpX(IReadOnlyList<uint> rawConfigDump, ShipConfigMapping configMapping)
-	{
-		int listPosition = 0;
-		int currentLength = (int)rawConfigDump[listPosition++];
-		List<List<uint>> groupedList = new();
-		List<uint> tmpList = new();
-		int step = 0;
-		while (listPosition < rawConfigDump.Count)
-		{
-			if (currentLength == 0)
-			{
-				groupedList.Add(tmpList);
-				step++;
-				if (step == configMapping.TotalValueCount || step == configMapping.AutoSupplyState)
-				{
-					tmpList = new() { rawConfigDump[listPosition++] };
-				}
-				else
-				{
-					currentLength = (int)rawConfigDump[listPosition++];
-					tmpList = new();
-				}
-			}
-			else
-			{
-				tmpList.Add(rawConfigDump[listPosition++]);
-				currentLength--;
-			}
-		}
-
-		groupedList.Add(tmpList);
-		return groupedList;
 	}
 }
