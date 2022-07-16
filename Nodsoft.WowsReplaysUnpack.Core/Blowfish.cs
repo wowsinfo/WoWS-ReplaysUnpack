@@ -115,7 +115,10 @@ public class Blowfish
 	public string Encrypt_CBC(string pt)
 	{
 		if (!iVSet)
-			SetRandomIV();
+		{
+			SetRandomIv();
+		}
+
 		return ByteToHex(initVector) + ByteToHex(Encrypt_CBC(Encoding.ASCII.GetBytes(pt)));
 	}
 
@@ -200,7 +203,10 @@ public class Blowfish
 	public string Encrypt_CTR(string pt)
 	{
 		if (!iVSet)
-			SetRandomIV();
+		{
+			SetRandomIv();
+		}
+
 		return ByteToHex(initVector) + ByteToHex(Crypt_CTR(Encoding.ASCII.GetBytes(pt), 2));
 	}
 
@@ -241,7 +247,7 @@ public class Blowfish
 	/// Creates and sets a random initialization vector.
 	/// </summary>
 	/// <returns>The random IV</returns>
-	public byte[] SetRandomIV()
+	public byte[] SetRandomIv()
 	{
 #if NET6_0_OR_GREATER
 		initVector = RandomNumberGenerator.GetBytes(8);

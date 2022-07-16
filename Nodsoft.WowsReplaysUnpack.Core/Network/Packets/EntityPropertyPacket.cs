@@ -6,7 +6,7 @@ namespace Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
 /// Fires when servers requests client to change
 /// entity's property with some arguments
 /// </summary>
-public class EntityPropertyPacket : ANetworkPacket
+public class EntityPropertyPacket : NetworkPacketBase
 {
 	public uint EntityId { get; }
 	public uint MessageId { get; }

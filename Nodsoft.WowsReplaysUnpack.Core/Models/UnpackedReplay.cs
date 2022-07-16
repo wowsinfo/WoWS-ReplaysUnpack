@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace Nodsoft.WowsReplaysUnpack.Core.Models;
 
-public class UnpackedReplay
+public record UnpackedReplay
 {
 	public Version ClientVersion { get; }
 	public ArenaInfo ArenaInfo { get; }

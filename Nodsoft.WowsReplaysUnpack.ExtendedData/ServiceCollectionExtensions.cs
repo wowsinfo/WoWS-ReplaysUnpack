@@ -10,8 +10,12 @@ public static class ServiceCollectionExtensions
 	{
 		builder.AddReplayController<ExtendedDataController>();
 		builder.Services.AddSingleton<VersionMappingFactory>();
-		foreach (var versionMappingType in VersionMappingFactory.VersionMappingTypes)
+
+		foreach (Type? versionMappingType in VersionMappingFactory.VersionMappingTypes)
+		{
 			builder.Services.AddSingleton(typeof(IVersionMapping), versionMappingType);
+		}
+
 		return builder;
 	}
 }

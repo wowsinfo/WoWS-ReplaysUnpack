@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using Nodsoft.WowsReplaysUnpack.Controllers;
+﻿using Nodsoft.WowsReplaysUnpack.Controllers;
 using Nodsoft.WowsReplaysUnpack.Core;
 using Nodsoft.WowsReplaysUnpack.Core.Exceptions;
 using Nodsoft.WowsReplaysUnpack.Core.Extensions;
@@ -13,25 +12,18 @@ using System.Text.Json;
 namespace Nodsoft.WowsReplaysUnpack.Services;
 
 
-public sealed class ReplayUnpackerService<TController> : IReplayUnpackerService
+public sealed class ReplayUnpackerService<TController> : ReplayUnpackerService, IReplayUnpackerService
 	where TController : IReplayController
 {
-	private static readonly byte[] BlowfishKey = "\x29\xB7\xC9\x09\x38\x3F\x84\x88\xFA\x98\xEC\x4E\x13\x19\x79\xFB"
-		  .Select(Convert.ToByte).ToArray();
-	private static readonly Blowfish Blowfish = new(BlowfishKey);
-	private static readonly byte[] ReplaySignature = Encoding.UTF8.GetBytes("\x12\x32\x34\x11");
-
 	private readonly JsonSerializerOptions _jsonSerializerOptions = new() { PropertyNameCaseInsensitive = true };
 	private readonly IReplayDataParser _replayDataParser;
 	private readonly IReplayController _replayController;
-	private readonly ILogger<ReplayUnpackerService<TController>> _logger;
 
-	public ReplayUnpackerService(IReplayDataParser replayDataParser, TController replayController, ILogger<ReplayUnpackerService<TController>> logger)
+	public ReplayUnpackerService(IReplayDataParser replayDataParser, TController replayController)
 	{
 		_jsonSerializerOptions.Converters.Add(new DateTimeJsonConverter());
 		_replayDataParser = replayDataParser;
 		_replayController = replayController;
-		_logger = logger;
 	}
 
 
@@ -90,7 +82,7 @@ public sealed class ReplayUnpackerService<TController> : IReplayUnpackerService
 		ReadExtraJsonBlocks(replay, binaryReader, jsonBlockCount);
 
 		MemoryStream decryptedStream = new();
-		Decrypt(binaryReader, decryptedStream);
+		ReplayUnpackerService<TController>.Decrypt(binaryReader, decryptedStream);
 
 		// Initial stream and reader not used anymore
 		binaryReader.Dispose();
@@ -102,8 +94,10 @@ public sealed class ReplayUnpackerService<TController> : IReplayUnpackerService
 		decryptedStream.Dispose();
 
 
-		foreach (ANetworkPacket networkPacket in _replayDataParser.ParseNetworkPackets(replayDataStream, options))
+		foreach (NetworkPacketBase networkPacket in _replayDataParser.ParseNetworkPackets(replayDataStream, options))
+		{
 			_replayController.HandleNetworkPacket(networkPacket, options);
+		}
 
 		return replay;
 	}
@@ -112,8 +106,10 @@ public sealed class ReplayUnpackerService<TController> : IReplayUnpackerService
 	{
 		if (jsonBlockCount > 1)
 		{
-			foreach (int _ in Enumerable.Range(0, jsonBlockCount - 1))
+			for (int i = 0; i < jsonBlockCount - 1; i++)
+			{
 				replay.ExtraJsonData.Add(ReadJsonBlock<JsonElement>(binaryReader));
+			}
 		}
 	}
 
@@ -135,9 +131,8 @@ public sealed class ReplayUnpackerService<TController> : IReplayUnpackerService
 	/// 4. Bitwise xor with previous chunk value
 	/// 5. Convert back to bytes
 	/// </summary>
-	/// <param name="binaryReader"></param>
 	/// <returns>Decrypted data</returns>
-	private void Decrypt(BinaryReader binaryReader, MemoryStream targetStream)
+	private static void Decrypt(BinaryReader binaryReader, Stream targetStream)
 	{
 		long previousChunkValue = 0;
 
@@ -163,7 +158,7 @@ public sealed class ReplayUnpackerService<TController> : IReplayUnpackerService
 		}
 	}
 
-	private void Decompress(MemoryStream compressedStream, MemoryStream decompressedStream)
+	private static void Decompress(Stream compressedStream, Stream decompressedStream)
 	{
 		// DeflateStream doesn't strip the header so we strip it manually.
 		compressedStream.Seek(2, SeekOrigin.Begin);
@@ -171,4 +166,12 @@ public sealed class ReplayUnpackerService<TController> : IReplayUnpackerService
 		deflateStream.CopyTo(decompressedStream);
 		decompressedStream.Seek(0, SeekOrigin.Begin);
 	}
+}
+
+public class ReplayUnpackerService
+{
+	private static readonly byte[] BlowfishKey = "\x29\xB7\xC9\x09\x38\x3F\x84\x88\xFA\x98\xEC\x4E\x13\x19\x79\xFB".Select(Convert.ToByte).ToArray();
+	protected static readonly byte[] ReplaySignature = Encoding.UTF8.GetBytes("\x12\x32\x34\x11");
+	protected static readonly Blowfish Blowfish = new(BlowfishKey);
+	
 }

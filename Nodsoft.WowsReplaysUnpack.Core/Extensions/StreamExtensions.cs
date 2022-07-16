@@ -18,11 +18,7 @@ public static class StreamExtensions
 		return binaryReader.ReadBytes((int)size);
 	}
 
-	public static BinaryReader GetBinaryReader(this byte[] data)
-		=> new(new MemoryStream(data));
+	public static BinaryReader GetBinaryReader(this byte[] data) => new(new MemoryStream(data));
 
-	public static Vector3 ReadVector3(this BinaryReader binaryReader)
-	{
-		return new Vector3(binaryReader.ReadSingle(), binaryReader.ReadSingle(), binaryReader.ReadSingle());
-	}
+	public static Vector3 ReadVector3(this BinaryReader binaryReader) => new(binaryReader.ReadSingle(), binaryReader.ReadSingle(), binaryReader.ReadSingle());
 }

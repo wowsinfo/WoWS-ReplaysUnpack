@@ -3,10 +3,10 @@ using System.Numerics;
 
 namespace Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
 
-public class PlayerPositionPacket : ANetworkPacket
+public class PlayerPositionPacket : NetworkPacketBase
 {
-	public uint EntityId1 { get; } = 0;
-	public uint EntityId2 { get; } = 0;
+	public uint EntityId1 { get; }
+	public uint EntityId2 { get; }
 	public PositionContainer Position { get; }
 
 	public PlayerPositionPacket(int packetIndex, BinaryReader binaryReader) : base(packetIndex)

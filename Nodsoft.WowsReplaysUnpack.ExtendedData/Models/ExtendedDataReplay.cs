@@ -2,12 +2,10 @@
 
 namespace Nodsoft.WowsReplaysUnpack.ExtendedData.Models;
 
-public class ExtendedDataReplay : UnpackedReplay
+public record ExtendedDataReplay : UnpackedReplay
 {
-	public ExtendedDataReplay(ArenaInfo arenaInfo) : base(arenaInfo)
-	{
-	}
+	public ExtendedDataReplay(ArenaInfo arenaInfo) : base(arenaInfo) { }
 
-	public List<ReplayPlayer> ReplayPlayers { get; set; } = new();
-	public List<ChatMessage> ChatMessages { get; set; } = new();
+	public List<ReplayPlayer> ReplayPlayers { get; } = new();
+	public List<ChatMessage> ChatMessages { get; } = new();
 }

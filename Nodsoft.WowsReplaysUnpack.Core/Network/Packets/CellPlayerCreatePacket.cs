@@ -2,7 +2,7 @@
 
 namespace Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
 
-public class CellPlayerCreatePacket : ANetworkPacket
+public class CellPlayerCreatePacket : NetworkPacketBase
 {
 	public uint EntityId { get; }
 	public byte[] Data { get; }

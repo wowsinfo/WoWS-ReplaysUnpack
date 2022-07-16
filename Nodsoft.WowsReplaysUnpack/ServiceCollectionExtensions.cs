@@ -13,11 +13,12 @@ public static class ServiceCollectionExtensions
 		where TReplayDataParser : class, IReplayDataParser
 		where TDefinitionStore : class, IDefinitionStore
 		=> services.AddWowsReplayUnpacker(unpacker =>
-																  {
-																	  unpacker
-																			.WithReplayDataParser<TReplayDataParser>()
-																			.WithDefinitionStore<TDefinitionStore>();
-																  });
+			{
+				unpacker
+					.WithReplayDataParser<TReplayDataParser>()
+					.WithDefinitionStore<TDefinitionStore>();
+			}
+		);
 	public static IServiceCollection AddWowsReplayUnpacker(this IServiceCollection services, Action<ReplayUnpackerBuilder> builderAction)
 	{
 		ReplayUnpackerBuilder builder = new(services);
@@ -65,10 +66,14 @@ public static class ServiceCollectionExtensions
 		public void Build()
 		{
 			if (!replayDataParserAdded)
+			{
 				WithReplayDataParser<DefaultReplayDataParser>();
+			}
 
 			if (!definitionStoreAdded)
+			{
 				WithDefinitionStore<DefaultDefinitionStore>();
+			}
 		}
 	}
 }

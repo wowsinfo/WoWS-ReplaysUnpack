@@ -2,7 +2,7 @@
 
 namespace Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
 
-public class EntityCreatePacket : ANetworkPacket
+public class EntityCreatePacket : NetworkPacketBase
 {
 	public uint EntityId { get; }
 	public short Type { get; }

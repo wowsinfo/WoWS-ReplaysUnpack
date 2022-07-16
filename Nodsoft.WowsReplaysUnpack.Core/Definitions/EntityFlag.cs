@@ -1,6 +1,9 @@
-﻿namespace Nodsoft.WowsReplaysUnpack.Core.Definitions;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Nodsoft.WowsReplaysUnpack.Core.Definitions;
 
 [Flags]
+[SuppressMessage("ReSharper", "InconsistentNaming")] // Member Naming depends on strings defined in upstream definition files.
 public enum EntityFlag
 {
 	CELL_PRIVATE = 1,

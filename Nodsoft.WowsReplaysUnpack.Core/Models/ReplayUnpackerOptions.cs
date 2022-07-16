@@ -3,5 +3,5 @@
 
 public class ReplayUnpackerOptions
 {
-	
+	// Reserved for future use.
 }

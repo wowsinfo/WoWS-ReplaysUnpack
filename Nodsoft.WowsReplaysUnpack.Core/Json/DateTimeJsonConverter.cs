@@ -8,13 +8,8 @@ public class DateTimeJsonConverter : JsonConverter<DateTime>
 {
 	private const string DateFormat = "dd.MM.yyyy HH:mm:ss";
 
-	public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-	{
-		return DateTime.ParseExact(reader.GetString()!, DateFormat, CultureInfo.InvariantCulture, DateTimeStyles.None);
-	}
+	public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) 
+		=> DateTime.ParseExact(reader.GetString()!, DateFormat, CultureInfo.InvariantCulture, DateTimeStyles.None);
 
-	public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options)
-	{
-		writer.WriteStringValue(value.ToString(DateFormat));
-	}
+	public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options) => writer.WriteStringValue(value.ToString(DateFormat));
 }

@@ -4,7 +4,7 @@ namespace Nodsoft.WowsReplaysUnpack.Core.Definitions;
 
 public static class TypeConsts
 {
-	public static Dictionary<string, Type> SimpleTypeMappings = new()
+	public static readonly Dictionary<string, Type> SimpleTypeMappings = new()
 	{
 		{ "BLOB", typeof(BlobDataType) },
 		{ "STRING", typeof(StringDataType) },

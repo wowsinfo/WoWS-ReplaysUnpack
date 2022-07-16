@@ -4,15 +4,11 @@ namespace Nodsoft.WowsReplaysUnpack.Core.Models;
 
 public class FixedList : List<object?>, IFixedLength
 {
-	public ADataTypeBase ElementType { get; }
+	public DataTypeBase ElementType { get; }
 
 	public int Length => Count;
 
-	public FixedList(ADataTypeBase elementType, IEnumerable<object?> values)
-		: base(values)
-	{
-		ElementType = elementType;
-	}
+	public FixedList(DataTypeBase elementType, IEnumerable<object?> values) : base(values) => ElementType = elementType;
 
 	public void Slice(int start, int end, IEnumerable<object?> newItems)
 	{
@@ -21,5 +17,5 @@ public class FixedList : List<object?>, IFixedLength
 		AddRange(newList);
 	}
 
-	public override string ToString() => $"[{string.Join(Consts.COMMA + " ", this)}]";
+	public override string ToString() => $"[{string.Join(Consts.Comma + " ", this)}]";
 }

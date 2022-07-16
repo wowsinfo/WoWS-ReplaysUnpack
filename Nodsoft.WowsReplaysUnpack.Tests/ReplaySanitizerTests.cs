@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using Nodsoft.WowsReplaysUnpack.Core.Exceptions;
 using Nodsoft.WowsReplaysUnpack.Core.Models;
 using Nodsoft.WowsReplaysUnpack.Services;
-using System.IO;
 using Xunit;
 
 namespace Nodsoft.WowsReplaysUnpack.Tests;
@@ -48,6 +47,6 @@ public class ReplaySanitizerTests
 	[Fact]
 	public void TestPayloadReplayDetection()
 	{
-		Assert.Throws<CVESecurityException>(() => _factory.GetUnpacker().Unpack(LoadReplay("payload.wowsreplay")));
+		Assert.Throws<CveSecurityException>(() => _factory.GetUnpacker().Unpack(LoadReplay("payload.wowsreplay")));
 	}
 }

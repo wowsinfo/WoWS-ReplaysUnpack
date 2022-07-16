@@ -2,7 +2,7 @@
 
 namespace Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
 
-public class CameraPacket : ANetworkPacket
+public class CameraPacket : NetworkPacketBase
 {
 	public float Fov { get; }
 

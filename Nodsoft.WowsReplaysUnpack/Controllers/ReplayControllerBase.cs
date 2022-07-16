@@ -9,7 +9,7 @@ using System.Reflection;
 
 namespace Nodsoft.WowsReplaysUnpack.Controllers;
 
-public abstract class AReplayControllerBase<T> : IReplayController
+public abstract class ReplayControllerBase<T> : IReplayController
 	where T : class, IReplayController
 {
 	private static readonly Dictionary<string, MethodInfo[]> _methodSubscriptions;
@@ -19,69 +19,97 @@ public abstract class AReplayControllerBase<T> : IReplayController
 
 	public UnpackedReplay Replay { get; protected set; }
 
-	static AReplayControllerBase()
+	static ReplayControllerBase()
 	{
 		_methodSubscriptions = typeof(T).GetMethods()
 			.Select(m => new { Attribute = m.GetCustomAttribute<MethodSubscriptionAttribute>(), MethodInfo = m })
 			.Where(m => m.Attribute is not null)
 			.GroupBy(m => $"{m.Attribute!.EntityName}_{m.Attribute.MethodName}")
-			.ToDictionary(m => m.Key, m => m.OrderBy(m => m.Attribute.Priority).Select(m => m.MethodInfo).ToArray());
+			.ToDictionary(
+				m => m.Key, 
+				m => m.OrderBy(m => m.Attribute?.Priority).Select(m => m.MethodInfo).ToArray());
 
 		_propertyChangedSubscriptions = typeof(T).GetMethods()
 			.Select(m => new { Attribute = m.GetCustomAttribute<PropertyChangedSubscriptionAttribute>(), MethodInfo = m })
 			.Where(m => m.Attribute is not null)
 			.GroupBy(m => $"{m.Attribute!.EntityName}_{m.Attribute.PropertyName}")
-			.ToDictionary(m => m.Key, m => m.Select(m => m.MethodInfo).ToArray());
+			.ToDictionary(
+				m => m.Key, 
+				m => m.Select(m => m.MethodInfo).ToArray());
 	}
 
 #pragma warning disable CS8618 // Replay Property is never null because after creating the controller, CreateUnpackedReplay is called
-	public AReplayControllerBase(IDefinitionStore definitionStore,
-#pragma warning restore CS8618
+	
+	protected ReplayControllerBase(IDefinitionStore definitionStore,
+
+		// ReSharper disable once ContextualLoggerProblem
 		ILogger<Entity> entityLogger)
 	{
 		DefinitionStore = definitionStore;
 		EntityLogger = entityLogger;
 	}
-
+	
+#pragma warning restore CS8618
+	
+	
 	public virtual UnpackedReplay CreateUnpackedReplay(ArenaInfo arenaInfo)
 	{
-		Replay = new UnpackedReplay(arenaInfo);
+		Replay = new(arenaInfo);
 		return Replay;
 	}
 
 	#region Packet Handling
-	public virtual void HandleNetworkPacket(ANetworkPacket networkPacket, ReplayUnpackerOptions options)
+	public virtual void HandleNetworkPacket(NetworkPacketBase networkPacket, ReplayUnpackerOptions options)
 	{
 		if (networkPacket is MapPacket mapPacket)
+		{
 			OnMap(mapPacket);
+		}
 		else if (networkPacket is BasePlayerCreatePacket _1)
+		{
 			OnBasePlayerCreate(_1);
+		}
 		else if (networkPacket is CellPlayerCreatePacket _2)
+		{
 			OnCellPlayerCreate(_2);
+		}
 		else if (networkPacket is EntityEnterPacket _3 && Replay.Entities.ContainsKey(_3.EntityId))
+		{
 			Replay.Entities[_3.EntityId].IsInAoI = true;
+		}
 		else if (networkPacket is EntityLeavePacket _4 && Replay.Entities.ContainsKey(_4.EntityId))
+		{
 			Replay.Entities[_4.EntityId].IsInAoI = false;
+		}
 		else if (networkPacket is EntityCreatePacket _5)
+		{
 			OnEntityCreate(_5);
+		}
 		else if (networkPacket is PositionPacket _6)
+		{
 			OnPosition(_6);
+		}
 		else if (networkPacket is PlayerPositionPacket _7)
+		{
 			OnPlayerPosition(_7);
+		}
 		else if (networkPacket is EntityMethodPacket _8)
+		{
 			OnEntityMethod(_8);
+		}
 		else if (networkPacket is EntityPropertyPacket _9)
+		{
 			OnEntityProperty(_9);
+		}
 		else if (networkPacket is NestedPropertyPacket _10)
+		{
 			OnNestedProperty(_10);
+		}
 	}
 
-	public virtual void OnMap(MapPacket packet)
-	{
-		Replay.MapName = packet.Name;
-	}
+	protected virtual void OnMap(MapPacket packet) => Replay.MapName = packet.Name;
 
-	public virtual void OnBasePlayerCreate(BasePlayerCreatePacket packet)
+	protected virtual void OnBasePlayerCreate(BasePlayerCreatePacket packet)
 	{
 		Replay.Entities.GetOrAddValue(packet.EntityId, out Entity? entity, () => CreateEntity(packet.EntityId, "Avatar"));
 
@@ -90,7 +118,7 @@ public abstract class AReplayControllerBase<T> : IReplayController
 		Replay.PlayerEntityId = packet.EntityId;
 	}
 
-	public virtual void OnCellPlayerCreate(CellPlayerCreatePacket packet)
+	protected virtual void OnCellPlayerCreate(CellPlayerCreatePacket packet)
 	{
 		Replay.Entities.GetOrAddValue(packet.EntityId, out Entity? entity, () => CreateEntity(packet.EntityId, "Avatar"));
 
@@ -98,29 +126,33 @@ public abstract class AReplayControllerBase<T> : IReplayController
 		entity.SetInternalClientProperties(binaryReader);
 	}
 
-	public virtual void OnEntityCreate(EntityCreatePacket packet)
+	protected virtual void OnEntityCreate(EntityCreatePacket packet)
 	{
 		Entity entity = CreateEntity(packet.EntityId, packet.Type);
 
 		Replay.Entities[packet.EntityId] = entity;
 		using BinaryReader binaryReader = packet.Data.GetBinaryReader();
 		byte valuesCount = binaryReader.ReadByte();
-		foreach (int i in Enumerable.Range(0, valuesCount))
+
+		for (int i = 0; i < valuesCount; i++)
 		{
 			byte propertyIndex = binaryReader.ReadByte();
 			entity.SetClientProperty(propertyIndex, binaryReader, this);
 		}
 	}
 
-	public virtual void OnPosition(PositionPacket packet)
+	protected virtual void OnPosition(PositionPacket packet)
 	{
 		if (!Replay.Entities.ContainsKey(packet.EntityId))
+		{
 			return;
+		}
+
 		Entity entity = Replay.Entities[packet.EntityId];
 		entity.SetPosition(packet.Position);
 	}
 
-	public virtual void OnPlayerPosition(PlayerPositionPacket packet)
+	protected virtual void OnPlayerPosition(PlayerPositionPacket packet)
 	{
 		/* 
 		 Entity at ID 1 is the primary one's position being updated
@@ -129,7 +161,7 @@ public abstract class AReplayControllerBase<T> : IReplayController
 		 Vehicle anymore, and a position instead.
 		 Before death only "Vehicle in ID 1" packets have a position.
 		*/
-		if (packet.EntityId2 != 0 && Replay.Entities.ContainsKey(packet.EntityId1) && Replay.Entities.ContainsKey(packet.EntityId2))
+		if (packet.EntityId2 is not 0 && Replay.Entities.ContainsKey(packet.EntityId1) && Replay.Entities.ContainsKey(packet.EntityId2))
 		{
 			/*
 				This serves to link the positions of the two entities 
@@ -137,44 +169,49 @@ public abstract class AReplayControllerBase<T> : IReplayController
 				is, rather than by the position field.
 				e.g. Assigning the Avatar the position of the Vehicle
 			 */
-			Entity? masterEntity = Replay.Entities[packet.EntityId2];
-			Entity? slaveEntity = Replay.Entities[packet.EntityId1];
+			Entity masterEntity = Replay.Entities[packet.EntityId2];
+			Entity slaveEntity = Replay.Entities[packet.EntityId1];
 
-			slaveEntity.SetPosition(slaveEntity.GetPosition());
+			slaveEntity.SetPosition(masterEntity.GetPosition());
 		}
-		else if (packet.EntityId1 != 0 && packet.EntityId2 == 0
-			&& Replay.Entities.ContainsKey(packet.EntityId1))
+		else if (packet is { EntityId1: not 0, EntityId2: 0 } && Replay.Entities.ContainsKey(packet.EntityId1))
 		{
 			// This is a regular update for entity 1, without entity 2
-			Entity? entity = Replay.Entities[packet.EntityId1];
+			Entity entity = Replay.Entities[packet.EntityId1];
 			entity.SetPosition(packet.Position);
 		}
 	}
 
-	public virtual void OnEntityMethod(EntityMethodPacket packet)
+	protected virtual void OnEntityMethod(EntityMethodPacket packet)
 	{
 		if (!Replay.Entities.ContainsKey(packet.EntityId))
+		{
 			return;
+		}
 
 		Entity entity = Replay.Entities[packet.EntityId];
 		using BinaryReader methodDataReader = packet.Data.GetBinaryReader();
 		entity.CallClientMethod(packet.MessageId, packet.PacketTime, methodDataReader, this);
 	}
 
-	public virtual void OnEntityProperty(EntityPropertyPacket packet)
+	protected virtual void OnEntityProperty(EntityPropertyPacket packet)
 	{
 		if (!Replay.Entities.ContainsKey(packet.EntityId))
+		{
 			return;
+		}
 
 		Entity entity = Replay.Entities[packet.EntityId];
 		using BinaryReader propertyData = packet.Data.GetBinaryReader();
 		entity.SetClientProperty(packet.MessageId, propertyData, this);
 	}
 
-	public virtual void OnNestedProperty(NestedPropertyPacket packet)
+	protected virtual void OnNestedProperty(NestedPropertyPacket packet)
 	{
 		if (!Replay.Entities.ContainsKey(packet.EntityId))
+		{
 			return;
+		}
 
 		Entity entity = Replay.Entities[packet.EntityId];
 		packet.Apply(entity);
@@ -196,10 +233,10 @@ public abstract class AReplayControllerBase<T> : IReplayController
 	[MethodSubscription("Avatar", "onArenaStateReceived", ParamsAsDictionary = true, Priority = -1)]
 	public void OnArenaStateReceivedCVECheck(Dictionary<string, object?> arguments)
 	{
-		CVEChecks.ScanForCVE_2022_31265((byte[])arguments["preBattlesInfo"]!, "Avatar_onArenaStateReceived_preBattlesInfo");
-		CVEChecks.ScanForCVE_2022_31265((byte[])arguments["playersStates"]!, "Avatar_onArenaStateReceived_playersStates");
-		CVEChecks.ScanForCVE_2022_31265((byte[])arguments["observersState"]!, "Avatar_onArenaStateReceived_observersState");
-		CVEChecks.ScanForCVE_2022_31265((byte[])arguments["buildingsInfo"]!, "Avatar_onArenaStateReceived_buildingsInfo");
+		CveChecks.ScanForCVE_2022_31265((byte[])arguments["preBattlesInfo"]!, "Avatar_onArenaStateReceived_preBattlesInfo");
+		CveChecks.ScanForCVE_2022_31265((byte[])arguments["playersStates"]!, "Avatar_onArenaStateReceived_playersStates");
+		CveChecks.ScanForCVE_2022_31265((byte[])arguments["observersState"]!, "Avatar_onArenaStateReceived_observersState");
+		CveChecks.ScanForCVE_2022_31265((byte[])arguments["buildingsInfo"]!, "Avatar_onArenaStateReceived_buildingsInfo");
 	}
 	#endregion
 }

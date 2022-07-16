@@ -3,14 +3,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Nodsoft.WowsReplaysUnpack.Benchmark.Controllers;
 using Nodsoft.WowsReplaysUnpack.Services;
-using System;
-using System.IO;
 
 namespace Nodsoft.WowsReplaysUnpack.Benchmark
 {
 	public class UnpackBenchmark
 	{
-		private static string samplesPath = Path.Join(Environment.CurrentDirectory, "Samples");
+		private static readonly string samplesPath = Path.Join(Environment.CurrentDirectory, "Samples");
 		private static readonly MemoryStream _ms;
 		private static readonly IReplayUnpackerService _defaultUnpacker;
 		private static readonly IReplayUnpackerService _performanceUnpacker;
@@ -24,7 +22,7 @@ namespace Nodsoft.WowsReplaysUnpack.Benchmark
 				fs.CopyTo(_ms);
 				fs.Dispose();
 			}
-			var services = new ServiceCollection()
+			ServiceProvider? services = new ServiceCollection()
 					.AddWowsReplayUnpacker(b =>
 					{
 						b.AddReplayController<PerformanceController>();
@@ -32,7 +30,7 @@ namespace Nodsoft.WowsReplaysUnpack.Benchmark
 					.AddLogging(l => l.ClearProviders())
 					.BuildServiceProvider();
 
-			var factory = services.GetRequiredService<ReplayUnpackerFactory>();
+			ReplayUnpackerFactory? factory = services.GetRequiredService<ReplayUnpackerFactory>();
 			_defaultUnpacker = factory.GetUnpacker();
 			_performanceUnpacker = factory.GetUnpacker<PerformanceController>();
 		}

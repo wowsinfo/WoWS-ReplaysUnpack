@@ -8,7 +8,7 @@ namespace Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
 /// client is provided in this method - the cell data will be provided by the
 /// CellPlayerCreatePacket later if the player is put on the cell also.
 /// </summary>
-public class BasePlayerCreatePacket : ANetworkPacket
+public class BasePlayerCreatePacket : NetworkPacketBase
 {
 	public uint EntityId { get; }
 	public short EntityType { get; }

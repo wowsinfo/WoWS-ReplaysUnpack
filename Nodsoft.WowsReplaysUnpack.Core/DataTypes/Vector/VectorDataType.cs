@@ -4,7 +4,7 @@ using System.Xml;
 
 namespace Nodsoft.WowsReplaysUnpack.Core.DataTypes;
 
-internal class VectorDataType : ADataTypeBase
+internal class VectorDataType : DataTypeBase
 {
 	private readonly int _itemCount;
 
@@ -18,9 +18,6 @@ internal class VectorDataType : ADataTypeBase
 	/// Reads the python tuple
 	/// Equivalent to tuple(struct.unpack())
 	/// </summary>
-	/// <param name="reader"></param>
-	/// <param name="itemCount"></param>
-	/// <returns></returns>
 	protected override object? GetValueInternal(BinaryReader reader, XmlNode? propertyOrArgumentNode, int headerSize)
 	{
 		// Size of a float value
@@ -29,5 +26,5 @@ internal class VectorDataType : ADataTypeBase
 	}
 
 	public override object? GetDefaultValue(XmlNode? propertyOrArgumentNode, bool forArray = false)
-	=> propertyOrArgumentNode?.SelectSingleNodeText("Default")?.Split(' ').Select(v => Convert.ToSingle(v)).ToArray();
+		=> propertyOrArgumentNode?.SelectSingleNodeText("Default")?.Split(' ').Select(Convert.ToSingle).ToArray();
 }

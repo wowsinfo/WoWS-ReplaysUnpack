@@ -3,14 +3,13 @@ using System.Xml;
 
 namespace Nodsoft.WowsReplaysUnpack.Core.DataTypes;
 
-public class ChildDataType : ADataTypeBase
+public class ChildDataType : DataTypeBase
 {
-	public ADataTypeBase ChildType { get; set; }
-	public ChildDataType(Version version, IDefinitionStore definitionStore, XmlNode xmlNode)
-		: base(version, definitionStore, xmlNode, typeof(object))
+	public DataTypeBase ChildType { get; }
+	public ChildDataType(Version version, IDefinitionStore definitionStore, XmlNode xmlNode) : base(version, definitionStore, xmlNode, typeof(object))
 	{
-		XmlNode? typeNode = xmlNode.SelectSingleNode("Type");
-		ChildType = typeNode is null ? new BlobDataType(version, definitionStore, xmlNode) : definitionStore.GetDataType(version, typeNode);
+		XmlNode? typeNode = XmlNode.SelectSingleNode("Type");
+		ChildType = typeNode is null ? new BlobDataType(Version, DefinitionStore, xmlNode) : DefinitionStore.GetDataType(Version, typeNode);
 		ClrType = ChildType.ClrType;
 	}
 
@@ -18,7 +17,10 @@ public class ChildDataType : ADataTypeBase
 	{
 		// Always read header otherwise we will get a padding error
 		if (ChildType is not BlobDataType)
+		{
 			_ = reader.ReadBytes(headerSize);
+		}
+
 		return ChildType.GetValue(reader, propertyOrArgumentNode, headerSize);
 	}
 }

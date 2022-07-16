@@ -6,7 +6,7 @@ namespace Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
 /// Fires when servers requests client to call
 /// entity's method with some arguments
 /// </summary>
-public class EntityMethodPacket : ANetworkPacket
+public class EntityMethodPacket : NetworkPacketBase
 {
 	public uint EntityId { get; }
 	public uint MessageId { get; }

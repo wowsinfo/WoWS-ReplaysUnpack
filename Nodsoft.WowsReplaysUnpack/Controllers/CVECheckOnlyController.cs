@@ -7,30 +7,43 @@ using Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
 
 namespace Nodsoft.WowsReplaysUnpack.Controllers;
 
-public class CVECheckOnlyController : AReplayControllerBase<CVECheckOnlyController>
+public class CveCheckOnlyController : ReplayControllerBase<CveCheckOnlyController>
 {
-	public CVECheckOnlyController(IDefinitionStore definitionStore, ILogger<Entity> entityLogger) : base(definitionStore, entityLogger)
+	public CveCheckOnlyController(IDefinitionStore definitionStore, ILogger<Entity> entityLogger) : base(definitionStore, entityLogger)
 	{
 	}
 
-	public override void HandleNetworkPacket(ANetworkPacket networkPacket, ReplayUnpackerOptions options)
+	public override void HandleNetworkPacket(NetworkPacketBase networkPacket, ReplayUnpackerOptions options)
 	{
 		if (networkPacket is BasePlayerCreatePacket bpPacker)
+		{
 			OnBasePlayerCreate(bpPacker);
+		}
+
 		if (networkPacket is CellPlayerCreatePacket cpPacket)
+		{
 			OnCellPlayerCreate(cpPacket);
+		}
+
 		if (networkPacket is EntityMethodPacket entityMethod)
+		{
 			OnEntityMethod(entityMethod);
+		}
 	}
 
-	public override void OnEntityMethod(EntityMethodPacket packet)
+	protected override void OnEntityMethod(EntityMethodPacket packet)
 	{
 		if (!Replay.Entities.ContainsKey(packet.EntityId))
+		{
 			return;
+		}
 
 		Entity entity = Replay.Entities[packet.EntityId];
-		if (entity.Name != "Avatar" && entity.GetClientMethodNameForIndex(packet.MessageId) != "onArenaStateReceived")
+		if (entity.Name is not "Avatar" && entity.GetClientMethodNameForIndex(packet.MessageId) is not "onArenaStateReceived")
+		{
 			return;
+		}
+
 		using BinaryReader methodDataReader = packet.Data.GetBinaryReader();
 		entity.CallClientMethod(packet.MessageId, packet.PacketTime, methodDataReader, this);
 	}

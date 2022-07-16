@@ -3,13 +3,13 @@ using System.Xml;
 
 namespace Nodsoft.WowsReplaysUnpack.Core.Definitions;
 
-public class EntityDefinition : ABaseDefinition
+public class EntityDefinition : BaseDefinition
 {
 	private const string ENTITY_DEFS = "entity_defs";
 
-	public List<EntityMethodDefinition> CellMethods { get; set; } = new();
-	public List<EntityMethodDefinition> BaseMethods { get; set; } = new();
-	public List<EntityMethodDefinition> ClientMethods { get; set; } = new();
+	private List<EntityMethodDefinition> CellMethods { get; set; } = new();
+	// public List<EntityMethodDefinition> BaseMethods { get; set; } = new();
+	public List<EntityMethodDefinition> ClientMethods { get; private set; } = new();
 
 	public EntityDefinition(Version clientVersion, IDefinitionStore definitionStore,
 		string name) : base(clientVersion, definitionStore, name, ENTITY_DEFS)
@@ -27,12 +27,16 @@ public class EntityDefinition : ABaseDefinition
 		ClientMethods = ClientMethods.OrderBy(m => m.DataSize).ToList();
 	}
 
-	private void ParseMethods(XmlNode? methodsNode, List<EntityMethodDefinition> methods)
+	private void ParseMethods(XmlNode? methodsNode, ICollection<EntityMethodDefinition> methods)
 	{
 		if (methodsNode is null)
+		{
 			return;
+		}
 
 		foreach (XmlNode node in methodsNode.ChildNodes())
-			methods.Add(new EntityMethodDefinition(ClientVersion, DefinitionStore, node));
+		{
+			methods.Add(new(ClientVersion, DefinitionStore, node));
+		}
 	}
 }

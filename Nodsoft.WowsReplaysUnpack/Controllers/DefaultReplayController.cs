@@ -3,10 +3,9 @@ using Nodsoft.WowsReplaysUnpack.Core.Definitions;
 using Nodsoft.WowsReplaysUnpack.Core.Entities;
 
 namespace Nodsoft.WowsReplaysUnpack.Controllers;
-public class DefaultReplayController : AReplayControllerBase<DefaultReplayController>
+
+public sealed class DefaultReplayController : ReplayControllerBase<DefaultReplayController>
 {
-	public DefaultReplayController(IDefinitionStore definitionStore, ILogger<Entity> entityLogger)
-		: base(definitionStore, entityLogger)
-	{
-	}
+	// ReSharper disable once ContextualLoggerProblem
+	public DefaultReplayController(IDefinitionStore definitionStore, ILogger<Entity> entityLogger) : base(definitionStore, entityLogger) { }
 }

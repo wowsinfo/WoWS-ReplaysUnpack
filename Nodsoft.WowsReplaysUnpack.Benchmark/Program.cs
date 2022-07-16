@@ -5,7 +5,6 @@ using BenchmarkDotNet.Environments;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Running;
 using Nodsoft.WowsReplaysUnpack.Benchmark;
-using System;
 
 BenchmarkRunner.Run<UnpackBenchmark>(DefaultConfig.Instance
 	.WithOptions(ConfigOptions.DisableOptimizationsValidator)

@@ -5,9 +5,10 @@ using System.Text;
 
 namespace Nodsoft.WowsReplaysUnpack.ExtendedData.Models;
 
-public class ReplayPlayer
+public record ReplayPlayer
 {
-	public static PropertyInfo[] PropertyInfos = typeof(ReplayPlayer).GetProperties();
+	public static IEnumerable<PropertyInfo> PropertyInfos { get; } = typeof(ReplayPlayer).GetProperties();
+
 	public uint AccountId { get; set; }
 
 	public bool AntiAbuseEnabled { get; set; }
@@ -87,20 +88,23 @@ public class ReplayPlayer
 	public ReplayPlayer(ShipConfigMapping shipConfigMapping)
 	{
 		ShipData = new(() =>
-		{
-			if (string.IsNullOrEmpty(ShipConfigDump))
-				return null;
+			{
+				if (string.IsNullOrEmpty(ShipConfigDump))
+				{
+					return null;
+				}
 
-			byte[] byteArray = Encoding.Latin1.GetBytes(ShipConfigDump);
-			using MemoryStream memoryStream = new(byteArray);
-			using BinaryReader binaryReader = new(memoryStream);
+				byte[] byteArray = Encoding.Latin1.GetBytes(ShipConfigDump);
+				using MemoryStream memoryStream = new(byteArray);
+				using BinaryReader binaryReader = new(memoryStream);
 
-			List<uint> configDumpList = new();
+				List<uint> configDumpList = new();
 
-			while (memoryStream.Position != memoryStream.Length)
-				configDumpList.Add(binaryReader.ReadUInt32());
-			return new(ProcessShipConfigDump(configDumpList), shipConfigMapping);
-		});
+				while (memoryStream.Position != memoryStream.Length) configDumpList.Add(binaryReader.ReadUInt32());
+
+				return new(ProcessShipConfigDump(configDumpList), shipConfigMapping);
+			}
+		);
 	}
 
 	private static IReadOnlyList<uint[]> ProcessShipConfigDump(IReadOnlyList<uint> rawConfigDump)
@@ -114,12 +118,13 @@ public class ReplayPlayer
 			new[] { rawConfigDump[1] }, // ShipId
 			new[] { rawConfigDump[2] }  // TotalValues
 		};
+
 		while (tempList.Length > 0)
 		{
 			int length = (int)tempList[0];
 			tempList = tempList.Skip(1).ToArray();
 			resultList.Add(tempList.Take(length).ToArray());
-	    tempList = tempList.Skip(length).ToArray();
+			tempList = tempList.Skip(length).ToArray();
 		}
 
 		return resultList;

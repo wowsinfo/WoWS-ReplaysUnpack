@@ -1,6 +1,6 @@
 ﻿namespace Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
 
-public class EntityControlPacket : ANetworkPacket
+public class EntityControlPacket : NetworkPacketBase
 {
 	public uint EntityId { get; }
 	public bool IsControlled { get; }

@@ -6,7 +6,7 @@ public enum ReplayMessageGroup
 	Team = 1,
 	All = 2
 }
-public class ChatMessage
+public record ChatMessage
 {
 	public uint EntityId { get; }
 	public float PacketTime { get; } // Time in seconds from battle start
@@ -14,10 +14,10 @@ public class ChatMessage
 	public ReplayMessageGroup MessageGroup { get; }
 	public string MessageContent { get; }
 
-	public ChatMessage(uint entityId, float packetTIme, string messageGroup, string messageContent)
+	public ChatMessage(uint entityId, float packetTime, string messageGroup, string messageContent)
 	{
 		EntityId = entityId;
-		PacketTime = packetTIme;
+		PacketTime = packetTime;
 		MessageGroup = ParseMessageGroup(messageGroup);
 		MessageContent = messageContent;
 	}

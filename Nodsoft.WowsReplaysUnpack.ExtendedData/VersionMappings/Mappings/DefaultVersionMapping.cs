@@ -47,7 +47,7 @@ public class DefaultVersionMapping : IVersionMapping
 		{ 36, nameof(ReplayPlayer.TtkStatus) }
 	};
 
-	public ShipConfigMapping ShipConfigMapping { get; } = new ShipConfigMapping
+	public ShipConfigMapping ShipConfigMapping { get; } = new()
 	{
 		ShipId = 0,
 		TotalValueCount = 1,

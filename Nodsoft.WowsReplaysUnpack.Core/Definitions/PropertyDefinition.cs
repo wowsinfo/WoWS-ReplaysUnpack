@@ -7,7 +7,7 @@ namespace Nodsoft.WowsReplaysUnpack.Core.Definitions;
 public class PropertyDefinition
 {
 	public string Name { get; }
-	public ADataTypeBase DataType { get; }
+	public DataTypeBase DataType { get; }
 	public EntityFlag Flag { get; } = EntityFlag.CELL_PRIVATE;
 	public int DataSize => Math.Min(DataType.DataSize, Consts.Infinity);
 	public XmlNode XmlNode { get; }
@@ -19,14 +19,14 @@ public class PropertyDefinition
 		DataType = definitionStore.GetDataType(clientVersion, propertyXmlNode.SelectSingleNode("Type")!);
 
 		string? flag = propertyXmlNode.SelectSingleNodeText("Flags");
+
 		if (!string.IsNullOrEmpty(flag))
 		{
 			Flag = (EntityFlag)Enum.Parse(typeof(EntityFlag), flag);
 		}
 	}
 
-	public object? GetValue(BinaryReader reader, XmlNode propertyNode)
-		=> DataType.GetValue(reader, propertyNode);
+	public object? GetValue(BinaryReader reader, XmlNode propertyNode) => DataType.GetValue(reader, propertyNode);
 
 	public override string ToString() => $"{Name} <{DataType.GetType().Name},{DataType.ClrType.Name}>";
 }

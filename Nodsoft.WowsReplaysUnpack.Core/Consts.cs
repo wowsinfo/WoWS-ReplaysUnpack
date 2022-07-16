@@ -2,13 +2,13 @@
 
 public static class Consts
 {
-	public static int Infinity = 0xFFFF;
+	public const int Infinity = 0xFFFF;
 
-	public const char UNDERSCORE = '_';
-	public const char DOT = '.';
-	public const char COMMA = ',';
+	public const char Underscore = '_';
+	public const char Dot = '.';
+	public const char Comma = ',';
 
-	public const string UNDERSCORE_STR = "_";
-	public const string DOT_STR = ".";
-	public const string COMMA_STR = ",";
+	public const string UnderscoreStr = "_";
+	public const string DotStr = ".";
+	public const string CommaStr = ",";
 }

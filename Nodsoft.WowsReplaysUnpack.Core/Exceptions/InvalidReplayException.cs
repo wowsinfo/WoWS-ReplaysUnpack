@@ -2,7 +2,5 @@
 
 public class InvalidReplayException : Exception
 {
-	public InvalidReplayException(string? message = null) : base(message)
-	{
-	}
+	public InvalidReplayException(string? message = null) : base(message) { }
 }

@@ -3,14 +3,14 @@ using System.Xml;
 
 namespace Nodsoft.WowsReplaysUnpack.Core.DataTypes;
 
-public class BlobDataType : ADataTypeBase
+public class BlobDataType : DataTypeBase
 {
 	public BlobDataType(Version version, IDefinitionStore definitionStore, XmlNode xmlNode)
 		: base(version, definitionStore, xmlNode, typeof(byte[]))
 	{
 	}
 
-	protected override object? GetValueInternal(BinaryReader reader, XmlNode? propertyOrArgumentNode, int headerSize)
+	protected override object GetValueInternal(BinaryReader reader, XmlNode? propertyOrArgumentNode, int headerSize)
 		=> reader.ReadBytes(GetSizeFromHeader(reader));
 
 	protected override int GetSizeFromHeader(BinaryReader reader)

@@ -19,7 +19,7 @@ public struct PositionContainer
 	public float Roll { get; }
 }
 
-public class PositionPacket : ANetworkPacket
+public class PositionPacket : NetworkPacketBase
 {
 	public uint EntityId { get; }
 	public int VehicleId { get; }
@@ -40,5 +40,4 @@ public class PositionPacket : ANetworkPacket
 
 		Position = new(position, yaw, pitch, roll);
 	}
-
 }

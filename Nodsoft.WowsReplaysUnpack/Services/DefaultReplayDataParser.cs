@@ -2,7 +2,6 @@
 using Nodsoft.WowsReplaysUnpack.Core.Models;
 using Nodsoft.WowsReplaysUnpack.Core.Network;
 using Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
-using System.Text.RegularExpressions;
 
 namespace Nodsoft.WowsReplaysUnpack.Services;
 
@@ -15,14 +14,14 @@ public class DefaultReplayDataParser : IReplayDataParser
 	public DefaultReplayDataParser(ILogger<DefaultReplayDataParser> logger)
 	{
 		_logger = logger;
-		_packetBufferReader = new BinaryReader(_packetBuffer);
+		_packetBufferReader = new(_packetBuffer);
 	}
 
 	/// <summary>
 	/// Parses the individual network packets
 	/// </summary>
 	/// <param name="replayDataStream"></param>
-	public virtual IEnumerable<ANetworkPacket> ParseNetworkPackets(MemoryStream replayDataStream, ReplayUnpackerOptions options)
+	public virtual IEnumerable<NetworkPacketBase> ParseNetworkPackets(MemoryStream replayDataStream, ReplayUnpackerOptions options)
 	{
 		int packetIndex = 0;
 		using BinaryReader binaryReader = new(replayDataStream);

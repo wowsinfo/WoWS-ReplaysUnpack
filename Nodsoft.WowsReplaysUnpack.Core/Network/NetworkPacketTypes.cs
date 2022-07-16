@@ -17,12 +17,14 @@ public static class NetworkPacketTypes
 	public const uint Position = 0x0a;
 	public const uint PlayerPosition = 0x2b;
 
-	private readonly static Dictionary<uint, string> _names = new();
+	private static readonly Dictionary<uint, string> _names = new();
 
 	static NetworkPacketTypes()
 	{
 		foreach (FieldInfo field in typeof(NetworkPacketTypes).GetFields(BindingFlags.Public))
+		{
 			_names.Add((uint)field.GetValue(null)!, field.Name);
+		}
 	}
 
 	public static string GetName(uint type) => _names.ContainsKey(type) ? _names[type] : $"Unsupported Type ({type})";
