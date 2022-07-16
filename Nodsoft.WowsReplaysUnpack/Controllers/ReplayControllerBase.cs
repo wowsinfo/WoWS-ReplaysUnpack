@@ -61,50 +61,23 @@ public abstract class ReplayControllerBase<T> : IReplayController
 	#region Packet Handling
 	public virtual void HandleNetworkPacket(NetworkPacketBase networkPacket, ReplayUnpackerOptions options)
 	{
-		if (networkPacket is MapPacket mapPacket)
+		Action? action = networkPacket switch
 		{
-			OnMap(mapPacket);
-		}
-		else if (networkPacket is BasePlayerCreatePacket _1)
-		{
-			OnBasePlayerCreate(_1);
-		}
-		else if (networkPacket is CellPlayerCreatePacket _2)
-		{
-			OnCellPlayerCreate(_2);
-		}
-		else if (networkPacket is EntityEnterPacket _3 && Replay.Entities.ContainsKey(_3.EntityId))
-		{
-			Replay.Entities[_3.EntityId].IsInAoI = true;
-		}
-		else if (networkPacket is EntityLeavePacket _4 && Replay.Entities.ContainsKey(_4.EntityId))
-		{
-			Replay.Entities[_4.EntityId].IsInAoI = false;
-		}
-		else if (networkPacket is EntityCreatePacket _5)
-		{
-			OnEntityCreate(_5);
-		}
-		else if (networkPacket is PositionPacket _6)
-		{
-			OnPosition(_6);
-		}
-		else if (networkPacket is PlayerPositionPacket _7)
-		{
-			OnPlayerPosition(_7);
-		}
-		else if (networkPacket is EntityMethodPacket _8)
-		{
-			OnEntityMethod(_8);
-		}
-		else if (networkPacket is EntityPropertyPacket _9)
-		{
-			OnEntityProperty(_9);
-		}
-		else if (networkPacket is NestedPropertyPacket _10)
-		{
-			OnNestedProperty(_10);
-		}
+			MapPacket p => () => OnMap(p),
+			BasePlayerCreatePacket p => () => OnBasePlayerCreate(p),
+			CellPlayerCreatePacket p => () => OnCellPlayerCreate(p),
+			EntityEnterPacket p when Replay.Entities.ContainsKey(p.EntityId) => () => Replay.Entities[p.EntityId].IsInAoI = true,
+			EntityLeavePacket p when Replay.Entities.ContainsKey(p.EntityId) => () => Replay.Entities[p.EntityId].IsInAoI = false,
+			EntityCreatePacket p => () => OnEntityCreate(p),
+			PositionPacket p => () => OnPosition(p),
+			PlayerPositionPacket p => () => OnPlayerPosition(p),
+			EntityMethodPacket p => () => OnEntityMethod(p),
+			EntityPropertyPacket p => () => OnEntityProperty(p),
+			NestedPropertyPacket p => () => OnNestedProperty(p),
+			_ => null
+		};
+
+		action?.Invoke();
 	}
 
 	protected virtual void OnMap(MapPacket packet) => Replay.MapName = packet.Name;
