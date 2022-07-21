@@ -66,6 +66,7 @@ UnpackedReplay unpackedReplay = replayUnpackerFactory
 	.Unpack(File.OpenRead("my-replay.wowsreplay"));
 ```
 **CVE Check Only Implementation**
+
 In the library you get a custom implementation ready to use for when you only want to check the CVE .
 `CveCheckOnlyController`
 
@@ -74,6 +75,7 @@ It skips all network packets except the affected ones.
 You have to add it with the `AddReplayController<CveCheckOnlyController>()` method and get the unpacker with `GetUnpacker<CveCheckOnlyController>()`
 
 **Extend the replay data**
+
 When implementing your own controller and extending `ReplayControllerBase<T>` you can overwrite the `CreateUnpackedReplay` method to create an instance of your own replay class.
 The replay class has to extend `UnpackedReplay`. 
 That way you can add extra properties.
@@ -90,6 +92,7 @@ public override UnpackedReplay CreateUnpackedReplay(ArenaInfo arenaInfo)
 You can see this in action [here](Nodsoft.WowsReplaysUnpack.ExtendedData/ExtendedDataController.cs)
 
 **Method/Property Subscriptions**
+
 When implementing your own controller and extending `ReplayControllerBase<T>` you can subscribe to `EntityMethods` and `EntityProperty` calls by adding a method with an attribute.
 
 `MethodSubscription("EntityName", "MethodName")`
