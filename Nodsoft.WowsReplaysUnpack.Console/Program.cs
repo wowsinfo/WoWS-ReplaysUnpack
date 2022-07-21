@@ -1,47 +1,48 @@
 ﻿// See https://aka.ms/new-console-template for more information
-using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Configs;
-using BenchmarkDotNet.Environments;
-using BenchmarkDotNet.Jobs;
-using BenchmarkDotNet.Running;
-using Nodsoft.WowsReplaysUnpack.Console;
-using Nodsoft.WowsReplaysUnpack.Data;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Nodsoft.WowsReplaysUnpack;
+using Nodsoft.WowsReplaysUnpack.ExtendedData;
+using Nodsoft.WowsReplaysUnpack.ExtendedData.Models;
+using Nodsoft.WowsReplaysUnpack.Services;
 using System;
+using System.IO;
 
-Console.WriteLine();
+string samplePath = Path.Join(Directory.GetCurrentDirectory(), "../../../..", "Replay-Samples");
+FileStream _GetReplayFile(string name) => File.OpenRead(Path.Join(samplePath, name));
 
+ServiceProvider? services = new ServiceCollection()
+	.AddWowsReplayUnpacker(builder =>
+	{
+		//builder.AddReplayController<CVECheckOnlyController>();
+		builder.AddExtendedData();
+	})
+	.AddLogging(logging =>
+	{
+		logging.ClearProviders();
+		logging.AddConsole();
+		logging.SetMinimumLevel(LogLevel.Error);
+	})
+	.BuildServiceProvider();
 
-BenchmarkRunner.Run<UnpackBenchmark>(DefaultConfig.Instance
-	.WithOptions(ConfigOptions.DisableOptimizationsValidator)
-	.AddJob(Job.Default.WithRuntime(CoreRuntime.Core50))
-	.AddJob(Job.Default.WithRuntime(CoreRuntime.Core60))
-);
+ReplayUnpackerFactory? replayUnpacker = services.GetRequiredService<ReplayUnpackerFactory>();
 
-/**/
+//var unpackedReplay = replayUnpacker.GetUnpacker().Unpack(GetReplayFile("payload.wowsreplay"));
+//var unpackedReplay = replayUnpacker.GetUnpacker<CVECheckOnlyController>().Unpack(GetReplayFile("payload.wowsreplay"));
+ExtendedDataReplay? unpackedReplay = (ExtendedDataReplay)replayUnpacker.GetExtendedDataUnpacker().Unpack(_GetReplayFile("good.wowsreplay"));
 
-/*
-ReplayRaw replay = new UnpackBenchmark().GetReplay();
-
-/**/
-
-/*
-foreach (ReplayMessage msg in replay.ChatMessages)
-{
-	Console.WriteLine($"[{GetGroupString(msg)}] {msg.EntityId} : {msg.MessageContent}");
-}
-
-/**/
-
+//foreach (ReplayMessage msg in replay.ChatMessages)
+//{
+//	Console.WriteLine($"[{GetGroupString(msg)}] {msg.EntityId} : {msg.MessageContent}");
+//}
+Console.WriteLine("DONE");
 Console.ReadKey();
 
 
-#pragma warning disable CS8321
-static string GetGroupString(ReplayMessage msg) => msg.MessageGroup switch
-{
-	"battle_team" => "Team",
-	"battle_common" => "All",
-	_ => ""
-};
-#pragma warning restore CS8321
 
-/**/
+//static string GetGroupString(ReplayMessage msg) => msg.MessageGroup switch
+//{
+//	"battle_team" => "Team",
+//	"battle_common" => "All",
+//	_ => ""
+//};
