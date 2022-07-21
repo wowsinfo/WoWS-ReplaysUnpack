@@ -3,6 +3,9 @@ using System.Xml;
 
 namespace Nodsoft.WowsReplaysUnpack.Core.Definitions;
 
+/// <summary>
+/// Specifies a definition store, responsible for loading and storing entity definitions.
+/// </summary>
 public interface IDefinitionStore
 {
 	DataTypeBase GetDataType(Version clientVersion, XmlNode typeOrArgXmlNode);

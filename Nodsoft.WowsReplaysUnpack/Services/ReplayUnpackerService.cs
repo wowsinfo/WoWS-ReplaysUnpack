@@ -11,7 +11,10 @@ using System.Text.Json;
 
 namespace Nodsoft.WowsReplaysUnpack.Services;
 
-
+/// <summary>
+/// Provides a controllable service for unpacking World of Warships replays.
+/// </summary>
+/// <typeparam name="TController">Type of the controller, responsible for data extraction.</typeparam>
 public sealed class ReplayUnpackerService<TController> : ReplayUnpackerService, IReplayUnpackerService
 	where TController : IReplayController
 {
