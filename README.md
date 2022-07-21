@@ -96,8 +96,11 @@ When implementing your own controller and extending `ReplayControllerBase<T>` yo
 
 You have a few extra properties on the attribute to configure how the method will be called:
 `bool IncludeEntity` => When `true` it will include the `Entity entity` parameter
+
 `bool IncludePacketTime` => When `true` it will include the `float packetTime` parameter
+
 `bool ParamsAsDictionary` => When `true` the last paremeter will be `Dictionary<string, object?> arguments` / When `false` the parameters have to match the actual packet parameters in order and type exactly. When they don't match you will get an exception telling you the required parameters.
+
 `bool Priority` => Defines the order in which methods are called when you have multiple subscriptions on the same method. Smaller = Earlier. Don't use -1.
 
 Example:
