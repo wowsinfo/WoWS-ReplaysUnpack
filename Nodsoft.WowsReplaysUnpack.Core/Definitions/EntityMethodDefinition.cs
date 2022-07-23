@@ -4,13 +4,31 @@ using System.Xml;
 
 namespace Nodsoft.WowsReplaysUnpack.Core.Definitions;
 
-public class EntityMethodDefinition
+/// <summary>
+/// Represents a method defined in a definition (.def) file.
+/// </summary>
+public record EntityMethodDefinition
 {
 	private const int DefaultHeaderSize = 1;
+	
+	/// <summary>
+	/// The name of the method.
+	/// </summary>
 	public string? Name { get; }
+	
+	/// <summary>
+	/// The arguments of the method.
+	/// </summary>
 	public List<EntityMethodArgumentDefinition> Arguments { get; } = new();
+	
+	/// <summary>
+	/// Size of the method header.
+	/// </summary>
 	public int HeaderSize { get; }
 
+	/// <summary>
+	/// Size of the method data.
+	/// </summary>
 	public int DataSize { get; }
 
 	public EntityMethodDefinition(Version clientVersion, IDefinitionStore definitionStore,
@@ -65,6 +83,11 @@ public class EntityMethodDefinition
 		}
 	}
 
+	/// <summary>
+	/// Gets all named and unnamed property values from a specified binary reader.
+	/// </summary>
+	/// <param name="reader">The binary reader to read from.</param>
+	/// <returns>The property values.</returns>
 	public (List<object?> unnamed, Dictionary<string, object?> named) GetValues(BinaryReader reader)
 	{
 		List<object?> unnamed = new();
@@ -82,15 +105,30 @@ public class EntityMethodDefinition
 	public override string ToString() => $"{Name} <{DataSize}, {HeaderSize}>";
 }
 
+/// <summary>
+/// Represents an argument of a method defined in a definition (.def) file.
+/// </summary>
 public record EntityMethodArgumentDefinition
 {
 	private readonly XmlNode _node;
 
+	/// <summary>
+	/// The name of this argument.
+	/// </summary>
 	public string Name { get; }
+	
+	/// <summary>
+	/// Data type expected for this argument.
+	/// </summary>
 	public DataTypeBase DataType { get; }
 
 	public EntityMethodArgumentDefinition(XmlNode node, string name, DataTypeBase dataType) => (_node, Name, DataType) = (node, name, dataType);
 
+	/// <summary>
+	/// Gets the value of this argument from a specified binary reader.
+	/// </summary>
+	/// <param name="binaryReader">The binary reader to read from.</param>
+	/// <returns>The value of this argument.</returns>
 	public object? GetValue(BinaryReader binaryReader)
 	{
 		return DataType.GetValue(binaryReader, _node);

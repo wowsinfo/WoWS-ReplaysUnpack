@@ -1,10 +1,14 @@
 ﻿using Nodsoft.WowsReplaysUnpack.Core.DataTypes;
+using System.Collections.Immutable;
 
 namespace Nodsoft.WowsReplaysUnpack.Core.Definitions;
 
 public static class TypeConsts
 {
-	public static readonly Dictionary<string, Type> SimpleTypeMappings = new()
+	/// <summary>
+	/// Provides common primitive types names, as read from the .def files, and their CLR types.
+	/// </summary>
+	public static readonly ImmutableDictionary<string, Type> SimpleTypeMappings = new Dictionary<string, Type>
 	{
 		{ "BLOB", typeof(BlobDataType) },
 		{ "STRING", typeof(StringDataType) },
@@ -29,5 +33,5 @@ public static class TypeConsts
 		{ "ARRAY", typeof(ArrayDataType) },
 		{ "TUPLE", typeof(ArrayDataType) },
 		{ "USER_TYPE", typeof(ChildDataType) }
-	};
+	}.ToImmutableDictionary();
 }

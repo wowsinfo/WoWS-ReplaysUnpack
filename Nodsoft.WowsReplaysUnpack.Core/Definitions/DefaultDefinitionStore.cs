@@ -7,16 +7,29 @@ using System.Xml;
 
 namespace Nodsoft.WowsReplaysUnpack.Core.Definitions;
 
+/// <summary>
+/// Default implementation of a Definition store, which is used to load definitions from XML files.
+/// </summary>
 public class DefaultDefinitionStore : IDefinitionStore
 {
+	/// <summary>
+	/// File name of the entities definition file.
+	/// </summary>
 	protected const string EntitiesXml = "entities.xml";
 
 	private readonly Version[] _supportedVersions;
 
+	/// <summary>
+	/// Logger instance used by this definition store.
+	/// </summary>
 	protected readonly ILogger<IDefinitionStore> Logger;
 
+	/// <summary>
+	/// Assembly of the Definition store (defaults to the implementation assembly).
+	/// </summary>
 	protected readonly Assembly Assembly;
-
+	
+	
 	/// <summary>
 	/// Version -> Definitions Directory
 	/// </summary>
@@ -61,14 +74,16 @@ public class DefaultDefinitionStore : IDefinitionStore
 
 	#region EntityDefinitions
 
+	/// <inheritdoc />
 	public virtual EntityDefinition GetEntityDefinition(Version clientVersion, int index)
 	{
 		clientVersion = GetActualVersion(clientVersion);
-		string name = GetEntityDefinitionNameByIndex(clientVersion, index);
+		string name = GetEntityDefinitionName(clientVersion, index);
 
 		return GetEntityDefinition(clientVersion, name);
 	}
 
+	/// <inheritdoc />
 	public virtual EntityDefinition GetEntityDefinition(Version clientVersion, string name)
 	{
 		clientVersion = GetActualVersion(clientVersion);
@@ -85,7 +100,12 @@ public class DefaultDefinitionStore : IDefinitionStore
 		return definition;
 	}
 
-	protected virtual string GetEntityDefinitionNameByIndex(Version clientVersion, int index)
+	/// <summary>
+	///	Gets the name of an entity definition by its index.
+	/// </summary>
+	/// <inheritdoc cref="GetEntityDefinition(System.Version,int)" />
+	/// <returns>The name of the entity definition.</returns>
+	protected virtual string GetEntityDefinitionName(Version clientVersion, int index)
 	{
 		string cacheKey = CacheKey(clientVersion.ToString(), (index - 1).ToString());
 
@@ -100,6 +120,11 @@ public class DefaultDefinitionStore : IDefinitionStore
 		return EntityDefinitionIndexNameCache[cacheKey];
 	}
 
+	/// <summary>
+	/// Gets all entity indexes for a given game client version.
+	/// </summary>
+	/// <param name="clientVersion">The game client version.</param>
+	/// <returns>A dictionary of entity indexes and their names.</returns>
 	protected virtual Dictionary<int, string> GetEntityIndexes(Version clientVersion)
 	{
 		return GetFileAsXml(clientVersion, EntitiesXml).DocumentElement!.SelectSingleNode("ClientServerEntities")!.ChildNodes()
@@ -109,7 +134,7 @@ public class DefaultDefinitionStore : IDefinitionStore
 
 	#endregion
 
-
+	/// <inheritdoc />
 	public virtual XmlDocument GetFileAsXml(Version clientVersion, string name, params string[] directoryNames)
 	{
 		clientVersion = GetActualVersion(clientVersion);
@@ -128,6 +153,7 @@ public class DefaultDefinitionStore : IDefinitionStore
 		return xmlDocument;
 	}
 
+	/// <inheritdoc />
 	public virtual DataTypeBase GetDataType(Version clientVersion, XmlNode typeOrArgXmlNode)
 	{
 		clientVersion = GetActualVersion(clientVersion);
@@ -151,6 +177,12 @@ public class DefaultDefinitionStore : IDefinitionStore
 		return GetDataTypeInternal(clientVersion, typeMapping, typeOrArgXmlNode);
 	}
 
+	/// <summary>
+	/// Finds a definition directory by given names.
+	/// </summary>
+	/// <param name="clientVersion">The game client version.</param>
+	/// <param name="directoryNames">The names of the directories.</param>
+	/// <returns>The definition directory.</returns>
 	protected virtual DefinitionDirectory FindDirectory(Version clientVersion, IEnumerable<string> directoryNames)
 	{
 		DefinitionDirectory folder = GetRootDirectory(clientVersion);
@@ -170,6 +202,11 @@ public class DefaultDefinitionStore : IDefinitionStore
 		return folder;
 	}
 
+	/// <summary>
+	/// Gets the root definition directory for a given game client version.
+	/// </summary>
+	/// <param name="clientVersion">The game client version.</param>
+	/// <returns>The root definition directory.</returns>
 	protected virtual DefinitionDirectory GetRootDirectory(Version clientVersion)
 	{
 		if (DirectoryCache.TryGetValue(clientVersion.ToString(), out DefinitionDirectory? rootDirectory))
@@ -191,6 +228,14 @@ public class DefaultDefinitionStore : IDefinitionStore
 		return rootDirectory;
 	}
 
+	/// <summary>
+	/// Internal method for getting a data type.
+	/// </summary>
+	/// <param name="clientVersion">The game client version.</param>
+	/// <param name="typeMapping">The type mapping.</param>
+	/// <param name="typeOrArgXmlNode">The type or argument XML node.</param>
+	/// <returns>The data type.</returns>
+	/// <exception cref="NotSupportedException">The data type is not supported.</exception>
 	protected virtual DataTypeBase GetDataTypeInternal(Version clientVersion, Dictionary<string, XmlNode> typeMapping, XmlNode typeOrArgXmlNode)
 	{
 		while (true)
@@ -200,16 +245,15 @@ public class DefaultDefinitionStore : IDefinitionStore
 			if (typeMapping.TryGetValue(typeName, out XmlNode? mappedNode))
 			{
 				typeOrArgXmlNode = mappedNode;
-
-				continue;
 			}
-
-			if (TypeConsts.SimpleTypeMappings.TryGetValue(typeName, out Type? dataType))
+			else if (TypeConsts.SimpleTypeMappings.TryGetValue(typeName, out Type? dataType))
 			{
 				return (DataTypeBase)Activator.CreateInstance(dataType, clientVersion, this, typeOrArgXmlNode)!;
 			}
-
-			throw new NotSupportedException($"DataType {typeName} is not supported");
+			else
+			{
+				throw new NotSupportedException($"DataType {typeName} is not supported");
+			}
 		}
 	}
 
@@ -225,6 +269,17 @@ public class DefaultDefinitionStore : IDefinitionStore
 		return actualVersion;
 	}
 
+	/// <summary>
+	/// Joins parts of an XML path, separated by a dot.
+	/// </summary>
+	/// <param name="parts">Parts of the path.</param>
+	/// <returns>The joined path.</returns>
 	protected static string JoinPath(params string[] parts) => string.Join(Consts.Dot, parts);
+	
+	/// <summary>
+	/// Joins parts of a cache key, separated by an underscore.
+	/// </summary>
+	/// <param name="values">Parts of the cache key.</param>
+	/// <returns>The joined cache key.</returns>
 	protected static string CacheKey(params string[] values) => string.Join(Consts.Underscore, values);
 }

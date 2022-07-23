@@ -24,7 +24,7 @@ public sealed class ReplayUnpackerService<TController> : ReplayUnpackerService, 
 
 	public ReplayUnpackerService(IReplayDataParser replayDataParser, TController replayController)
 	{
-		_jsonSerializerOptions.Converters.Add(new DateTimeJsonConverter());
+		_jsonSerializerOptions.Converters.Add(new ReplayDateTimeJsonConverter());
 		_replayDataParser = replayDataParser;
 		_replayController = replayController;
 	}

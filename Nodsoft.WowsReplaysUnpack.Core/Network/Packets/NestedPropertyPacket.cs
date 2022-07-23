@@ -40,7 +40,7 @@ public class NestedPropertyPacket : NetworkPacketBase
 			{
 				FixedDictionary d => d.ElementValueAt(propertyIndex),
 				FixedList l => l.ElementAt(propertyIndex),
-				Entity e when e.GetClientPropertyNameForIndex(propertyIndex) is { } field => e.ClientProperties[field],
+				Entity e when e.GetClientPropertyName(propertyIndex) is { } field => e.ClientProperties[field],
 				_ => null
 			};
 		}
@@ -51,7 +51,7 @@ public class NestedPropertyPacket : NetworkPacketBase
 			int index = bitReader.ReadBits(maxBits);
 
 			string fieldName = dict.ElementAt(index).Key;
-			DataTypes.DataTypeBase fieldType = dict.GetDataTypeForIndex(index);
+			DataTypes.DataTypeBase fieldType = dict.GetDataType(index);
 			using BinaryReader fieldValueReader = new(new MemoryStream(bitReader.ReadRest()));
 			dict[fieldName] = fieldType.GetValue(fieldValueReader, null);
 		}

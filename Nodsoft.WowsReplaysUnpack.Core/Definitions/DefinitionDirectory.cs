@@ -2,12 +2,29 @@
 
 namespace Nodsoft.WowsReplaysUnpack.Core.Definitions;
 
-public class DefinitionDirectory
+/// <summary>
+/// Defines a directory containing definition files.
+/// </summary>
+public record DefinitionDirectory
 {
+	/// <summary>
+	/// The name of the directory.
+	/// </summary>
 	public string Name { get; }
+	
+	/// <summary>
+	/// The path of the directory.
+	/// </summary>
 	public string Path { get; }
 
+	/// <summary>
+	/// Files in the directory.
+	/// </summary>
 	public List<DefinitionFile> Files { get; } = new();
+	
+	/// <summary>
+	/// Directories in the directory.
+	/// </summary>
 	public List<DefinitionDirectory> Directories { get; } = new();
 
 	public DefinitionDirectory(string name, string path, string[] fileNames)
@@ -42,4 +59,9 @@ public class DefinitionDirectory
 	}
 }
 
+/// <summary>
+/// Defines a file containing definition data.
+/// </summary>
+/// <param name="Name">Name of the file.</param>
+/// <param name="Path">Path of the file.</param>
 public record DefinitionFile(string Name, string Path);

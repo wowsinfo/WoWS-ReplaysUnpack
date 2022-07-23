@@ -9,22 +9,60 @@ using System.Text;
 
 namespace Nodsoft.WowsReplaysUnpack.Core.Entities;
 
+/// <summary>
+/// Represents an entity in the game.
+/// </summary>
 [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")] // Most elements are exposed to userspace, so shouldn't be restricted past public/protected.
 public class Entity
 {
+	/// <summary>
+	/// Logger instance for this class.
+	/// </summary>
 	protected ILogger<Entity> Logger { get; }
 
+	/// <summary>
+	/// Definition of the entity.
+	/// </summary>
 	protected EntityDefinition EntityDefinition { get; }
 
+	/// <summary>
+	/// Methods subscribed to the entity.
+	/// </summary>
 	protected Dictionary<string, MethodInfo[]> MethodSubscriptions { get; }
+	
+	/// <summary>
+	/// Methods subscribed to the entity's property changes.
+	/// </summary>
 	protected Dictionary<string, MethodInfo[]> PropertyChangedSubscriptions { get; }
 
+	/// <summary>
+	/// Definitions of the entity's properties, as scoped for public use from the client.
+	/// </summary>
 	protected PropertyDefinition[] ClientPropertyDefinitions { get; }
+	
+	/// <summary>
+	/// Definitions of the entity's properties, as scoped for internal use from the client.
+	/// </summary>
 	protected PropertyDefinition[] InternalClientPropertyDefinitions { get; }
+	
+	/// <summary>
+	/// Definitions of the entity's properties, as scoped for the cell.
+	/// </summary>
 	protected PropertyDefinition[] CellPropertyDefinitions { get; }
+	
+	/// <summary>
+	/// Definitions of the entity's base properties.
+	/// </summary>
 	protected PropertyDefinition[] BasePropertyDefinitions { get; }
 
+	/// <summary>
+	/// ID of the entity.
+	/// </summary>
 	public uint Id { get; }
+	
+	/// <summary>
+	/// Name of the entity.
+	/// </summary>
 	public string Name { get; }
 
 	/// <summary>
@@ -32,31 +70,64 @@ public class Entity
 	/// </summary>
 	public bool IsInAoI { get; set; }
 
+	/// <summary>
+	/// Entity properties, as scoped for public use from the client.
+	/// </summary>
 	public Dictionary<string, object?> ClientProperties { get; } = new();
+	
+	/// <summary>
+	/// Entity properties, as scoped for internal use from the client.
+	/// </summary>
 	public Dictionary<string, object?> CellProperties { get; } = new();
+	
+	/// <summary>
+	/// Entity base properties.
+	/// </summary>
 	public Dictionary<string, object?> BaseProperties { get; } = new();
+	
+	/// <summary>
+	/// Volatile properties of the entity.
+	/// </summary>
 	public Dictionary<string, object> VolatileProperties { get; }
+	
+	/// <summary>
+	/// Public method definitions exposed for this entity.
+	/// </summary>
+	/// <remarks>
+	/// Reflects the <see cref="Definitions.EntityDefinition.ClientMethods"/> of this entity's <see cref="EntityDefinition"/>.
+	/// </remarks>
 	public IEnumerable<EntityMethodDefinition> MethodDefinitions => EntityDefinition.ClientMethods;
 
-
+	/// <summary>
+	/// 3D position of the entity.
+	/// </summary>
 	public Vector3 VPosition
 	{
 		get => VolatileProperties.ContainsKey("position") ? (Vector3)VolatileProperties["position"] : new();
 		set => VolatileProperties["position"] = value;
 	}
 
+	/// <summary>
+	/// Yaw of the entity.
+	/// </summary>
 	public float Yaw
 	{
 		get => VolatileProperties.ContainsKey("yaw") ? (float)VolatileProperties["yaw"] : 0f;
 		set => VolatileProperties["yaw"] = value;
 	}
 
+	/// <summary>
+	/// Pitch of the entity.
+	/// </summary>
 	public float Pitch
 	{
 		get => VolatileProperties.ContainsKey("pitch") ? (float)VolatileProperties["pitch"] : 0f;
 		set => VolatileProperties["pitch"] = value;
 	}
 
+	/// <summary>
+	///	Roll of the entity.
+	/// </summary>
 	public float Roll
 	{
 		get => VolatileProperties.ContainsKey("roll") ? (float)VolatileProperties["roll"] : 0f;
@@ -94,10 +165,27 @@ public class Entity
 		BasePropertyDefinitions = EntityDefinition.GetPropertiesByFlags(EntityFlag.BASE_AND_CLIENT);
 	}
 
-	public string? GetClientPropertyNameForIndex(int index) => ClientPropertyDefinitions.ElementAtOrDefault(index)?.Name;
+	/// <summary>
+	/// Gets the name of a client property by its index.
+	/// </summary>
+	/// <param name="index">Index of the client property.</param>
+	/// <returns>Name of the client property.</returns>
+	public string? GetClientPropertyName(int index) => ClientPropertyDefinitions.ElementAtOrDefault(index)?.Name;
 
-	public string? GetClientMethodNameForIndex(uint index) => MethodDefinitions.ElementAtOrDefault((int)index)?.Name;
+	/// <summary>
+	/// Gets the name of a client method by its index.
+	/// </summary>
+	/// <param name="index">Index of the client method.</param>
+	/// <returns>Name of the client method.</returns>
+	public string? GetClientMethodName(uint index) => MethodDefinitions.ElementAtOrDefault((int)index)?.Name;
 
+	/// <summary>
+	/// Calls a client method.
+	/// </summary>
+	/// <param name="index">Index of the client method.</param>
+	/// <param name="packetTime">Time of the packet.</param>
+	/// <param name="reader">Packet binary reader.</param>
+	/// <param name="subscriptionTarget">Subscription target (Shouldn't be null).</param>
 	public virtual void CallClientMethod(uint index, float packetTime, BinaryReader reader, object? subscriptionTarget)
 	{
 		if (subscriptionTarget is null)
@@ -109,7 +197,7 @@ public class Entity
 
 		if (methodDefinition is null)
 		{
-			Logger.LogError("Method with index {index} was not found on entity with name {Name} ({Id})", index, Name, Id);
+			Logger.LogError("Method with index {Index} was not found on entity with name {Name} ({Id})", index, Name, Id);
 
 			return;
 		}
@@ -137,7 +225,7 @@ public class Entity
 	}
 
 	private void CallClientMethodWithParameters(BinaryReader reader, float packetTime, object? subscriptionTarget,
-		EntityMethodDefinition methodDefinition, string hash, MethodInfo methodInfo, MethodSubscriptionAttribute attribute)
+		EntityMethodDefinition methodDefinition, string hash, MethodBase methodInfo, MethodSubscriptionAttribute attribute)
 	{
 		if (!ValidateParameterTypes(methodDefinition, methodInfo, attribute))
 		{
@@ -158,7 +246,7 @@ public class Entity
 				methodArgumentValues = methodArgumentValues.Prepend(packetTime);
 			}
 
-			Logger.LogDebug("Calling method subscription with hash {hash}", hash);
+			Logger.LogDebug("Calling method subscription with hash {Hash}", hash);
 			methodInfo.Invoke(subscriptionTarget, methodArgumentValues.ToArray());
 		}
 		catch (Exception ex)
@@ -168,12 +256,12 @@ public class Entity
 				throw ex.InnerException;
 			}
 
-			Logger.LogError(ex, "Error when calling method subscription with hash {hash}", hash);
+			Logger.LogError(ex, "Error when calling method subscription with hash {Hash}", hash);
 		}
 	}
 
 	private void CallClientMethodWithDictionary(BinaryReader reader, float packetTime, object? subscriptionTarget,
-		EntityMethodDefinition methodDefinition, string hash, MethodInfo methodInfo, MethodSubscriptionAttribute attribute)
+		EntityMethodDefinition methodDefinition, string hash, MethodBase methodInfo, MethodSubscriptionAttribute attribute)
 	{
 		if (!ValidateParameterTypes(methodDefinition, methodInfo, attribute))
 		{
@@ -194,7 +282,7 @@ public class Entity
 				methodArgumentValues = methodArgumentValues.Prepend(packetTime);
 			}
 
-			Logger.LogDebug("Calling method subscription with hash {hash}", hash);
+			Logger.LogDebug("Calling method subscription with hash {Hash}", hash);
 			methodInfo.Invoke(subscriptionTarget, methodArgumentValues.ToArray());
 		}
 		catch (Exception ex)
@@ -204,7 +292,7 @@ public class Entity
 				throw ex.InnerException;
 			}
 
-			Logger.LogError(ex, "Error when calling method subscription with hash {hash}", hash);
+			Logger.LogError(ex, "Error when calling method subscription with hash {Hash}", hash);
 		}
 	}
 
@@ -251,10 +339,16 @@ public class Entity
 		return true;
 	}
 
-	public virtual void SetClientProperty(uint exposedIndex, BinaryReader reader, object? subscriptionTarget)
+	/// <summary>
+	/// Sets a client property's value by its exposed index.
+	/// </summary>
+	/// <param name="index">Exposed index of the property.</param>
+	/// <param name="reader">Binary reader to read the value from.</param>
+	/// <param name="subscriptionTarget">Target object to set the property on.</param>
+	public virtual void SetClientProperty(uint index, BinaryReader reader, object? subscriptionTarget)
 	{
-		Logger.LogDebug("Setting client property with index {index} on entity {Name} ({id})", exposedIndex, Name, Id);
-		PropertyDefinition propertyDefinition = ClientPropertyDefinitions[exposedIndex];
+		Logger.LogDebug("Setting client property with index {Index} on entity {Name} ({Id})", index, Name, Id);
+		PropertyDefinition propertyDefinition = ClientPropertyDefinitions[index];
 		object? propertyValue = propertyDefinition.GetValue(reader, propertyDefinition.XmlNode);
 		ClientProperties[propertyDefinition.Name] = propertyValue;
 
@@ -293,41 +387,64 @@ public class Entity
 
 				try
 				{
-					Logger.LogDebug("Calling property changed subscription with hash {hash}", hash);
+					Logger.LogDebug("Calling property changed subscription with hash {Hash}", hash);
 					methodInfo.Invoke(subscriptionTarget, new[] { this, propertyValue });
 				}
 				catch (Exception ex)
 				{
-					Logger.LogError(ex, "Error when calling property changed subscription with hash {hash}", hash);
+					Logger.LogError(ex, "Error when calling property changed subscription with hash {Hash}", hash);
 				}
 			}
 		}
 	}
 
-	public virtual void SetInternalClientProperty(int internalIndex, BinaryReader reader)
+	/// <summary>
+	/// Sets an internal client property's value by its internal index.
+	/// </summary>
+	/// <param name="index">Internal index of the property.</param>
+	/// <param name="reader">Binary reader to read the value from.</param>
+	public virtual void SetInternalClientProperty(int index, BinaryReader reader)
 	{
-		Logger.LogDebug("Setting internal client property with index {index} on entity {Name} ({id})", internalIndex, Name, Id);
-		PropertyDefinition propertyDefinition = InternalClientPropertyDefinitions[internalIndex];
+		Logger.LogDebug("Setting internal client property with index {Index} on entity {Name} ({Id})", index, Name, Id);
+		PropertyDefinition propertyDefinition = InternalClientPropertyDefinitions[index];
 		object? propertyValue = propertyDefinition.GetValue(reader, propertyDefinition.XmlNode);
 		ClientProperties[propertyDefinition.Name] = propertyValue;
 	}
 
-	public virtual void SetCellProperty(int internalIndex, BinaryReader reader)
+	/// <summary>
+	/// Sets a cell property's value by its internal index.
+	/// </summary>
+	/// <param name="index">Internal index of the property.</param>
+	/// <param name="reader">Binary reader to read the value from.</param>
+	public virtual void SetCellProperty(int index, BinaryReader reader)
 	{
-		Logger.LogDebug("Setting cell property with index {index} on entity {Name} ({id})", internalIndex, Name, Id);
-		PropertyDefinition propertyDefinition = CellPropertyDefinitions[internalIndex];
+		Logger.LogDebug("Setting cell property with index {Index} on entity {Name} ({Id})", index, Name, Id);
+		PropertyDefinition propertyDefinition = CellPropertyDefinitions[index];
 		object? propertyValue = propertyDefinition.GetValue(reader, propertyDefinition.XmlNode);
 		CellProperties[propertyDefinition.Name] = propertyValue;
 	}
 
-	public virtual void SetBaseProperty(int internalIndex, BinaryReader reader)
+	/// <summary>
+	/// Sets a base property's value by its internal index.
+	/// </summary>
+	/// <param name="index">Internal index of the property.</param>
+	/// <param name="reader">Binary reader to read the value from.</param>
+	public virtual void SetBaseProperty(int index, BinaryReader reader)
 	{
-		Logger.LogDebug("Setting base property with index {index} on entity {Name} ({id})", internalIndex, Name, Id);
-		PropertyDefinition propertyDefinition = BasePropertyDefinitions[internalIndex];
+		Logger.LogDebug("Setting base property with index {Index} on entity {Name} ({Id})", index, Name, Id);
+		PropertyDefinition propertyDefinition = BasePropertyDefinitions[index];
 		object? propertyValue = propertyDefinition.GetValue(reader, propertyDefinition.XmlNode);
 		BaseProperties[propertyDefinition.Name] = propertyValue;
 	}
 
+	/// <summary>
+	/// Sets multiple base properties from a binary reader.
+	/// </summary>
+	/// <remarks>
+	///	This method expects the binary reader to contain the base properties
+	/// and their values in the same order as the base property definitions.
+	/// </remarks>
+	/// <param name="reader">Binary reader to read the values from.</param>
 	public virtual void SetBaseProperties(BinaryReader reader)
 	{
 		for (int i = 0; i < BasePropertyDefinitions.Length; i++)
@@ -336,6 +453,14 @@ public class Entity
 		}
 	}
 
+	/// <summary>
+	/// Sets multiple cell properties from a binary reader.
+	/// </summary>
+	/// <remarks>
+	/// This method expects the binary reader to contain the internal client properties
+	/// and their values in the same order as the internal client property definitions.
+	/// </remarks>
+	/// <param name="reader">Binary reader to read the values from.</param>
 	public virtual void SetInternalClientProperties(BinaryReader reader)
 	{
 		for (int i = 0; i < InternalClientPropertyDefinitions.Length; i++)
@@ -344,16 +469,26 @@ public class Entity
 		}
 	}
 
+	/// <summary>
+	/// Sets the position (Coordinates and PYR) of the entity.
+	/// </summary>
+	/// <param name="position">Position to set.</param>
 	public void SetPosition(PositionContainer position)
 	{
 		VPosition = position.Position;
-		Yaw = position.Yaw;
-		Pitch = position.Pitch;
-		Roll = position.Roll;
+		
+		(Pitch, Yaw, Roll) = (position.Pitch, position.Yaw, position.Roll);
 	}
 
-	public PositionContainer GetPosition()
-		=> new(VPosition, Yaw, Pitch, Roll);
+	/// <summary>
+	/// Gets the Position (Coordinates and PYR) of the entity.
+	/// </summary>
+	/// <returns>Position of the entity, as a <see cref="PositionContainer"/> object.</returns>
+	public PositionContainer GetPosition() => new(VPosition, Yaw, Pitch, Roll);
 
+	/// <summary>
+	/// Gets the string representation of the entity.
+	/// </summary>
+	/// <returns>String representation of the entity.</returns>
 	public override string ToString() => $"{Name} <{Id}>";
 }

@@ -28,7 +28,7 @@ public class DefaultReplayDataParser : IReplayDataParser
 			float packetTime = binaryReader.ReadSingle(); // Time in seconds from battle start
 
 			_logger.LogDebug("Packet parsed of type '{PacketType}' with size '{PacketSize}' and timestamp '{PacketTime}'",
-				NetworkPacketTypes.GetName(packetType), packetSize, packetTime);
+				NetworkPacketTypes.GetTypeName(packetType), packetSize, packetTime);
 
 			byte[] packetData = binaryReader.ReadBytes((int)packetSize);
 

@@ -4,17 +4,33 @@ using System.Xml;
 
 namespace Nodsoft.WowsReplaysUnpack.Core.Definitions;
 
-public abstract class BaseDefinition
+/// <summary>
+/// Base class for all definitions (.def) files.
+/// </summary>
+public abstract record BaseDefinition
 {
+	/// <summary>
+	/// Game client version of this definition file.
+	/// </summary>
 	protected Version ClientVersion { get; }
+
+	/// <summary>
+	/// Definition store for this definition.
+	/// </summary>
 	protected IDefinitionStore DefinitionStore { get; }
-	
+
+	/// <summary>
+	/// Name of this definition file.
+	/// </summary>
 	public string Name { get; }
+
+	/// <summary>
+	/// Represents all volatile properties in this definition file.
+	/// </summary>
 	public Dictionary<string, object> VolatileProperties { get; } = new();
-	
+
 	private readonly List<PropertyDefinition> _properties = new();
 	private readonly string _folder;
-
 
 	protected BaseDefinition(Version clientVersion, IDefinitionStore definitionStore, string name, string folder)
 	{
@@ -22,13 +38,18 @@ public abstract class BaseDefinition
 		DefinitionStore = definitionStore;
 		Name = name;
 		_folder = folder;
+
 		ParseDefinitionFile(DefinitionStore.GetFileAsXml(ClientVersion, Name + ".def", _folder).DocumentElement!);
 	}
 
+	
 	public PropertyDefinition[] GetPropertiesByFlags(EntityFlag entityFlag, bool orderBySize = false)
 	{
 		IEnumerable<PropertyDefinition> properties = _properties.Where(p => entityFlag.HasFlag(p.Flag));
-		return !orderBySize ? properties.ToArray() : properties.OrderBy(p => p.DataSize).ToArray();
+		
+		return !orderBySize 
+			? properties.ToArray() 
+			: properties.OrderBy(p => p.DataSize).ToArray();
 	}
 
 	protected virtual void ParseDefinitionFile(XmlElement xml)

@@ -4,10 +4,19 @@ using System.Text.RegularExpressions;
 
 namespace Nodsoft.WowsReplaysUnpack.Core.Security;
 
+/// <summary>
+/// Provides scanning methods for CVEs.
+/// </summary>
 public static class CveChecks
 {
 	private static readonly Regex CVE_2022_31265_Regex = new(@"cnt\ssystem|commands", RegexOptions.Compiled | RegexOptions.ExplicitCapture);
 
+	/// <summary>
+	/// Scans a buffer for <a href="https://www.cve.org/CVERecord?id=CVE-2022-31265">CVE-2022-31265</a> attack patterns.
+	/// </summary>
+	/// <param name="data">The buffer to scan.</param>
+	/// <param name="propertyOrArgumentName">The name of the property or argument that is being scanned.</param>
+	/// <exception cref="CveSecurityException">Thrown if the buffer contains a known CVE-2022-31265 attack pattern.</exception>
 	public static void ScanForCVE_2022_31265(byte[] data, string? propertyOrArgumentName)
 	{
 		/*

@@ -45,7 +45,7 @@ public class CveCheckOnlyController : ReplayControllerBase<CveCheckOnlyControlle
 
 		Entity entity = Replay.Entities[packet.EntityId];
 
-		if (entity.Name is not "Avatar" && entity.GetClientMethodNameForIndex(packet.MessageId) is not "onArenaStateReceived")
+		if (entity.Name is not "Avatar" && entity.GetClientMethodName(packet.MessageId) is not "onArenaStateReceived")
 		{
 			return;
 		}

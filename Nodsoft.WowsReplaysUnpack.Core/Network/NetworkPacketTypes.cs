@@ -2,6 +2,9 @@
 
 namespace Nodsoft.WowsReplaysUnpack.Core.Network;
 
+/// <summary>
+/// Type definitions and utilities for working with network packets.
+/// </summary>
 public static class NetworkPacketTypes
 {
 	public const uint BasePlayerCreate = 0x0;
@@ -27,5 +30,10 @@ public static class NetworkPacketTypes
 		}
 	}
 
-	public static string GetName(uint type) => _names.ContainsKey(type) ? _names[type] : $"Unsupported Type ({type})";
+	/// <summary>
+	/// Gets the name of a network packet type by its ID.
+	/// </summary>
+	/// <param name="id">The ID of the packet type.</param>
+	/// <returns>The name of the packet type.</returns>
+	public static string GetTypeName(uint id) => _names.ContainsKey(id) ? _names[id] : $"Unsupported Type ({id})";
 }

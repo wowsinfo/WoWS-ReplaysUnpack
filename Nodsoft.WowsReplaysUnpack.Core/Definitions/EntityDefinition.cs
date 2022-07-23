@@ -3,12 +3,19 @@ using System.Xml;
 
 namespace Nodsoft.WowsReplaysUnpack.Core.Definitions;
 
-public class EntityDefinition : BaseDefinition
+/// <summary>
+/// Defines an entity definition found in a .def file.
+/// </summary>
+public record EntityDefinition : BaseDefinition
 {
 	private const string ENTITY_DEFS = "entity_defs";
-
+	
 	private List<EntityMethodDefinition> CellMethods { get; set; } = new();
 	// public List<EntityMethodDefinition> BaseMethods { get; set; } = new();
+
+	/// <summary>
+	/// Methods exposed by the game client.
+	/// </summary>
 	public List<EntityMethodDefinition> ClientMethods { get; private set; } = new();
 
 	public EntityDefinition(Version clientVersion, IDefinitionStore definitionStore,
@@ -16,6 +23,10 @@ public class EntityDefinition : BaseDefinition
 	{
 	}
 
+	/// <summary>
+	/// Parses a .def file for the entity definition.
+	/// </summary>
+	/// <param name="xml">The XML document to parse.</param>
 	protected override void ParseDefinitionFile(XmlElement xml)
 	{
 		base.ParseDefinitionFile(xml);

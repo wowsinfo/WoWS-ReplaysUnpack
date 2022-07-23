@@ -45,4 +45,11 @@ public sealed record ArenaInfo(
 	string PlayerVehicle,
 	int BattleDuration);
 
+/// <summary>
+/// Represents a vehicle in the replay.
+/// </summary>
+/// <param name="ShipId">The numeric ID of the ship.</param>
+/// <param name="Relation">The relation of the ship to the player.</param>
+/// <param name="Id">The numeric ID of the player.</param>
+/// <param name="Name">The name of the player.</param>
 public sealed record VehicleDetails(uint ShipId, uint Relation, uint Id, string Name);
