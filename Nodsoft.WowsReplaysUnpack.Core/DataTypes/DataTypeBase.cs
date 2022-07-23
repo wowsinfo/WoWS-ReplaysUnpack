@@ -41,7 +41,8 @@ public abstract class DataTypeBase
 		=> GetValueInternal(reader, propertyOrArgumentNode, headerSize) ?? GetDefaultValue(propertyOrArgumentNode);
 
 	/// <summary>
-	/// Internal method for getting the value of an XML node.
+	/// Internal method for getting the value from the binary reader.
+	/// Setting the default value to the XML node if present.
 	/// </summary>
 	/// <param name="reader">Binary reader to read from.</param>
 	/// <param name="propertyOrArgumentNode">XML node to get the value from.</param>
@@ -50,9 +51,9 @@ public abstract class DataTypeBase
 	protected abstract object? GetValueInternal(BinaryReader reader, XmlNode? propertyOrArgumentNode, int headerSize);
 
 	/// <summary>
-	/// Gets the default value of this data type, per the XML node.
+	/// Gets the default value of a given XML node, based on this data type's defaults.
 	/// </summary>
-	/// <param name="propertyOrArgumentNode">XML node to get the default value from.</param>
+	/// <param name="propertyOrArgumentNode">XML node to get the default value of.</param>
 	/// <param name="forArray">Whether the default value is for an array.</param>
 	/// <returns>Default value of the XML node.</returns>
 	public virtual object? GetDefaultValue(XmlNode? propertyOrArgumentNode, bool forArray = false) => forArray
