@@ -14,13 +14,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Nodsoft.WowsReplaysUnpack.Core\Nodsoft.WowsReplaysUnpack.Core.csproj" />
-    <ProjectReference Include="..\Nodsoft.WowsReplaysUnpack.ExtendedData\Nodsoft.WowsReplaysUnpack.ExtendedData.csproj" />
-    <ProjectReference Include="..\Nodsoft.WowsReplaysUnpack\Nodsoft.WowsReplaysUnpack.csproj" />
+    <ProjectReference Include="../Nodsoft.WowsReplaysUnpack.Core/Nodsoft.WowsReplaysUnpack.Core.csproj" />
+    <ProjectReference Include="../Nodsoft.WowsReplaysUnpack.ExtendedData/Nodsoft.WowsReplaysUnpack.ExtendedData.csproj" />
+    <ProjectReference Include="../Nodsoft.WowsReplaysUnpack/Nodsoft.WowsReplaysUnpack.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="sampleData\*.wowsreplay">
+    <None Update="sampleData/*.wowsreplay">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

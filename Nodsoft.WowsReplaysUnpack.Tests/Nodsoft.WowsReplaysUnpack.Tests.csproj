@@ -23,11 +23,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Nodsoft.WowsReplaysUnpack\Nodsoft.WowsReplaysUnpack.csproj" />
+        <ProjectReference Include="../Nodsoft.WowsReplaysUnpack/Nodsoft.WowsReplaysUnpack.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <Content Include="Samples\*.wowsreplay">
+        <Content Include="Samples/*.wowsreplay">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
     </ItemGroup>

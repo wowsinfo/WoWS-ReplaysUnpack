@@ -1,0 +1,22 @@
+﻿<Project>
+    <PropertyGroup>
+        <Deterministic>true</Deterministic>
+        <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+        <AnalysisLevel>latest</AnalysisLevel>
+
+        <VersionPrefix>1.0</VersionPrefix>
+        <VersionSuffix>preview1</VersionSuffix>
+
+        <Company>Nodsoft Systems</Company>
+        <Authors>imkindaprogrammermyself, Sakura Akeno Isayeki, floribe2000</Authors>
+        <Product>WoWS Replays Unpack</Product>
+        <PackageProjectUrl>https://github.com/Nodsoft/WoWS-ReplaysUnpack</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/Nodsoft/WoWS-ReplaysUnpack</RepositoryUrl>
+        <RepositoryType>Git</RepositoryType>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
+
+    <ItemGroup Condition="exists('LICENSE')">
+        <None Include="LICENSE" Pack="true" PackagePath="" />
+    </ItemGroup>
+</Project>
