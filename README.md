@@ -1,5 +1,5 @@
 
-<img align="right" src="Nodsoft.WowsReplaysUnpack/logo.png" alt="logo" width="200"/>
+<img align="right" src="logo.png" alt="logo" width="200"/>
 
 # WoWS-ReplaysUnpack
 A C# file unpacking library for World of Warships Replays, inspired by Monstrofil's [replays_unpack](https://github.com/Monstrofil/replays_unpack/).

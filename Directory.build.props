@@ -14,8 +14,13 @@
         <RepositoryUrl>https://github.com/Nodsoft/WoWS-ReplaysUnpack</RepositoryUrl>
         <RepositoryType>Git</RepositoryType>
         <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageIcon>logo.png</PackageIcon>
     </PropertyGroup>
 
+    <ItemGroup>
+        <None Include="../logo.png" Pack="true" PackagePath="/"/>
+    </ItemGroup>
+    
     <ItemGroup Condition="exists('LICENSE')">
         <None Include="LICENSE" Pack="true" PackagePath="" />
     </ItemGroup>
