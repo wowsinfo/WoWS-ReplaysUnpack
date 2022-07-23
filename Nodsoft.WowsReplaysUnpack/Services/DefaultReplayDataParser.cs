@@ -5,22 +5,18 @@ using Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
 
 namespace Nodsoft.WowsReplaysUnpack.Services;
 
+/// <summary>
+/// Represents the default implementation for a data parser.
+/// </summary>
 public class DefaultReplayDataParser : IReplayDataParser
 {
 	private readonly ILogger<DefaultReplayDataParser> _logger;
 	private readonly MemoryStream _packetBuffer = new();
 	private readonly BinaryReader _packetBufferReader;
 
-	public DefaultReplayDataParser(ILogger<DefaultReplayDataParser> logger)
-	{
-		_logger = logger;
-		_packetBufferReader = new(_packetBuffer);
-	}
+	public DefaultReplayDataParser(ILogger<DefaultReplayDataParser> logger) => (_logger, _packetBufferReader) = (logger, new(_packetBuffer));
 
-	/// <summary>
-	/// Parses the individual network packets
-	/// </summary>
-	/// <param name="replayDataStream"></param>
+	/// <inheritdoc />
 	public virtual IEnumerable<NetworkPacketBase> ParseNetworkPackets(MemoryStream replayDataStream, ReplayUnpackerOptions options)
 	{
 		int packetIndex = 0;
@@ -31,7 +27,7 @@ public class DefaultReplayDataParser : IReplayDataParser
 			uint packetType = binaryReader.ReadUInt32();
 			float packetTime = binaryReader.ReadSingle(); // Time in seconds from battle start
 
-			_logger.LogDebug("Packet parsed of type '{packetType}' with size '{packetSize}' and timestamp '{packetTime}'",
+			_logger.LogDebug("Packet parsed of type '{PacketType}' with size '{PacketSize}' and timestamp '{PacketTime}'",
 				NetworkPacketTypes.GetName(packetType), packetSize, packetTime);
 
 			byte[] packetData = binaryReader.ReadBytes((int)packetSize);
@@ -62,6 +58,9 @@ public class DefaultReplayDataParser : IReplayDataParser
 		}
 	}
 
+	/// <summary>
+	/// Disposes the data parser.
+	/// </summary>
 	public void Dispose()
 	{
 		_packetBufferReader.Dispose();

@@ -6,7 +6,7 @@
     <LangVersion>10</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>  
-    <Version>0.5.3</Version>
+    <Version>0.6-pre1</Version>
     <Company>Nodsoft Systems</Company>
     <Authors>imkindaprogrammermyself, Sakura Akeno Isayeki, floribe2000</Authors>
     <Product>WoWS Replays Unpack</Product>

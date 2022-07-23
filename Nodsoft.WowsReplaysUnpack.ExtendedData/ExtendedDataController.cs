@@ -11,6 +11,9 @@ using System.Reflection;
 
 namespace Nodsoft.WowsReplaysUnpack.ExtendedData
 {
+	/// <summary>
+	/// Defines a non-generic implementation of the <see cref="ExtendedDataController{T}" />.
+	/// </summary>
 	public sealed class ExtendedDataController : ExtendedDataController<ExtendedDataController>
 	{
 		// ReSharper disable once ContextualLoggerProblem
@@ -18,8 +21,8 @@ namespace Nodsoft.WowsReplaysUnpack.ExtendedData
 			: base(versionMappingFactory, definitionStore, entityLogger) { }
 	}
 
-	public class ExtendedDataController<T> : ReplayControllerBase<T>
-		where T : class, IReplayController
+	public class ExtendedDataController<TController> : ReplayControllerBase<TController>
+		where TController : class, IReplayController
 	{
 		private readonly VersionMappingFactory _versionMappingFactory;
 
@@ -31,6 +34,7 @@ namespace Nodsoft.WowsReplaysUnpack.ExtendedData
 
 		public ExtendedDataReplay ExtendedReplay => (ExtendedDataReplay)Replay;
 
+		/// <inheritdoc />
 		public override UnpackedReplay CreateUnpackedReplay(ArenaInfo arenaInfo)
 		{
 			Replay = new ExtendedDataReplay(arenaInfo);
@@ -38,12 +42,23 @@ namespace Nodsoft.WowsReplaysUnpack.ExtendedData
 			return Replay;
 		}
 
+		/// <summary>
+		/// Triggered when a chat message is parsed from the replay.
+		/// </summary>
+		/// <param name="packetTime">The time the packet was received.</param>
+		/// <param name="entityId">The entity ID of the player who sent the message.</param>
+		/// <param name="messageGroup">The message group of the message (All/).</param>
+		/// <param name="messageContent">The content of the message.</param>
 		[MethodSubscription("Avatar", "onChatMessage", IncludePacketTime = true)]
-		public void OnChatMessage(float packetTime, int entityId, string messageGroup, string messageContent, string xx)
+		public void OnChatMessage(float packetTime, int entityId, string messageGroup, string messageContent)
 		{
 			ExtendedReplay.ChatMessages.Add(new((uint)entityId, packetTime, messageGroup, messageContent));
 		}
 
+		/// <summary>
+		/// Triggered when arena data is parsed from the replay.
+		/// </summary>
+		/// <param name="arguments">The arguments of the event.</param>
 		[MethodSubscription("Avatar", "onArenaStateReceived", ParamsAsDictionary = true)]
 		public void OnArenaStateReceived(Dictionary<string, object?> arguments)
 		{

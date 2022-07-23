@@ -9,7 +9,7 @@ using System.Text;
 
 namespace Nodsoft.WowsReplaysUnpack.Core.Entities;
 
-[SuppressMessage("ReSharper", "MemberCanBePrivate.Global")] // Most elements are exposed to usersapce, so shouldn't be restricted past public/protected.
+[SuppressMessage("ReSharper", "MemberCanBePrivate.Global")] // Most elements are exposed to userspace, so shouldn't be restricted past public/protected.
 public class Entity
 {
 	protected ILogger<Entity> Logger { get; }
@@ -94,11 +94,9 @@ public class Entity
 		BasePropertyDefinitions = EntityDefinition.GetPropertiesByFlags(EntityFlag.BASE_AND_CLIENT);
 	}
 
-	public string? GetClientPropertyNameForIndex(int index)
-		=> ClientPropertyDefinitions.ElementAtOrDefault(index)?.Name;
+	public string? GetClientPropertyNameForIndex(int index) => ClientPropertyDefinitions.ElementAtOrDefault(index)?.Name;
 
-	public string? GetClientMethodNameForIndex(uint index)
-		=> MethodDefinitions.ElementAtOrDefault((int)index)?.Name;
+	public string? GetClientMethodNameForIndex(uint index) => MethodDefinitions.ElementAtOrDefault((int)index)?.Name;
 
 	public virtual void CallClientMethod(uint index, float packetTime, BinaryReader reader, object? subscriptionTarget)
 	{

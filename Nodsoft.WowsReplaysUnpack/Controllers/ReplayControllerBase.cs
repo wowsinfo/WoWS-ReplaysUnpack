@@ -8,20 +8,36 @@ using Nodsoft.WowsReplaysUnpack.Core.Security;
 using System.Reflection;
 
 namespace Nodsoft.WowsReplaysUnpack.Controllers;
+// ReSharper disable VirtualMemberNeverOverridden.Global
 
-public abstract class ReplayControllerBase<T> : IReplayController
-	where T : class, IReplayController
+/// <summary>
+/// Defines a base class for a replay controller.
+/// </summary>
+/// <typeparam name="TController">The type of the controller.</typeparam>
+public abstract class ReplayControllerBase<TController> : IReplayController
+	where TController : class, IReplayController
 {
 	private static readonly Dictionary<string, MethodInfo[]> _methodSubscriptions;
 	private static readonly Dictionary<string, MethodInfo[]> _propertyChangedSubscriptions;
+	
+	/// <summary>
+	/// Definition store used by the controller.
+	/// </summary>
 	protected IDefinitionStore DefinitionStore { get; }
+	
+	/// <summary>
+	/// Logger used to log <see cref="Entity"/> processing related events.
+	/// </summary>
 	protected ILogger<Entity> EntityLogger { get; }
 
+	/// <summary>
+	/// Unpoacked replay being processed.
+	/// </summary>
 	public UnpackedReplay Replay { get; protected set; }
 
 	static ReplayControllerBase()
 	{
-		_methodSubscriptions = typeof(T).GetMethods()
+		_methodSubscriptions = typeof(TController).GetMethods()
 			.Select(m => new { Attribute = m.GetCustomAttribute<MethodSubscriptionAttribute>(), MethodInfo = m })
 			.Where(m => m.Attribute is not null)
 			.GroupBy(m => $"{m.Attribute!.EntityName}_{m.Attribute.MethodName}")
@@ -29,7 +45,7 @@ public abstract class ReplayControllerBase<T> : IReplayController
 				m => m.Key, 
 				m => m.OrderBy(m => m.Attribute?.Priority).Select(m => m.MethodInfo).ToArray());
 
-		_propertyChangedSubscriptions = typeof(T).GetMethods()
+		_propertyChangedSubscriptions = typeof(TController).GetMethods()
 			.Select(m => new { Attribute = m.GetCustomAttribute<PropertyChangedSubscriptionAttribute>(), MethodInfo = m })
 			.Where(m => m.Attribute is not null)
 			.GroupBy(m => $"{m.Attribute!.EntityName}_{m.Attribute.PropertyName}")
@@ -40,18 +56,17 @@ public abstract class ReplayControllerBase<T> : IReplayController
 
 #pragma warning disable CS8618 // Replay Property is never null because after creating the controller, CreateUnpackedReplay is called
 	
-	protected ReplayControllerBase(IDefinitionStore definitionStore,
+	// ReSharper disable once ContextualLoggerProblem
+	protected ReplayControllerBase(IDefinitionStore definitionStore, ILogger<Entity> entityLogger) 
+		=> (DefinitionStore, EntityLogger) = (definitionStore, entityLogger);
 
-		// ReSharper disable once ContextualLoggerProblem
-		ILogger<Entity> entityLogger)
-	{
-		DefinitionStore = definitionStore;
-		EntityLogger = entityLogger;
-	}
-	
 #pragma warning restore CS8618
 	
-	
+	/// <summary>
+	/// Creates an <inheritdoc cref="UnpackedReplay" /> out of an existing <see cref="ArenaInfo" />.
+	/// </summary>
+	/// <param name="arenaInfo">The arena info.</param>
+	/// <returns>The unpacked replay.</returns>
 	public virtual UnpackedReplay CreateUnpackedReplay(ArenaInfo arenaInfo)
 	{
 		Replay = new(arenaInfo);
@@ -59,6 +74,8 @@ public abstract class ReplayControllerBase<T> : IReplayController
 	}
 
 	#region Packet Handling
+	
+	/// <inheritdoc />
 	public virtual void HandleNetworkPacket(NetworkPacketBase networkPacket, ReplayUnpackerOptions options)
 	{
 		Action? action = networkPacket switch
@@ -77,11 +94,19 @@ public abstract class ReplayControllerBase<T> : IReplayController
 			_ => null
 		};
 
-		action?.Invoke();
+		action?.Invoke();	
 	}
 
+	/// <summary>
+	/// Trigerred when a <see cref="MapPacket" /> is handled by <see cref="HandleNetworkPacket"/>.
+	/// </summary>
+	/// <param name="packet">The packet.</param>
 	protected virtual void OnMap(MapPacket packet) => Replay.MapName = packet.Name;
 
+	/// <summary>
+	/// Trigerred when a <see cref="BasePlayerCreatePacket" /> is handled by <see cref="HandleNetworkPacket"/>.
+	/// </summary>
+	/// <param name="packet">The packet.</param>
 	protected virtual void OnBasePlayerCreate(BasePlayerCreatePacket packet)
 	{
 		Replay.Entities.GetOrAddValue(packet.EntityId, out Entity? entity, () => CreateEntity(packet.EntityId, "Avatar"));
@@ -91,6 +116,10 @@ public abstract class ReplayControllerBase<T> : IReplayController
 		Replay.PlayerEntityId = packet.EntityId;
 	}
 
+	/// <summary>
+	/// Trigerred when a <see cref="CellPlayerCreatePacket" /> is handled by <see cref="HandleNetworkPacket"/>.
+	/// </summary>
+	/// <param name="packet">The packet.</param>
 	protected virtual void OnCellPlayerCreate(CellPlayerCreatePacket packet)
 	{
 		Replay.Entities.GetOrAddValue(packet.EntityId, out Entity? entity, () => CreateEntity(packet.EntityId, "Avatar"));
@@ -99,6 +128,10 @@ public abstract class ReplayControllerBase<T> : IReplayController
 		entity.SetInternalClientProperties(binaryReader);
 	}
 
+	/// <summary>
+	/// Trigerred when a <see cref="EntityEnterPacket" /> is handled by <see cref="HandleNetworkPacket"/>.
+	/// </summary>
+	/// <param name="packet">The packet.</param>
 	protected virtual void OnEntityCreate(EntityCreatePacket packet)
 	{
 		Entity entity = CreateEntity(packet.EntityId, packet.Type);
@@ -114,6 +147,10 @@ public abstract class ReplayControllerBase<T> : IReplayController
 		}
 	}
 
+	/// <summary>
+	/// Trigerred when a <see cref="PositionPacket" /> is handled by <see cref="HandleNetworkPacket"/>.
+	/// </summary>
+	/// <param name="packet">The packet.</param>
 	protected virtual void OnPosition(PositionPacket packet)
 	{
 		if (!Replay.Entities.ContainsKey(packet.EntityId))
@@ -125,6 +162,10 @@ public abstract class ReplayControllerBase<T> : IReplayController
 		entity.SetPosition(packet.Position);
 	}
 
+	/// <summary>
+	/// Trigerred when a <see cref="PlayerPositionPacket" /> is handled by <see cref="HandleNetworkPacket"/>.
+	/// </summary>
+	/// <param name="packet">The packet.</param>
 	protected virtual void OnPlayerPosition(PlayerPositionPacket packet)
 	{
 		/* 
@@ -155,6 +196,10 @@ public abstract class ReplayControllerBase<T> : IReplayController
 		}
 	}
 
+	/// <summary>
+	/// Trigerred when a <see cref="EntityMethodPacket" /> is handled by <see cref="HandleNetworkPacket"/>.
+	/// </summary>
+	/// <param name="packet">The packet.</param>
 	protected virtual void OnEntityMethod(EntityMethodPacket packet)
 	{
 		if (!Replay.Entities.ContainsKey(packet.EntityId))
@@ -167,6 +212,10 @@ public abstract class ReplayControllerBase<T> : IReplayController
 		entity.CallClientMethod(packet.MessageId, packet.PacketTime, methodDataReader, this);
 	}
 
+	/// <summary>
+	/// Trigerred when a <see cref="EntityPropertyPacket" /> is handled by <see cref="HandleNetworkPacket"/>.
+	/// </summary>
+	/// <param name="packet">The packet.</param>
 	protected virtual void OnEntityProperty(EntityPropertyPacket packet)
 	{
 		if (!Replay.Entities.ContainsKey(packet.EntityId))
@@ -179,6 +228,10 @@ public abstract class ReplayControllerBase<T> : IReplayController
 		entity.SetClientProperty(packet.MessageId, propertyData, this);
 	}
 
+	/// <summary>
+	/// Trigerred when a <see cref="EntityPropertyPacket" /> is handled by <see cref="HandleNetworkPacket"/>.
+	/// </summary>
+	/// <param name="packet">The packet.</param>
 	protected virtual void OnNestedProperty(NestedPropertyPacket packet)
 	{
 		if (!Replay.Entities.ContainsKey(packet.EntityId))
@@ -190,12 +243,24 @@ public abstract class ReplayControllerBase<T> : IReplayController
 		packet.Apply(entity);
 	}
 
+	/// <summary>
+	/// Creates an entity object for the given ID and name.
+	/// </summary>
+	/// <param name="id">The ID of the entity.</param>
+	/// <param name="name">The name of the entity.</param>
+	/// <returns>The entity object.</returns>
 	protected virtual Entity CreateEntity(uint id, string name)
-		=> new(id, name, DefinitionStore.GetEntityDefinitionByName(Replay.ClientVersion, name), _methodSubscriptions, _propertyChangedSubscriptions, EntityLogger);
+		=> new(id, name, DefinitionStore.GetEntityDefinition(Replay.ClientVersion, name), _methodSubscriptions, _propertyChangedSubscriptions, EntityLogger);
 
+	/// <summary>
+	/// Creates an entity object for the given ID and index.
+	/// </summary>
+	/// <param name="id">The ID of the entity.</param>
+	/// <param name="index">The index of the entity.</param>
+	/// <returns>The entity object.</returns>
 	protected virtual Entity CreateEntity(uint id, int index)
 	{
-		EntityDefinition definition = DefinitionStore.GetEntityDefinitionByIndex(Replay.ClientVersion, index - 1);
+		EntityDefinition definition = DefinitionStore.GetEntityDefinition(Replay.ClientVersion, index - 1);
 		return new(id, definition.Name, definition, _methodSubscriptions, _propertyChangedSubscriptions, EntityLogger);
 	}
 
@@ -203,6 +268,10 @@ public abstract class ReplayControllerBase<T> : IReplayController
 
 	#region Subscriptions
 
+	/// <summary>
+	/// Trigerred when a CVE is handled by <see cref="HandleNetworkPacket"/>.
+	/// </summary>
+	/// <param name="arguments">The arguments.</param>
 	[MethodSubscription("Avatar", "onArenaStateReceived", ParamsAsDictionary = true, Priority = -1)]
 	public void OnArenaStateReceivedCVECheck(Dictionary<string, object?> arguments)
 	{

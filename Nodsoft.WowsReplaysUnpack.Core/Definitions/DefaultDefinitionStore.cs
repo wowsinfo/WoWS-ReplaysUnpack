@@ -61,15 +61,15 @@ public class DefaultDefinitionStore : IDefinitionStore
 
 	#region EntityDefinitions
 
-	public virtual EntityDefinition GetEntityDefinitionByIndex(Version clientVersion, int index)
+	public virtual EntityDefinition GetEntityDefinition(Version clientVersion, int index)
 	{
 		clientVersion = GetActualVersion(clientVersion);
 		string name = GetEntityDefinitionNameByIndex(clientVersion, index);
 
-		return GetEntityDefinitionByName(clientVersion, name);
+		return GetEntityDefinition(clientVersion, name);
 	}
 
-	public virtual EntityDefinition GetEntityDefinitionByName(Version clientVersion, string name)
+	public virtual EntityDefinition GetEntityDefinition(Version clientVersion, string name)
 	{
 		clientVersion = GetActualVersion(clientVersion);
 		string cacheKey = CacheKey(clientVersion.ToString(), name);

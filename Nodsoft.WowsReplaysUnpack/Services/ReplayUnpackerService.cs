@@ -29,14 +29,16 @@ public sealed class ReplayUnpackerService<TController> : ReplayUnpackerService, 
 		_replayController = replayController;
 	}
 
-
+	/// <inheritdoc />
 	public UnpackedReplay Unpack(byte[] data, ReplayUnpackerOptions? options = null)
 	{
 		// Stream is disposed in Unpack method
 		MemoryStream memoryStream = new(data);
+
 		return Unpack(memoryStream, options);
 	}
 
+	/// <inheritdoc />
 	public UnpackedReplay Unpack(Stream stream, ReplayUnpackerOptions? options = null)
 	{
 		/*
@@ -64,7 +66,7 @@ public sealed class ReplayUnpackerService<TController> : ReplayUnpackerService, 
 		Read "data length" bytes
 		Once all blocks have been read, the remainder of the data in the file is the compressed and encrypted replay data
 
-		See http://wiki.vbaddict.net/pages/File_Replays for more details;
+		See http://wiki.vbaddict.net/pages/File_Replays for more details.
 		*/
 		options ??= new();
 
@@ -85,7 +87,7 @@ public sealed class ReplayUnpackerService<TController> : ReplayUnpackerService, 
 		ReadExtraJsonBlocks(replay, binaryReader, jsonBlockCount);
 
 		MemoryStream decryptedStream = new();
-		ReplayUnpackerService<TController>.Decrypt(binaryReader, decryptedStream);
+		Decrypt(binaryReader, decryptedStream);
 
 		// Initial stream and reader not used anymore
 		binaryReader.Dispose();
@@ -121,6 +123,7 @@ public sealed class ReplayUnpackerService<TController> : ReplayUnpackerService, 
 		int blockSize = binaryReader.ReadInt32();
 		byte[] jsonData = binaryReader.ReadBytes(blockSize);
 		Utf8JsonReader jsonReader = new(jsonData);
+
 		return JsonSerializer.Deserialize<T>(ref jsonReader, _jsonSerializerOptions) ?? throw new InvalidReplayException();
 	}
 
@@ -171,10 +174,15 @@ public sealed class ReplayUnpackerService<TController> : ReplayUnpackerService, 
 	}
 }
 
+/// <summary>
+/// Internal class used to house common methods and properties used
+/// across all instances of the <see cref="ReplayUnpackerService{TController}"/> class.
+/// </summary>
 public class ReplayUnpackerService
 {
 	private static readonly byte[] BlowfishKey = "\x29\xB7\xC9\x09\x38\x3F\x84\x88\xFA\x98\xEC\x4E\x13\x19\x79\xFB".Select(Convert.ToByte).ToArray();
 	protected static readonly byte[] ReplaySignature = Encoding.UTF8.GetBytes("\x12\x32\x34\x11");
 	protected static readonly Blowfish Blowfish = new(BlowfishKey);
-	
+
+	private protected ReplayUnpackerService() { }
 }
