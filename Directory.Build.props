@@ -6,6 +6,7 @@
 
         <VersionPrefix>1.0</VersionPrefix>
         <VersionSuffix>pre1</VersionSuffix>
+        <Version>$(VersionPrefix)-$(VersionSuffix)</Version>
 
         <Company>Nodsoft Systems</Company>
         <Authors>imkindaprogrammermyself, Sakura Akeno Isayeki, floribe2000, StewieoO</Authors>
@@ -13,7 +14,6 @@
         <PackageProjectUrl>https://github.com/Nodsoft/WoWS-ReplaysUnpack</PackageProjectUrl>
         <RepositoryUrl>https://github.com/Nodsoft/WoWS-ReplaysUnpack</RepositoryUrl>
         <RepositoryType>Git</RepositoryType>
-        <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageIcon>logo.png</PackageIcon>
     </PropertyGroup>
 

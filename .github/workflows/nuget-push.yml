@@ -21,7 +21,7 @@ jobs:
         project: [ 
           { name: "Main", path: "Nodsoft.WowsReplaysUnpack/Nodsoft.WowsReplaysUnpack.csproj" },
           { name: "Core", path: "Nodsoft.WowsReplaysUnpack.Core/Nodsoft.WowsReplaysUnpack.Core.csproj" },
-          { name: "ExtendedData", "Nodsoft.WowsReplaysUnpack.ExtendedData/Nodsoft.WowsReplaysUnpack.ExtendedData.csproj" }
+          { name: "ExtendedData", path: "Nodsoft.WowsReplaysUnpack.ExtendedData/Nodsoft.WowsReplaysUnpack.ExtendedData.csproj" }
         ]
         
         # Sources to publish to
@@ -41,7 +41,7 @@ jobs:
       # Publish
       - name: Build, Pack & Publish ${{ matrix.project.name }} to ${{ matrix.nuget.name }}
         id: publish_nuget
-        uses: brandedoutcast/publish-nuget@v2.5.5
+        uses: Rebel028/publish-nuget@v2.7.0
         with:
           # Filepath of the project to be packaged, relative to root of repository
           PROJECT_FILE_PATH: ${{ matrix.project.path }}
@@ -50,7 +50,7 @@ jobs:
           # PACKAGE_NAME: Core
           
           # Filepath with version info, relative to root of repository & defaults to PROJECT_FILE_PATH
-          # VERSION_FILE_PATH: Directory.Build.props
+          VERSION_FILE_PATH: Directory.Build.props
 
           # Regex pattern to extract version info in a capturing group
           # VERSION_REGEX: ^\s*<Version>(.*)<\/Version>\s*$
