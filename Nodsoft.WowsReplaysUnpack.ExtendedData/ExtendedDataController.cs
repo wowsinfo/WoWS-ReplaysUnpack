@@ -49,8 +49,9 @@ namespace Nodsoft.WowsReplaysUnpack.ExtendedData
 		/// <param name="entityId">The entity ID of the player who sent the message.</param>
 		/// <param name="messageGroup">The message group of the message (All/).</param>
 		/// <param name="messageContent">The content of the message.</param>
+		/// <param name="reserved1">Parameter unused</param>
 		[MethodSubscription("Avatar", "onChatMessage", IncludePacketTime = true)]
-		public void OnChatMessage(float packetTime, int entityId, string messageGroup, string messageContent)
+		public void OnChatMessage(float packetTime, int entityId, string messageGroup, string messageContent, string reserved1)
 		{
 			ExtendedReplay.ChatMessages.Add(new((uint)entityId, packetTime, messageGroup, messageContent));
 		}
