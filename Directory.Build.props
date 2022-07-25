@@ -13,10 +13,11 @@
         <PackageProjectUrl>https://github.com/Nodsoft/WoWS-ReplaysUnpack</PackageProjectUrl>
         <RepositoryUrl>https://github.com/Nodsoft/WoWS-ReplaysUnpack</RepositoryUrl>
         <RepositoryType>Git</RepositoryType>
-        <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageIcon>logo.png</PackageIcon>
-    </PropertyGroup>
 
+        <GitVersionBaseDirectory>$(MSBuildThisFileDirectory)</GitVersionBaseDirectory>
+    </PropertyGroup>
+    
     <ItemGroup>
         <None Include="../logo.png" Pack="true" PackagePath="/"/>
     </ItemGroup>
@@ -31,4 +32,17 @@
             <Version>3.5.108</Version>
         </PackageReference>
     </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Nerdbank.GitVersioning" Version="$(NerdbankGitVersioningVersion)" PrivateAssets="all" />
+    </ItemGroup>
+
+    <ImportGroup Condition=" '$(ExcludeRestorePackageImports)' == 'true' ">
+        <Import Project="$(UserProfile)\.nuget\packages\nerdbank.gitversioning\$(NerdbankGitVersioningVersion)\buildCrossTargeting\Nerdbank.GitVersioning.targets"
+                Condition="Exists('$(UserProfile)\.nuget\packages\nerdbank.gitversioning\$(NerdbankGitVersioningVersion)\buildCrossTargeting\Nerdbank.GitVersioning.targets')" />
+    </ImportGroup>
+    <Target Name="FixUpVersion"
+            BeforeTargets="_GenerateRestoreProjectSpec"
+            DependsOnTargets="GetBuildVersion"
+            Condition=" '$(NerdbankGitVersioningTasksPath)' != '' " />
 </Project>
