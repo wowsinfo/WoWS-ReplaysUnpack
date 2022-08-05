@@ -8,20 +8,20 @@ public static class EntitySerializer
 {
 	public static T Deserialize<T>(Entity entity) where T : class
 	{
-		Dictionary<string, object?>? clientProperties = entity.ClientProperties;
-		PropertyInfo[]? properties = typeof(T).GetProperties();
-		T? obj = Activator.CreateInstance<T>();
+		Dictionary<string, object?> clientProperties = entity.ClientProperties;
+		PropertyInfo[] properties = typeof(T).GetProperties();
+		T obj = Activator.CreateInstance<T>();
 		DeserializeDictionaryProperties(clientProperties, properties, obj);
 		return obj;
 	}
 
 	private static void DeserializeDictionaryProperties(Dictionary<string, object?> entityProperties, PropertyInfo[] propertyInfos, object obj)
 	{
-		Dictionary<string, object?>? invariantDictionary = entityProperties.ToDictionary(kv => kv.Key, kv => kv.Value, StringComparer.OrdinalIgnoreCase);
+		Dictionary<string, object?> invariantDictionary = entityProperties.ToDictionary(kv => kv.Key, kv => kv.Value, StringComparer.OrdinalIgnoreCase);
 
 		foreach (PropertyInfo? propertyInfo in propertyInfos)
 		{
-			string? propertyName = propertyInfo.Name;
+			string propertyName = propertyInfo.Name;
 			DataMemberAttribute? dataMemberAttribute = propertyInfo.GetCustomAttribute<DataMemberAttribute>();
 			if (dataMemberAttribute is { Name.Length: > 0 })
 			{
@@ -56,21 +56,21 @@ public static class EntitySerializer
 
 	private static object? DeserializeFixedDictionary(FixedDictionary dict, Type propertyType)
 	{
-		object? propertyObj = Activator.CreateInstance(propertyType)!;
+		object propertyObj = Activator.CreateInstance(propertyType)!;
 		DeserializeDictionaryProperties(dict, propertyType.GetProperties(), propertyObj);
 		return propertyObj;
 	}
 
 	private static object? DeserializeFixedList(FixedList list, Type elementType)
 	{
-		Type? listType = typeof(List<>).MakeGenericType(elementType);
-		MethodInfo? addMethod = listType.GetMethod("Add")!;
-		object? values = Activator.CreateInstance(listType);
+		Type listType = typeof(List<>).MakeGenericType(elementType);
+		MethodInfo addMethod = listType.GetMethod("Add")!;
+		object values = Activator.CreateInstance(listType)!;
 		foreach (object? item in list)
 		{
 			if (item is FixedDictionary itemDict)
 			{
-				object? itemObj = Activator.CreateInstance(elementType)!;
+				object itemObj = Activator.CreateInstance(elementType)!;
 				addMethod.Invoke(values, new[] { DeserializeFixedDictionary(itemDict, elementType) });
 			}
 			else if (item is FixedList itemList)
