@@ -5,14 +5,20 @@ on:
   push:
     branches: 
     - master
+    - develop
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
   
 jobs:
+  build-test:
+    uses: ./.github/workflows/build.yml
+
   publish-nuget:
     name: Publish NuGet package
     runs-on: ubuntu-latest
+    needs: 
+      - build-test
 
     strategy:
       fail-fast: false
@@ -32,11 +38,27 @@ jobs:
         
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
 
       - name: Setup dotnet
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 6.0.x
+
+      - uses: dotnet/nbgv@main
+        id: nbgv
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build
+
+      - id: is-public-release
+        uses: ASzc/change-string-case-action@v2
+        with:
+          string: ${{ steps.nbgv.outputs.PublicRelease }}
 
       # Publish
       - name: Build, Pack & Publish ${{ matrix.project.name }} to ${{ matrix.nuget.name }}
@@ -56,13 +78,13 @@ jobs:
           # VERSION_REGEX: ^\s*<Version>(.*)<\/Version>\s*$
           
           # Useful with external providers like Nerdbank.GitVersioning, ignores VERSION_FILE_PATH & VERSION_REGEX
-          # VERSION_STATIC: 1.0.0
+          VERSION_STATIC: ${{ steps.nbgv.outputs.NuGetPackageVersion }}
 
           # Flag to toggle git tagging, enabled by default
-          TAG_COMMIT: true
+          TAG_COMMIT: ${{ steps.is-public-release.outputs.lowercase }}
 
           # Format of the git tag, [*] gets replaced with actual version
-          # TAG_FORMAT: v*
+          TAG_FORMAT: v${{ steps.nbgv.outputs.MajorMinorVersion }}
 
           # API key to authenticate with NuGet server
           NUGET_KEY: ${{ secrets[matrix.nuget.keyname] }}

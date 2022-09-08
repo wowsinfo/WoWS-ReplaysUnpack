@@ -1,6 +1,9 @@
-name: .NET
+name: .NET Build & Test
 
-on: [ push, pull_request ]
+on:
+  - push
+  - pull_request
+  - workflow_call
 
 jobs:
   build:
@@ -10,16 +13,21 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        submodules: 'recursive'
+        fetch-depth: 0 # avoid shallow clone so nbgv can do its work.
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 6.0.x
-        include-prerelease: true
+
+    - uses: dotnet/nbgv@main
+      id: nbgv
+
     - name: Restore dependencies
-      run: dotnet restore *.sln
+      run: dotnet restore
+
     - name: Build
-      run: dotnet build --no-restore *.sln
+      run: dotnet build --no-restore
+
     - name: Test
-      run: dotnet test --no-build --verbosity normal *.sln
+      run: dotnet test --no-build --verbosity normal
