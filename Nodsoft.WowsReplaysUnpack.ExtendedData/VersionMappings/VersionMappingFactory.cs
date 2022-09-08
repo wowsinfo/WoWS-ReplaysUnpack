@@ -11,7 +11,10 @@ public sealed class VersionMappingFactory
 	static VersionMappingFactory()
 	{
 		VersionMappingTypes = typeof(VersionMappingFactory).Assembly.GetTypes()
-			 .Where(t => t.Namespace!.Contains("VersionMappings") && t != typeof(IVersionMapping) && t.IsAssignableTo(typeof(IVersionMapping)))
+			 .Where(static t => t.Namespace is not null 
+				&& t.Namespace.Contains("VersionMappings") 
+				&& t != typeof(IVersionMapping) 
+				&& t.IsAssignableTo(typeof(IVersionMapping)))
 			 .ToArray();
 	}
 
