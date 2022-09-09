@@ -2,8 +2,6 @@
 using Nodsoft.WowsReplaysUnpack.Core.DataTypes;
 using Nodsoft.WowsReplaysUnpack.Core.Exceptions;
 using Nodsoft.WowsReplaysUnpack.Core.Extensions;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Xml;
 
 namespace Nodsoft.WowsReplaysUnpack.Core.Definitions;
@@ -18,6 +16,14 @@ public class DefaultDefinitionStore : IDefinitionStore
 	/// </summary>
 	protected const string EntitiesXml = "entities.xml";
 
+	private readonly Version[] _supportedVersions;
+
+	/// <summary>
+	/// Logger instance used by this definition store.
+	/// </summary>
+	protected ILogger<IDefinitionStore> Logger { get; }
+
+	public IDefinitionLoader DefinitionLoader { get; }
 
 	/// <summary>
 	/// version_name -> Definition
@@ -39,21 +45,21 @@ public class DefaultDefinitionStore : IDefinitionStore
 	/// </summary>
 	protected readonly Dictionary<string, Dictionary<string, XmlNode>> TypeMappings = new();
 
-	public IDefinitionLoader Loader { get; }
-
-	public DefaultDefinitionStore(IDefinitionLoader embeddedDefinitionLoader)
+	public DefaultDefinitionStore(ILogger<DefaultDefinitionStore> logger, IDefinitionLoader definitionLoader)
 	{
-		Loader = embeddedDefinitionLoader;
-	}
 
-	
+		Logger = logger;
+		DefinitionLoader = definitionLoader;
+
+		_supportedVersions = DefinitionLoader.GetSupportedVersions();
+	}
 
 	#region EntityDefinitions
 
 	/// <inheritdoc />
 	public virtual EntityDefinition GetEntityDefinition(Version clientVersion, int index)
 	{
-		clientVersion = Loader.GetExactVersion(clientVersion);
+		clientVersion = GetActualVersion(clientVersion);
 		string name = GetEntityDefinitionName(clientVersion, index);
 
 		return GetEntityDefinition(clientVersion, name);
@@ -62,8 +68,8 @@ public class DefaultDefinitionStore : IDefinitionStore
 	/// <inheritdoc />
 	public virtual EntityDefinition GetEntityDefinition(Version clientVersion, string name)
 	{
-		clientVersion = Loader.GetExactVersion(clientVersion);
-		string cacheKey = string.Join('_', clientVersion.ToString(), name);
+		clientVersion = GetActualVersion(clientVersion);
+		string cacheKey = CacheKey(clientVersion.ToString(), name);
 
 		if (EntityDefinitionCache.TryGetValue(cacheKey, out EntityDefinition? definition))
 		{
@@ -83,7 +89,7 @@ public class DefaultDefinitionStore : IDefinitionStore
 	/// <returns>The name of the entity definition.</returns>
 	protected virtual string GetEntityDefinitionName(Version clientVersion, int index)
 	{
-		string cacheKey = string.Join('_', clientVersion.ToString(), (index - 1).ToString());
+		string cacheKey = CacheKey(clientVersion.ToString(), (index - 1).ToString());
 
 		if (EntityDefinitionIndexNameCache.TryGetValue(cacheKey, out string? name))
 		{
@@ -103,23 +109,20 @@ public class DefaultDefinitionStore : IDefinitionStore
 	/// <returns>A dictionary of entity indexes and their names.</returns>
 	protected virtual Dictionary<int, string> GetEntityIndexes(Version clientVersion)
 	{
-		return GetFileAsXml(clientVersion, EntitiesXml).DocumentElement!.SelectSingleNode("ClientServerEntities")!.ChildNodes()
+		return DefinitionLoader.GetFileAsXml(GetActualVersion(clientVersion), EntitiesXml).DocumentElement!.SelectSingleNode("ClientServerEntities")!.ChildNodes()
 			.Select((node, index) => new { node, index })
 			.ToDictionary(i => i.index, i => i.node.Name);
 	}
 
 	#endregion
 
-	/// <inheritdoc />
-	public virtual XmlDocument GetFileAsXml(Version clientVersion, string name, params string[] directoryNames)
-	{
-		return Loader.GetFileAsXml(clientVersion, name, directoryNames);
-	}
+	public virtual XmlDocument GetFileAsXml(Version clientVersion, string name, params string[] directoryNames) 
+		=> DefinitionLoader.GetFileAsXml(GetActualVersion(clientVersion), name, directoryNames);
 
 	/// <inheritdoc />
 	public virtual DataTypeBase GetDataType(Version clientVersion, XmlNode typeOrArgXmlNode)
 	{
-		clientVersion = Loader.GetExactVersion(clientVersion);
+		clientVersion = GetActualVersion(clientVersion);
 		string versionString = clientVersion.ToString();
 
 		if (TypeMappings.TryGetValue(versionString, out Dictionary<string, XmlNode>? typeMapping))
@@ -127,7 +130,7 @@ public class DefaultDefinitionStore : IDefinitionStore
 			return GetDataTypeInternal(clientVersion, typeMapping, typeOrArgXmlNode);
 		}
 
-		XmlDocument aliasXml = GetFileAsXml(clientVersion, "alias.xml", "entity_defs");
+		XmlDocument aliasXml = DefinitionLoader.GetFileAsXml(clientVersion, "alias.xml", "entity_defs");
 		typeMapping = new();
 
 		foreach (XmlNode node in aliasXml.DocumentElement!.ChildNodes)
@@ -139,6 +142,7 @@ public class DefaultDefinitionStore : IDefinitionStore
 
 		return GetDataTypeInternal(clientVersion, typeMapping, typeOrArgXmlNode);
 	}
+
 
 	/// <summary>
 	/// Internal method for getting a data type.
@@ -168,4 +172,23 @@ public class DefaultDefinitionStore : IDefinitionStore
 			}
 		}
 	}
+
+	private Version GetActualVersion(Version version)
+	{
+		Version actualVersion = _supportedVersions.FirstOrDefault(v => version >= v) ?? throw new VersionNotSupportedException(_supportedVersions.Last(), version);
+
+		if (actualVersion != version)
+		{
+			Logger.LogWarning("The requested version does not match the latest supported version. Requested: {requested}, Latest: {latest}", version, actualVersion);
+		}
+
+		return actualVersion;
+	}
+
+	/// <summary>
+	/// Joins parts of a cache key, separated by an underscore.
+	/// </summary>
+	/// <param name="values">Parts of the cache key.</param>
+	/// <returns>The joined cache key.</returns>
+	protected static string CacheKey(params string[] values) => string.Join(Consts.Underscore, values);
 }

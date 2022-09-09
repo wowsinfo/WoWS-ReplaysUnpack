@@ -17,7 +17,7 @@ public static class ServiceCollectionExtensions
 	/// <param name="services">The service collection.</param>
 	/// <returns>The service collection.</returns>
 	public static IServiceCollection AddWowsReplayUnpacker(this IServiceCollection services) 
-		=> services.AddWowsReplayUnpacker<DefaultReplayDataParser, DefaultDefinitionStore, EmbeddedDefinitionLoader>();
+		=> services.AddWowsReplayUnpacker<DefaultReplayDataParser, DefaultDefinitionStore, AssemblyDefinitionLoader>();
 
 	/// <summary>
 	/// Registers the WOWS replay data unpacker,

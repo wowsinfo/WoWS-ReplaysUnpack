@@ -10,18 +10,13 @@ namespace Nodsoft.WowsReplaysUnpack.Core.Definitions;
 public interface IDefinitionStore
 {
 	/// <summary>
-	/// The Definition loader used to load this store's definitions.
-	/// </summary>
-	IDefinitionLoader Loader { get; }
-
-	/// <summary>
 	/// Gets the data type of an XML node.
 	/// </summary>
 	/// <param name="clientVersion">Game client version</param>
 	/// <param name="typeOrArgXmlNode">XML node to get the data type of</param>
 	/// <returns>Data type of the XML node</returns>
 	DataTypeBase GetDataType(Version clientVersion, XmlNode typeOrArgXmlNode);
-	
+
 	/// <summary>
 	/// Gets an entity definition by its index.
 	/// </summary>
@@ -29,7 +24,7 @@ public interface IDefinitionStore
 	/// <param name="index">Index of the entity definition</param>
 	/// <returns>Entity definition</returns>
 	EntityDefinition GetEntityDefinition(Version clientVersion, int index);
-	
+
 	/// <summary>
 	/// Gets a property definition by its name.
 	/// </summary>
@@ -37,4 +32,13 @@ public interface IDefinitionStore
 	/// <param name="name">Name of the property definition</param>
 	/// <returns>Property definition</returns>
 	EntityDefinition GetEntityDefinition(Version clientVersion, string name);
+
+	/// <summary>
+	/// Gets the definition file from the definition loader
+	/// </summary>
+	/// <param name="clientVersion">Game client version</param>
+	/// <param name="name">Name of the .def file to read</param>
+	/// <param name="directoryNames">Directories where to search for the .def file</param>
+	/// <returns>XML data</returns>
+	XmlDocument GetFileAsXml(Version clientVersion, string name, params string[] directoryNames);
 }

@@ -26,7 +26,7 @@ public class ReplayUnpackerBuilder
 		Services = services;
 		AddReplayController<DefaultReplayController>();
 	}
-		
+
 	/// <summary>
 	/// Registers a <see cref="IReplayDataParser" /> for use in the WOWS replay data unpacker.
 	/// </summary>
@@ -62,7 +62,7 @@ public class ReplayUnpackerBuilder
 		definitionLoaderAdded = true;
 		return this;
 	}
-		
+
 	/// <summary>
 	/// Registers a <see cref="IDefinitionStore" /> for use in the WOWS replay data unpacker.
 	/// </summary>
@@ -74,7 +74,22 @@ public class ReplayUnpackerBuilder
 		definitionStoreAdded = true;
 		return this;
 	}
-		
+
+
+  // stewie says: No need for that since they will be added either way if you don't add other ones
+	///// <summary>
+	///// Registers the Assembly definition loader and the default definition store for the WOWS replay data unpacker.
+	///// These are considered the default definition services for the unpacker.
+	///// </summary>
+	///// <param name="builder">The replay unpacker builder.</param>
+	///// <returns>The service collection.</returns>
+	//public static ReplayUnpackerBuilder WithDefaultDefinitions(this ReplayUnpackerBuilder builder)
+	//{
+	//	builder.WithDefinitionLoader<AssemblyDefinitionLoader>();
+	//	builder.WithDefinitionStore<DefaultDefinitionStore>();
+	//	return builder;
+	//}
+
 	/// <summary>
 	/// Builds the WOWS replay data unpacker, registering any missing services.
 	/// </summary>
@@ -89,26 +104,10 @@ public class ReplayUnpackerBuilder
 		{
 			WithDefinitionStore<DefaultDefinitionStore>();
 		}
-		
+
 		if (!definitionLoaderAdded)
 		{
-			WithDefinitionLoader<EmbeddedDefinitionLoader>();
+			WithDefinitionLoader<AssemblyDefinitionLoader>();
 		}
-	}
-}
-
-public static class ReplayUnpackerBuilderExtensions
-{
-	/// <summary>
-	/// Registers the Embedded definition loader and the default definition store for the WOWS replay data unpacker.
-	/// These are considered the default definition services for the unpacker.
-	/// </summary>
-	/// <param name="builder">The replay unpacker builder.</param>
-	/// <returns>The service collection.</returns>
-	public static ReplayUnpackerBuilder WithDefaultDefinitions(this ReplayUnpackerBuilder builder)
-	{
-		builder.WithDefinitionLoader<EmbeddedDefinitionLoader>();
-		builder.WithDefinitionStore<DefaultDefinitionStore>();
-		return builder;
 	}
 }
