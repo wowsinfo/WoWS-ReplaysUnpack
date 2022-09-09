@@ -40,9 +40,9 @@ public record DefinitionDirectory
 
 		foreach (string fileName in fileNames)
 		{
-			string actualFileName = fileName.GetStringAfterLength(Path + ".");
+			string actualFileName = fileName.GetStringAfterLength(Path + '.');
 
-			if (actualFileName.Count(c => c == '.') is 1)
+			if (actualFileName.Count(static c => c is '.') is 1)
 			{
 				Files.Add(new(actualFileName, fileName));
 			}

@@ -39,7 +39,7 @@ public abstract record BaseDefinition
 		Name = name;
 		_folder = folder;
 
-		ParseDefinitionFile(DefinitionStore.GetFileAsXml(ClientVersion, Name + ".def", _folder).DocumentElement!);
+		ParseDefinitionFile(DefinitionStore.Loader.GetFileAsXml(ClientVersion, Name + ".def", _folder).DocumentElement!);
 	}
 
 	
@@ -63,7 +63,7 @@ public abstract record BaseDefinition
 	{
 		foreach (string @interface in interfaces)
 		{
-			ParseDefinitionFile(DefinitionStore.GetFileAsXml(ClientVersion, @interface + ".def", _folder, "interfaces").DocumentElement!);
+			ParseDefinitionFile(DefinitionStore.Loader.GetFileAsXml(ClientVersion, @interface + ".def", _folder, "interfaces").DocumentElement!);
 		}
 	}
 

@@ -3,6 +3,7 @@ using Nodsoft.WowsReplaysUnpack.Core.DataTypes;
 using Nodsoft.WowsReplaysUnpack.Core.Exceptions;
 using Nodsoft.WowsReplaysUnpack.Core.Extensions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Xml;
 
 namespace Nodsoft.WowsReplaysUnpack.Core.Definitions;
@@ -17,23 +18,6 @@ public class DefaultDefinitionStore : IDefinitionStore
 	/// </summary>
 	protected const string EntitiesXml = "entities.xml";
 
-	private readonly Version[] _supportedVersions;
-
-	/// <summary>
-	/// Logger instance used by this definition store.
-	/// </summary>
-	protected readonly ILogger<IDefinitionStore> Logger;
-
-	/// <summary>
-	/// Assembly of the Definition store (defaults to the implementation assembly).
-	/// </summary>
-	protected readonly Assembly Assembly;
-	
-	
-	/// <summary>
-	/// Version -> Definitions Directory
-	/// </summary>
-	protected readonly Dictionary<string, DefinitionDirectory> DirectoryCache = new();
 
 	/// <summary>
 	/// version_name -> Definition
@@ -55,29 +39,21 @@ public class DefaultDefinitionStore : IDefinitionStore
 	/// </summary>
 	protected readonly Dictionary<string, Dictionary<string, XmlNode>> TypeMappings = new();
 
-	public DefaultDefinitionStore(ILogger<DefaultDefinitionStore> logger)
+	public IDefinitionLoader Loader { get; }
+
+	public DefaultDefinitionStore(IDefinitionLoader embeddedDefinitionLoader)
 	{
-		Assembly = typeof(DefaultDefinitionStore).Assembly;
-		Logger = logger;
-
-		string versionsDirectory = JoinPath(Assembly.FullName!.GetStringBeforeIndex(Consts.Comma), "Definitions", "Versions");
-
-		_supportedVersions = Assembly.GetManifestResourceNames()
-			.Where(name => name.StartsWith(versionsDirectory))
-			.Select(name => name.GetStringAfterLength(versionsDirectory + Consts.Dot).GetStringBeforeIndex(Consts.Dot)[1..])
-			.Distinct()
-			.Select(version => version.Split(Consts.Underscore).Select(int.Parse).ToArray())
-			.Select(arr => new Version(arr[0], arr[1], arr[2]))
-			.OrderByDescending(version => version)
-			.ToArray();
+		Loader = embeddedDefinitionLoader;
 	}
+
+	
 
 	#region EntityDefinitions
 
 	/// <inheritdoc />
 	public virtual EntityDefinition GetEntityDefinition(Version clientVersion, int index)
 	{
-		clientVersion = GetActualVersion(clientVersion);
+		clientVersion = Loader.GetExactVersion(clientVersion);
 		string name = GetEntityDefinitionName(clientVersion, index);
 
 		return GetEntityDefinition(clientVersion, name);
@@ -86,8 +62,8 @@ public class DefaultDefinitionStore : IDefinitionStore
 	/// <inheritdoc />
 	public virtual EntityDefinition GetEntityDefinition(Version clientVersion, string name)
 	{
-		clientVersion = GetActualVersion(clientVersion);
-		string cacheKey = CacheKey(clientVersion.ToString(), name);
+		clientVersion = Loader.GetExactVersion(clientVersion);
+		string cacheKey = string.Join('_', clientVersion.ToString(), name);
 
 		if (EntityDefinitionCache.TryGetValue(cacheKey, out EntityDefinition? definition))
 		{
@@ -107,7 +83,7 @@ public class DefaultDefinitionStore : IDefinitionStore
 	/// <returns>The name of the entity definition.</returns>
 	protected virtual string GetEntityDefinitionName(Version clientVersion, int index)
 	{
-		string cacheKey = CacheKey(clientVersion.ToString(), (index - 1).ToString());
+		string cacheKey = string.Join('_', clientVersion.ToString(), (index - 1).ToString());
 
 		if (EntityDefinitionIndexNameCache.TryGetValue(cacheKey, out string? name))
 		{
@@ -137,26 +113,13 @@ public class DefaultDefinitionStore : IDefinitionStore
 	/// <inheritdoc />
 	public virtual XmlDocument GetFileAsXml(Version clientVersion, string name, params string[] directoryNames)
 	{
-		clientVersion = GetActualVersion(clientVersion);
-		DefinitionDirectory directory = FindDirectory(clientVersion, directoryNames);
-
-		if (directory.Files.SingleOrDefault(f => f.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase)) is not { } file)
-		{
-			throw new InvalidOperationException("File could not be found");
-		}
-
-		XmlReaderSettings settings = new() { IgnoreComments = true };
-		XmlReader reader = XmlReader.Create(Assembly.GetManifestResourceStream(file.Path) ?? throw new InvalidOperationException("File not found"), settings);
-		XmlDocument xmlDocument = new();
-		xmlDocument.Load(reader);
-
-		return xmlDocument;
+		return Loader.GetFileAsXml(clientVersion, name, directoryNames);
 	}
 
 	/// <inheritdoc />
 	public virtual DataTypeBase GetDataType(Version clientVersion, XmlNode typeOrArgXmlNode)
 	{
-		clientVersion = GetActualVersion(clientVersion);
+		clientVersion = Loader.GetExactVersion(clientVersion);
 		string versionString = clientVersion.ToString();
 
 		if (TypeMappings.TryGetValue(versionString, out Dictionary<string, XmlNode>? typeMapping))
@@ -175,57 +138,6 @@ public class DefaultDefinitionStore : IDefinitionStore
 		TypeMappings.Add(versionString, typeMapping);
 
 		return GetDataTypeInternal(clientVersion, typeMapping, typeOrArgXmlNode);
-	}
-
-	/// <summary>
-	/// Finds a definition directory by given names.
-	/// </summary>
-	/// <param name="clientVersion">The game client version.</param>
-	/// <param name="directoryNames">The names of the directories.</param>
-	/// <returns>The definition directory.</returns>
-	protected virtual DefinitionDirectory FindDirectory(Version clientVersion, IEnumerable<string> directoryNames)
-	{
-		DefinitionDirectory folder = GetRootDirectory(clientVersion);
-
-		foreach (string? folderName in directoryNames)
-		{
-			DefinitionDirectory? foundFolder = folder.Directories.SingleOrDefault(f => f.Name.Equals(folderName, StringComparison.InvariantCultureIgnoreCase));
-
-			if (foundFolder is null)
-			{
-				break;
-			}
-
-			folder = foundFolder;
-		}
-
-		return folder;
-	}
-
-	/// <summary>
-	/// Gets the root definition directory for a given game client version.
-	/// </summary>
-	/// <param name="clientVersion">The game client version.</param>
-	/// <returns>The root definition directory.</returns>
-	protected virtual DefinitionDirectory GetRootDirectory(Version clientVersion)
-	{
-		if (DirectoryCache.TryGetValue(clientVersion.ToString(), out DefinitionDirectory? rootDirectory))
-		{
-			return rootDirectory;
-		}
-
-		string scriptsDirectory = JoinPath(Assembly.FullName!.GetStringBeforeIndex(Consts.Comma),
-			"Definitions", "Versions", $"{Consts.Underscore}{clientVersion.ToString().Replace(Consts.Dot, Consts.Underscore)}", "scripts"
-		);
-		
-		string[] fileNames = Assembly.GetManifestResourceNames()
-			.Where(name => name.StartsWith(scriptsDirectory))
-			.ToArray();
-
-		rootDirectory = new("scripts", scriptsDirectory, fileNames);
-		DirectoryCache.Add(clientVersion.ToString(), rootDirectory);
-
-		return rootDirectory;
 	}
 
 	/// <summary>
@@ -256,30 +168,4 @@ public class DefaultDefinitionStore : IDefinitionStore
 			}
 		}
 	}
-
-	private Version GetActualVersion(Version version)
-	{
-		Version actualVersion = _supportedVersions.FirstOrDefault(v => version >= v) ?? throw new VersionNotSupportedException(_supportedVersions.Last(), version);
-
-		if (actualVersion != version)
-		{
-			Logger.LogWarning("The requested version does not match the latest supported version. Requested: {requested}, Latest: {latest}", version, actualVersion);
-		}
-
-		return actualVersion;
-	}
-
-	/// <summary>
-	/// Joins parts of an XML path, separated by a dot.
-	/// </summary>
-	/// <param name="parts">Parts of the path.</param>
-	/// <returns>The joined path.</returns>
-	protected static string JoinPath(params string[] parts) => string.Join(Consts.Dot, parts);
-	
-	/// <summary>
-	/// Joins parts of a cache key, separated by an underscore.
-	/// </summary>
-	/// <param name="values">Parts of the cache key.</param>
-	/// <returns>The joined cache key.</returns>
-	protected static string CacheKey(params string[] values) => string.Join(Consts.Underscore, values);
 }

@@ -10,6 +10,11 @@ namespace Nodsoft.WowsReplaysUnpack.Core.Definitions;
 public interface IDefinitionStore
 {
 	/// <summary>
+	/// The Definition loader used to load this store's definitions.
+	/// </summary>
+	IDefinitionLoader Loader { get; }
+
+	/// <summary>
 	/// Gets the data type of an XML node.
 	/// </summary>
 	/// <param name="clientVersion">Game client version</param>
@@ -32,13 +37,4 @@ public interface IDefinitionStore
 	/// <param name="name">Name of the property definition</param>
 	/// <returns>Property definition</returns>
 	EntityDefinition GetEntityDefinition(Version clientVersion, string name);
-	
-	/// <summary>
-	/// Reads XML data from a .def file (seeking through directories as needed).
-	/// </summary>
-	/// <param name="clientVersion">Game client version</param>
-	/// <param name="name">Name of the .def file to read</param>
-	/// <param name="directoryNames">Directories where to search for the .def file</param>
-	/// <returns>XML data</returns>
-	XmlDocument GetFileAsXml(Version clientVersion, string name, params string[] directoryNames);
 }
