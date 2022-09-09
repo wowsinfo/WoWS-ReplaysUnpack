@@ -23,7 +23,7 @@ public class DefaultDefinitionStore : IDefinitionStore
 	/// </summary>
 	protected ILogger<IDefinitionStore> Logger { get; }
 
-	public IDefinitionLoader DefinitionLoader { get; }
+	protected IDefinitionLoader DefinitionLoader { get; }
 
 	/// <summary>
 	/// version_name -> Definition
