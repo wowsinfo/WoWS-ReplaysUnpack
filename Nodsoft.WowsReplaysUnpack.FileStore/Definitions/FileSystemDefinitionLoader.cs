@@ -49,6 +49,7 @@ public class FileSystemDefinitionLoader : IDefinitionLoader
 		// so we'll need to parse them accordingly into Version objects.
 		Version[] versions = new DirectoryInfo(_options.CurrentValue.RootDirectory).GetDirectories()
 			.Select(static dir => FromFilesystemString(dir.Name))
+			.OrderByDescending(static version => version)
 			.ToArray();
 		
 		return versions;

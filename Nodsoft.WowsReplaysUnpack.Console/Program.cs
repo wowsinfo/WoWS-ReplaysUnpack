@@ -6,6 +6,7 @@ using Nodsoft.WowsReplaysUnpack.Core.Models;
 using Nodsoft.WowsReplaysUnpack.EntitySerializer;
 using Nodsoft.WowsReplaysUnpack.ExtendedData;
 using Nodsoft.WowsReplaysUnpack.ExtendedData.Models;
+using Nodsoft.WowsReplaysUnpack.FileStore.Definitions;
 using Nodsoft.WowsReplaysUnpack.Services;
 using System;
 using System.Collections.Generic;
@@ -17,11 +18,18 @@ string samplePath = Path.Join(Directory.GetCurrentDirectory(), "../../../..", "R
 FileStream _GetReplayFile(string name) => File.OpenRead(Path.Join(samplePath, name));
 
 ServiceProvider? services = new ServiceCollection()
-	.AddWowsReplayUnpacker(builder =>
-	{
-		//builder.AddReplayController<CVECheckOnlyController>();
-		builder.AddExtendedData();
-	})
+	//.AddWowsReplayUnpacker(builder =>
+	//{
+	//	//builder.AddReplayController<CVECheckOnlyController>();
+	//	//builder.AddExtendedData();
+	//})
+	.AddWowsReplayUnpacker(builder => builder
+				.WithDefinitionLoader<FileSystemDefinitionLoader>())
+			.Configure<FileSystemDefinitionLoaderOptions>(options =>
+			{
+				options.RootDirectory = options.RootDirectory = Path.Join(Directory.GetCurrentDirectory(),
+					"..", "..", "..", "..", "Nodsoft.WowsReplaysUnpack.Core", "Definitions", "Versions");
+			})
 	.AddLogging(logging =>
 	{
 		logging.ClearProviders();
@@ -42,7 +50,7 @@ ReplayUnpackerFactory? replayUnpacker = services.GetRequiredService<ReplayUnpack
 //}
 
 
-
+var goodReplay = replayUnpacker.GetUnpacker().Unpack(_GetReplayFile("good.wowsreplay"));
 var alphaReplay = replayUnpacker.GetUnpacker().Unpack(_GetReplayFile("press_account_alpha.wowsreplay"));
 var bravoReplay = replayUnpacker.GetUnpacker().Unpack(_GetReplayFile("unfinished_replay.wowsreplay"));
 
