@@ -16,6 +16,6 @@ public interface IDefinitionLoader
 	/// <summary>
 	/// Gets all game client versions supported by this definition loader.
 	/// </summary>
-	/// <returns>An array of all supported game client versions.</returns>
+	/// <returns>An array of all supported game client versions ordered newest -> oldest.</returns>
 	Version[] GetSupportedVersions();
 }
