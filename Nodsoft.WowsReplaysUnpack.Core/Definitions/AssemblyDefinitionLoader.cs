@@ -5,6 +5,8 @@ using System.Xml;
 namespace Nodsoft.WowsReplaysUnpack.Core.Definitions;
 public class AssemblyDefinitionLoader : IDefinitionLoader
 {
+	private static readonly XmlReaderSettings _xmlReaderSettings = new() { IgnoreComments = true };
+	
 	/// <summary>
 	/// Assembly of the Definition store (defaults to the implementation assembly).
 	/// </summary>
@@ -21,16 +23,17 @@ public class AssemblyDefinitionLoader : IDefinitionLoader
 		Assembly = typeof(DefaultDefinitionStore).Assembly;
 	}
 
+	/// <inheritdoc />
 	public Version[] GetSupportedVersions()
 	{
-		string versionsDirectory = JoinPath(Assembly.FullName!.GetStringBeforeIndex(Consts.Comma), "Definitions", "Versions");
+		string versionsDirectory = JoinPath(Assembly.FullName!.GetStringBeforeIndex(','), "Definitions", "Versions");
 		return Assembly.GetManifestResourceNames()
 			.Where(name => name.StartsWith(versionsDirectory))
-			.Select(name => name.GetStringAfterLength(versionsDirectory + Consts.Dot).GetStringBeforeIndex(Consts.Dot)[1..])
+			.Select(name => name.GetStringAfterLength(versionsDirectory + '.').GetStringBeforeIndex('.')[1..])
 			.Distinct()
-			.Select(version => version.Split(Consts.Underscore).Select(int.Parse).ToArray())
-			.Select(arr => new Version(arr[0], arr[1], arr[2]))
-			.OrderByDescending(version => version)
+			.Select(static version => version.Split('_').Select(int.Parse).ToArray())
+			.Select(static arr => new Version(arr[0], arr[1], arr[2]))
+			.OrderByDescending(static version => version)
 			.ToArray();
 	}
 
@@ -43,9 +46,8 @@ public class AssemblyDefinitionLoader : IDefinitionLoader
 		{
 			throw new InvalidOperationException("File could not be found");
 		}
-
-		XmlReaderSettings settings = new() { IgnoreComments = true };
-		XmlReader reader = XmlReader.Create(Assembly.GetManifestResourceStream(file.Path) ?? throw new InvalidOperationException("File not found"), settings);
+		
+		XmlReader reader = XmlReader.Create(Assembly.GetManifestResourceStream(file.Path) ?? throw new InvalidOperationException("File not found"), _xmlReaderSettings);
 		XmlDocument xmlDocument = new();
 		xmlDocument.Load(reader);
 
@@ -108,5 +110,5 @@ public class AssemblyDefinitionLoader : IDefinitionLoader
 	/// </summary>
 	/// <param name="parts">Parts of the path.</param>
 	/// <returns>The joined path.</returns>
-	protected static string JoinPath(params string[] parts) => string.Join(Consts.Dot, parts);
+	protected static string JoinPath(params string[] parts) => string.Join('.', parts);
 }

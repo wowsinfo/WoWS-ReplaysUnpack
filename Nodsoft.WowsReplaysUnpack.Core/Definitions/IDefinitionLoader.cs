@@ -1,5 +1,4 @@
-﻿using Nodsoft.WowsReplaysUnpack.Core.Exceptions;
-using System.Xml;
+﻿using System.Xml;
 
 namespace Nodsoft.WowsReplaysUnpack.Core.Definitions;
 
@@ -14,5 +13,9 @@ public interface IDefinitionLoader
 	/// <returns>XML data</returns>
 	XmlDocument GetFileAsXml(Version clientVersion, string name, params string[] directoryNames);
 
+	/// <summary>
+	/// Gets all game client versions supported by this definition loader.
+	/// </summary>
+	/// <returns>An array of all supported game client versions.</returns>
 	Version[] GetSupportedVersions();
 }
