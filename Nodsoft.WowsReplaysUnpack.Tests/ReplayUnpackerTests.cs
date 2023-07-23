@@ -1,10 +1,15 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Nodsoft.WowsReplaysUnpack.Core.Exceptions;
 using Nodsoft.WowsReplaysUnpack.Core.Models;
 using Nodsoft.WowsReplaysUnpack.Services;
 using Xunit;
 
+
+/*
+ * FIXME: Test parallelization is disabled due to a file loading issue.
+ */
+[assembly: CollectionBehavior(DisableTestParallelization = true)]
 namespace Nodsoft.WowsReplaysUnpack.Tests;
 
 public class ReplayUnpackerTests
