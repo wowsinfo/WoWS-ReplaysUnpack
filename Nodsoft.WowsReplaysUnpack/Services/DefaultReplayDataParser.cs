@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Nodsoft.WowsReplaysUnpack.Core.Models;
 using Nodsoft.WowsReplaysUnpack.Core.Network;
 using Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
@@ -17,7 +17,7 @@ public class DefaultReplayDataParser : IReplayDataParser
 	public DefaultReplayDataParser(ILogger<DefaultReplayDataParser> logger) => (_logger, _packetBufferReader) = (logger, new(_packetBuffer));
 
 	/// <inheritdoc />
-	public virtual IEnumerable<NetworkPacketBase> ParseNetworkPackets(MemoryStream replayDataStream, ReplayUnpackerOptions options)
+	public virtual IEnumerable<NetworkPacketBase> ParseNetworkPackets(MemoryStream replayDataStream, ReplayUnpackerOptions options, Version gameVersion)
 	{
 		int packetIndex = 0;
 		using BinaryReader binaryReader = new(replayDataStream);
@@ -28,7 +28,7 @@ public class DefaultReplayDataParser : IReplayDataParser
 			float packetTime = binaryReader.ReadSingle(); // Time in seconds from battle start
 
 			_logger.LogDebug("Packet parsed of type '{PacketType}' with size '{PacketSize}' and timestamp '{PacketTime}'",
-				NetworkPacketTypes.GetTypeName(packetType), packetSize, packetTime);
+				NetworkPacketTypes.GetTypeName(packetType, gameVersion), packetSize, packetTime);
 
 			byte[] packetData = binaryReader.ReadBytes((int)packetSize);
 
