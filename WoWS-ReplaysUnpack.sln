@@ -28,6 +28,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Replay-Samples", "Replay-Sa
 		Replay-Samples\0.11.2.wowsreplay = Replay-Samples\0.11.2.wowsreplay
 		Replay-Samples\good.wowsreplay = Replay-Samples\good.wowsreplay
 		Replay-Samples\payload.wowsreplay = Replay-Samples\payload.wowsreplay
+		Replay-Samples\12.6.wowsreplay = Replay-Samples\12.6.wowsreplay
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Library", "Library", "{367BF192-3EC3-4A87-B8E4-3E444E7019D0}"
