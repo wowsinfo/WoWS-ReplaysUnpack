@@ -10,7 +10,7 @@ namespace Nodsoft.WowsReplaysUnpack.Tests;
 public class ReplaySanitizerTests
 {
 	private readonly ReplayUnpackerFactory _factory;
-	private readonly string _sampleFolder = Path.Join(Directory.GetCurrentDirectory(), "../../../..", "Replay-Samples");
+	private readonly string _sampleFolder = Path.Join(Directory.GetCurrentDirectory(), "Replay-Samples");
 
 	public ReplaySanitizerTests()
 	{

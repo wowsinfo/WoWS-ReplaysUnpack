@@ -12,10 +12,10 @@ using Xunit;
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
 namespace Nodsoft.WowsReplaysUnpack.Tests;
 
-public class ReplayUnpackerTests
+public sealed class ReplayUnpackerTests
 {
 	private readonly ReplayUnpackerFactory _factory;
-	private readonly string _sampleFolder = Path.Join(Directory.GetCurrentDirectory(), "../../../..", "Replay-Samples");
+	private readonly string _sampleFolder = Path.Join(Directory.GetCurrentDirectory(), "Replay-Samples");
 
 	public ReplayUnpackerTests()
 	{
