@@ -5,26 +5,18 @@ using Nodsoft.WowsReplaysUnpack.Core.Models;
 using Nodsoft.WowsReplaysUnpack.Services;
 using Xunit;
 
-
 /*
- * FIXME: Test parallelization is disabled due to a file loading issue.
- */
+* FIXME: Test parallelization is disabled due to a file loading issue.
+*/
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
 namespace Nodsoft.WowsReplaysUnpack.Tests;
 
 public sealed class ReplayUnpackerTests
 {
-	private readonly ReplayUnpackerFactory _factory;
 	private readonly string _sampleFolder = Path.Join(Directory.GetCurrentDirectory(), "Replay-Samples");
 
 	public ReplayUnpackerTests()
-	{
-		_factory = new ServiceCollection()
-			.AddLogging(l => l.ClearProviders())
-			.AddWowsReplayUnpacker()
-			.BuildServiceProvider()
-			.GetRequiredService<ReplayUnpackerFactory>();
-	}
+	{ }
 
 	
 	/// <summary>
@@ -41,18 +33,24 @@ public sealed class ReplayUnpackerTests
 	]
 	public void TestReplay_Pass(string replayPath)
 	{
-		UnpackedReplay replay = _factory.GetUnpacker().Unpack(LoadReplay(replayPath));
-		Assert.NotNull(replay);
-	}
-	
-	
-	private MemoryStream LoadReplay(string replayPath)
-	{
-		using FileStream fs = File.OpenRead(Path.Join(_sampleFolder, replayPath));
-		MemoryStream ms = new();
-		fs.CopyTo(ms);
+		using MemoryStream ms = new();
+
+		using (FileStream fs = File.OpenRead(Path.Join(_sampleFolder, replayPath)))
+		{
+			fs.CopyTo(ms);
+			Assert.Equal(fs.Length, ms.Length);
+		}
+		
 		ms.Position = 0;
 
-		return ms;
+		ReplayUnpackerFactory replayUnpackerFactory = new ServiceCollection()
+			.AddLogging(l => l.ClearProviders())
+			.AddWowsReplayUnpacker()
+			.BuildServiceProvider()
+			.GetRequiredService<ReplayUnpackerFactory>();
+
+		UnpackedReplay replay = replayUnpackerFactory.GetUnpacker().Unpack(ms);
+		
+		Assert.NotNull(replay);
 	}
 }
