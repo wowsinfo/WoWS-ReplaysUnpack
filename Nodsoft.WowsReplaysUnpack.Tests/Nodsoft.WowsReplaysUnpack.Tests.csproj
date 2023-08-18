@@ -27,9 +27,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Content Include="Samples/*.wowsreplay">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </Content>
+        <None Remove="Replay-Samples\*.wowsreplay" />
+        <Content Include="Replay-Samples\*.wowsreplay" CopyToOutputDirectory="Always" />
     </ItemGroup>
 
 </Project>

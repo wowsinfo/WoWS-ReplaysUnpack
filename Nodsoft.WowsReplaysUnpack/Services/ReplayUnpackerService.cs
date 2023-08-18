@@ -5,6 +5,7 @@ using Nodsoft.WowsReplaysUnpack.Core.Extensions;
 using Nodsoft.WowsReplaysUnpack.Core.Json;
 using Nodsoft.WowsReplaysUnpack.Core.Models;
 using Nodsoft.WowsReplaysUnpack.Core.Network.Packets;
+using System.Diagnostics;
 using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
@@ -83,7 +84,8 @@ public sealed class ReplayUnpackerService<TController> : ReplayUnpackerService, 
 
 		// The first block is the arena info
 		// Read it and create the unpacked replay model
-		UnpackedReplay replay = _replayController.CreateUnpackedReplay(ReadJsonBlock<ArenaInfo>(binaryReader));
+		ArenaInfo arenaInfo = ReadJsonBlock<ArenaInfo>(binaryReader);
+		UnpackedReplay replay = _replayController.CreateUnpackedReplay(arenaInfo);
 		ReadExtraJsonBlocks(replay, binaryReader, jsonBlockCount);
 
 		MemoryStream decryptedStream = new();
@@ -99,7 +101,9 @@ public sealed class ReplayUnpackerService<TController> : ReplayUnpackerService, 
 		decryptedStream.Dispose();
 
 
-		foreach (NetworkPacketBase networkPacket in _replayDataParser.ParseNetworkPackets(replayDataStream, options))
+		Version gameclientVersion = Version.Parse(arenaInfo.ClientVersionFromExe.Replace(',', '.'));
+		
+		foreach (NetworkPacketBase networkPacket in _replayDataParser.ParseNetworkPackets(replayDataStream, options, gameclientVersion))
 		{
 			_replayController.HandleNetworkPacket(networkPacket, options);
 		}
@@ -113,7 +117,11 @@ public sealed class ReplayUnpackerService<TController> : ReplayUnpackerService, 
 		{
 			for (int i = 0; i < jsonBlockCount - 1; i++)
 			{
-				replay.ExtraJsonData.Add(ReadJsonBlock<JsonElement>(binaryReader));
+				if (ReadJsonBlock<JsonElement?>(binaryReader) is { } jsonElement)
+				{
+					replay.ExtraJsonData.Add(jsonElement);
+				}
+				
 			}
 		}
 	}
@@ -121,9 +129,20 @@ public sealed class ReplayUnpackerService<TController> : ReplayUnpackerService, 
 	private T ReadJsonBlock<T>(BinaryReader binaryReader)
 	{
 		int blockSize = binaryReader.ReadInt32();
-		byte[] jsonData = binaryReader.ReadBytes(blockSize);
+		Span<byte> jsonData = binaryReader.ReadBytes(blockSize);
+		
+		// If empty and T is nullable, return null
+		if (jsonData.Length is 0 && typeof(T).IsGenericType && typeof(T).GetGenericTypeDefinition() == typeof(Nullable<>))
+		{
+			return default!;
+		}
+		
 		Utf8JsonReader jsonReader = new(jsonData);
 
+		// Debug string
+		string message = Encoding.UTF8.GetString(jsonData);
+		Debug.WriteLine(message);
+		
 		return JsonSerializer.Deserialize<T>(ref jsonReader, _jsonSerializerOptions) ?? throw new InvalidReplayException();
 	}
 
@@ -164,7 +183,7 @@ public sealed class ReplayUnpackerService<TController> : ReplayUnpackerService, 
 		}
 	}
 
-	private static void Decompress(Stream compressedStream, Stream decompressedStream)
+	private static void Decompress(MemoryStream compressedStream, MemoryStream decompressedStream)
 	{
 		// DeflateStream doesn't strip the header so we strip it manually.
 		compressedStream.Seek(2, SeekOrigin.Begin);

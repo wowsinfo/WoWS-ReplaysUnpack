@@ -40,19 +40,22 @@ public record DefinitionDirectory
 
 		foreach (string fileName in fileNames)
 		{
-			string actualFileName = fileName.GetStringAfterLength(Path + ".");
+			string after = $"{Path}.";
+			string actualFileName = fileName[after.Length..];
 
-			if (actualFileName.Count(c => c == '.') is 1)
+			if (actualFileName.Count(c => c is '.') is 1)
 			{
 				Files.Add(new(actualFileName, fileName));
 			}
 			else
 			{
-				string directoryName = actualFileName.GetStringBeforeIndex('.');
+				int dotPos = actualFileName.IndexOf('.');
+				string directoryName = actualFileName[..dotPos];
 
 				if (Directories.All(d => d.Name != directoryName))
 				{
-					Directories.Add(new(actualFileName.GetStringBeforeIndex('.'), fileName.GetStringBeforeIndex("." + actualFileName.GetStringAfterIndex('.')), fileNames));
+					string before = $".{actualFileName[(dotPos + 1)..]}";
+					Directories.Add(new(actualFileName[..dotPos], fileName[..fileName.IndexOf(before, StringComparison.Ordinal)], fileNames));
 				}
 			}
 		}

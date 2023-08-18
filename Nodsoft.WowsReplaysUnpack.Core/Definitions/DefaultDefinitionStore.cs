@@ -60,13 +60,17 @@ public class DefaultDefinitionStore : IDefinitionStore
 		Assembly = typeof(DefaultDefinitionStore).Assembly;
 		Logger = logger;
 
-		string versionsDirectory = JoinPath(Assembly.FullName!.GetStringBeforeIndex(Consts.Comma), "Definitions", "Versions");
+		string versionsDirectory = JoinPath(Assembly.FullName![..Assembly.FullName!.IndexOf(',')], "Definitions", "Versions");
 
 		_supportedVersions = Assembly.GetManifestResourceNames()
 			.Where(name => name.StartsWith(versionsDirectory))
-			.Select(name => name.GetStringAfterLength(versionsDirectory + Consts.Dot).GetStringBeforeIndex(Consts.Dot)[1..])
+			.Select(name =>
+			{
+				string tempQualifier = name[$"{versionsDirectory}.".Length..];
+				return tempQualifier[..tempQualifier.IndexOf('.')][1..];
+			})
 			.Distinct()
-			.Select(version => version.Split(Consts.Underscore).Select(int.Parse).ToArray())
+			.Select(version => version.Split('_').Select(int.Parse).ToArray())
 			.Select(arr => new Version(arr[0], arr[1], arr[2]))
 			.OrderByDescending(version => version)
 			.ToArray();
@@ -214,8 +218,8 @@ public class DefaultDefinitionStore : IDefinitionStore
 			return rootDirectory;
 		}
 
-		string scriptsDirectory = JoinPath(Assembly.FullName!.GetStringBeforeIndex(Consts.Comma),
-			"Definitions", "Versions", $"{Consts.Underscore}{clientVersion.ToString().Replace(Consts.Dot, Consts.Underscore)}", "scripts"
+		string scriptsDirectory = JoinPath(Assembly.FullName![..Assembly.FullName!.IndexOf(',')],
+			"Definitions", "Versions", $"_{clientVersion.ToString().Replace('.', '_')}", "scripts"
 		);
 		
 		string[] fileNames = Assembly.GetManifestResourceNames()
@@ -274,12 +278,12 @@ public class DefaultDefinitionStore : IDefinitionStore
 	/// </summary>
 	/// <param name="parts">Parts of the path.</param>
 	/// <returns>The joined path.</returns>
-	protected static string JoinPath(params string[] parts) => string.Join(Consts.Dot, parts);
+	protected static string JoinPath(params string[] parts) => string.Join('.', parts);
 	
 	/// <summary>
 	/// Joins parts of a cache key, separated by an underscore.
 	/// </summary>
 	/// <param name="values">Parts of the cache key.</param>
 	/// <returns>The joined cache key.</returns>
-	protected static string CacheKey(params string[] values) => string.Join(Consts.Underscore, values);
+	protected static string CacheKey(params string[] values) => string.Join('_', values);
 }
