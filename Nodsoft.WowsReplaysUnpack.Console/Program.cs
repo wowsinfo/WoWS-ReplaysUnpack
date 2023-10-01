@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Nodsoft.WowsReplaysUnpack;
+using Nodsoft.WowsReplaysUnpack.Core.Definitions;
 using Nodsoft.WowsReplaysUnpack.Core.Models;
 using Nodsoft.WowsReplaysUnpack.EntitySerializer;
 using Nodsoft.WowsReplaysUnpack.ExtendedData;
@@ -21,6 +22,7 @@ ServiceProvider? services = new ServiceCollection()
 	{
 		//builder.AddReplayController<CVECheckOnlyController>();
 		builder.AddExtendedData();
+		builder.WithDefinitionStore<LocalDefinitionStore>();
 	})
 	.AddLogging(logging =>
 	{

@@ -365,3 +365,6 @@ FodyWeavers.xsd
 # Rider config directory
 .idea
 .store/
+
+# Replay samples
+Replay-Samples/*.wowsreplay

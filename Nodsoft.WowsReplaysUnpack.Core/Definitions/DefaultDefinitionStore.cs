@@ -60,9 +60,18 @@ public class DefaultDefinitionStore : IDefinitionStore
 		Assembly = typeof(DefaultDefinitionStore).Assembly;
 		Logger = logger;
 
+		_supportedVersions = GetSupportedVersions();
+	}
+
+	/// <summary>
+	/// From the assembly, gets all supported versions.
+	/// </summary>
+	/// <returns>An array of supported versions.</returns>
+	protected virtual Version[] GetSupportedVersions()
+	{
 		string versionsDirectory = JoinPath(Assembly.FullName![..Assembly.FullName!.IndexOf(',')], "Definitions", "Versions");
 
-		_supportedVersions = Assembly.GetManifestResourceNames()
+		 return Assembly.GetManifestResourceNames()
 			.Where(name => name.StartsWith(versionsDirectory))
 			.Select(name =>
 			{
@@ -261,7 +270,7 @@ public class DefaultDefinitionStore : IDefinitionStore
 		}
 	}
 
-	private Version GetActualVersion(Version version)
+	protected Version GetActualVersion(Version version)
 	{
 		Version actualVersion = _supportedVersions.FirstOrDefault(v => version >= v) ?? throw new VersionNotSupportedException(_supportedVersions.Last(), version);
 
