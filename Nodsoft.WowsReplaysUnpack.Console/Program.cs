@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 
 string samplePath = Path.Join(Directory.GetCurrentDirectory(), "../../../..", "Replay-Samples");
 FileStream _GetReplayFile(string name) => File.OpenRead(Path.Join(samplePath, name));
@@ -49,6 +50,12 @@ ReplayUnpackerFactory? replayUnpacker = services.GetRequiredService<ReplayUnpack
 //	Console.WriteLine($"[{GetGroupString(msg)}] {msg.EntityId} : {msg.MessageContent}");
 //}
 
+Task<UnpackedReplay>[] tasks = { };
+for (int i = 0; i < 10; i++)
+{
+	tasks.Append(Task.Run(() => replayUnpacker.GetUnpacker().Unpack(_GetReplayFile("good.wowsreplay"))));
+}
+await Task.WhenAll(tasks);
 
 var goodReplay = replayUnpacker.GetUnpacker().Unpack(_GetReplayFile("good.wowsreplay"));
 var alphaReplay = replayUnpacker.GetUnpacker().Unpack(_GetReplayFile("press_account_alpha.wowsreplay"));
