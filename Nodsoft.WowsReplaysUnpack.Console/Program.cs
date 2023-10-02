@@ -50,12 +50,30 @@ ReplayUnpackerFactory? replayUnpacker = services.GetRequiredService<ReplayUnpack
 //	Console.WriteLine($"[{GetGroupString(msg)}] {msg.EntityId} : {msg.MessageContent}");
 //}
 
-Task<UnpackedReplay>[] tasks = { };
-for (int i = 0; i < 10; i++)
+const int CYCLE = 20;
+async Task<UnpackedReplay[]> syncTasks(bool sync)
 {
-	tasks.Append(Task.Run(() => replayUnpacker.GetUnpacker().Unpack(_GetReplayFile("good.wowsreplay"))));
+	List<UnpackedReplay> unpackedReplays = new List<UnpackedReplay>();
+	if (sync)
+	{
+		for (int i = 0; i < CYCLE; i++)
+		{
+			replayUnpacker.GetUnpacker().Unpack(_GetReplayFile("good.wowsreplay"));
+		}
+	}
+	else
+	{	
+		Parallel.ForEach(Enumerable.Range(0, CYCLE), (i) =>
+		{
+			unpackedReplays.Add(replayUnpacker.GetUnpacker().Unpack(_GetReplayFile("good.wowsreplay")));
+		});
+	}
+	return unpackedReplays.ToArray();
 }
-await Task.WhenAll(tasks);
+
+DateTime start = DateTime.Now;
+await syncTasks(false);
+Console.WriteLine(DateTime.Now - start);
 
 var goodReplay = replayUnpacker.GetUnpacker().Unpack(_GetReplayFile("good.wowsreplay"));
 var alphaReplay = replayUnpacker.GetUnpacker().Unpack(_GetReplayFile("press_account_alpha.wowsreplay"));
